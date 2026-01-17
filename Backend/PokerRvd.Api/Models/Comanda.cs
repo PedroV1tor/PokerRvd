@@ -36,26 +36,10 @@ public class ItemComanda
     public int Id { get; set; }
     public int ComandaId { get; set; }
     public Comanda? Comanda { get; set; }
-    public int ProdutoId { get; set; }
+    public int? ProdutoId { get; set; } // Nullable para itens de fichas
     public Produto? Produto { get; set; }
+    public string? NomeCustomizado { get; set; } // Para itens de fichas (Buy-in, Re-buy, etc)
     public int Quantidade { get; set; }
     public decimal ValorUnitario { get; set; }
     public decimal ValorTotal => Quantidade * ValorUnitario;
-}
-
-public class Produto
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = string.Empty;
-    public decimal Preco { get; set; }
-    public CategoriaProduto Categoria { get; set; }
-    public int Estoque { get; set; }
-    public bool Ativo { get; set; } = true;
-}
-
-public enum CategoriaProduto
-{
-    BEBIDA,
-    COMIDA,
-    OUTROS
 }

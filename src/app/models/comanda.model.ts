@@ -24,6 +24,16 @@ export interface Comanda {
   status: StatusComanda;
   dataAbertura: Date;
   dataFechamento?: Date;
+  itens?: ItemComanda[];
+}
+
+export interface ItemComanda {
+  id: number;
+  produtoId: number;
+  produtoNome: string;
+  quantidade: number;
+  valorUnitario: number;
+  valorTotal: number;
 }
 
 export interface CreateComandaDto {

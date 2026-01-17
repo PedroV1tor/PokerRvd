@@ -34,6 +34,7 @@ builder.Services.AddDbContext<PokerDbContext>(options =>
 builder.Services.AddScoped<IPokerService, PokerService>();
 builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 var app = builder.Build();
 

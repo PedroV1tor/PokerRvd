@@ -1,0 +1,254 @@
+<app-navbar></app-navbar>
+
+<div class="produtos-container">
+  <div class="header">
+    <h1>Gerenciamento de Produtos</h1>
+    <button class="btn-novo-produto" (click)="abrirModal()">
+      + Novo Produto
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="🔍 Buscar produtos..."
+      [(ngModel)]="searchTerm"
+      (input)="filtrarProdutos()"
+    />
+  </div>
+
+  <div class="produtos-table-container" *ngIf="!isLoading">
+    <table class="produtos-table" *ngIf="filteredProdutos.length > 0">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Custo</th>
+          <th>Comercial</th>
+          <th>Margem</th>
+          <th>Estoque</th>
+          <th>Unidade</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let produto of filteredProdutos" [class.low-stock-row]="produto.quantidadeEstoque <= 10">
+          <td class="produto-nome">{{ produto.nome }}</td>
+          <td>R$ {{ produto.valorCusto.toFixed(2) }}</td>
+          <td class="valor-comercial">R$ {{ produto.valorComercial.toFixed(2) }}</td>
+          <td class="margem">{{ calcularMargem(produto).toFixed(1) }}%</td>
+          <td [class.low-stock]="produto.quantidadeEstoque <= 10">
+            {{ produto.quantidadeEstoque }}
+          </td>
+          <td>{{ produto.unidadeVenda }}</td>
+          <td class="acoes">
+            <button class="btn-editar" (click)="abrirModalEdicao(produto)" title="Editar">
+              ✏️
+            </button>
+            <button class="btn-deletar" (click)="deletarProduto(produto.id)" title="Deletar">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p>Carregando produtos...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && filteredProdutos.length === 0">
+    <p>Nenhum produto encontrado</p>
+  </div>
+</div>
+
+<!-- Modal Novo Produto -->
+<div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Novo Produto</h2>
+      <button class="btn-close" (click)="fecharModal()">✕</button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="criarProduto()">
+      <div class="form-group">
+        <label for="nome">Nome do Produto *</label>
+        <input
+          type="text"
+          id="nome"
+          [(ngModel)]="novoProduto.nome"
+          name="nome"
+          placeholder="Ex: Cerveja Heineken"
+          required
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="valorCusto">Valor de Custo</label>
+          <input
+            type="number"
+            id="valorCusto"
+            [(ngModel)]="novoProduto.valorCusto"
+            name="valorCusto"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="valorComercial">Valor Comercial *</label>
+          <input
+            type="number"
+            id="valorComercial"
+            [(ngModel)]="novoProduto.valorComercial"
+            name="valorComercial"
+            placeholder="0.00"
+            step="0.01"
+            min="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="quantidadeEstoque">Quantidade em Estoque *</label>
+          <input
+            type="number"
+            id="quantidadeEstoque"
+            [(ngModel)]="novoProduto.quantidadeEstoque"
+            name="quantidadeEstoque"
+            placeholder="0"
+            min="0"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="unidadeVenda">Unidade de Venda</label>
+          <select
+            id="unidadeVenda"
+            [(ngModel)]="novoProduto.unidadeVenda"
+            name="unidadeVenda"
+          >
+            <option *ngFor="let unidade of unidadesVenda" [value]="unidade">
+              {{ unidade }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="fecharModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="!isFormValid()">
+          Criar Produto
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Editar Produto -->
+<div class="modal-overlay" *ngIf="showModalEdicao" (click)="fecharModalEdicao()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Editar Produto</h2>
+      <button class="btn-close" (click)="fecharModalEdicao()">✕</button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="salvarEdicao()">
+      <div class="form-group">
+        <label for="editar-nome">Nome do Produto *</label>
+        <input
+          type="text"
+          id="editar-nome"
+          [(ngModel)]="produtoEditando.nome"
+          name="editar-nome"
+          placeholder="Ex: Cerveja Heineken"
+          required
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editar-valorCusto">Valor de Custo</label>
+          <input
+            type="number"
+            id="editar-valorCusto"
+            [(ngModel)]="produtoEditando.valorCusto"
+            name="editar-valorCusto"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editar-valorComercial">Valor Comercial *</label>
+          <input
+            type="number"
+            id="editar-valorComercial"
+            [(ngModel)]="produtoEditando.valorComercial"
+            name="editar-valorComercial"
+            placeholder="0.00"
+            step="0.01"
+            min="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editar-quantidadeEstoque">Quantidade em Estoque *</label>
+          <input
+            type="number"
+            id="editar-quantidadeEstoque"
+            [(ngModel)]="produtoEditando.quantidadeEstoque"
+            name="editar-quantidadeEstoque"
+            placeholder="0"
+            min="0"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editar-unidadeVenda">Unidade de Venda</label>
+          <select
+            id="editar-unidadeVenda"
+            [(ngModel)]="produtoEditando.unidadeVenda"
+            name="editar-unidadeVenda"
+          >
+            <option *ngFor="let unidade of unidadesVenda" [value]="unidade">
+              {{ unidade }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="produtoEditando.ativo"
+            name="editar-ativo"
+          />
+          Produto Ativo
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="fecharModalEdicao()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="!isFormEdicaoValid()">
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

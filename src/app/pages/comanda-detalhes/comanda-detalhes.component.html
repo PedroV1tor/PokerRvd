@@ -179,7 +179,7 @@
         <label>Produto:</label>
         <select [(ngModel)]="produtoSelecionadoId" class="form-control">
           <option *ngFor="let produto of produtos" [value]="produto.id">
-            {{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}
+            {{ produto.nome }} - R$ {{ produto.valorComercial.toFixed(2) }} (Estoque: {{ produto.quantidadeEstoque }})
           </option>
         </select>
       </div>

@@ -63,6 +63,7 @@ public class PokerDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ValorUnitario).HasPrecision(18, 2);
+            entity.Property(e => e.NomeCustomizado).HasMaxLength(100);
             entity.Ignore(e => e.ValorTotal);
         });
 
@@ -70,7 +71,9 @@ public class PokerDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Preco).HasPrecision(18, 2);
+            entity.Property(e => e.ValorCusto).HasPrecision(18, 2);
+            entity.Property(e => e.ValorComercial).HasPrecision(18, 2);
+            entity.Property(e => e.UnidadeVenda).IsRequired().HasMaxLength(50);
         });
 
         // Configurações para Usuários
@@ -85,11 +88,11 @@ public class PokerDbContext : DbContext
 
         // Seed data para Produtos
         modelBuilder.Entity<Produto>().HasData(
-            new Produto { Id = 1, Nome = "Cerveja", Preco = 10.00m, Categoria = CategoriaProduto.BEBIDA, Estoque = 100 },
-            new Produto { Id = 2, Nome = "Refrigerante", Preco = 7.00m, Categoria = CategoriaProduto.BEBIDA, Estoque = 80 },
-            new Produto { Id = 3, Nome = "Água", Preco = 5.00m, Categoria = CategoriaProduto.BEBIDA, Estoque = 150 },
-            new Produto { Id = 4, Nome = "Porção de Batata", Preco = 25.00m, Categoria = CategoriaProduto.COMIDA, Estoque = 30 },
-            new Produto { Id = 5, Nome = "Sanduíche", Preco = 15.00m, Categoria = CategoriaProduto.COMIDA, Estoque = 40 }
+            new Produto { Id = 1, Nome = "Cerveja", ValorCusto = 6.00m, ValorComercial = 10.00m, QuantidadeEstoque = 100, UnidadeVenda = "Unidade", Ativo = true, DataCadastro = DateTime.UtcNow },
+            new Produto { Id = 2, Nome = "Refrigerante", ValorCusto = 4.00m, ValorComercial = 7.00m, QuantidadeEstoque = 80, UnidadeVenda = "Unidade", Ativo = true, DataCadastro = DateTime.UtcNow },
+            new Produto { Id = 3, Nome = "Água", ValorCusto = 2.50m, ValorComercial = 5.00m, QuantidadeEstoque = 150, UnidadeVenda = "Unidade", Ativo = true, DataCadastro = DateTime.UtcNow },
+            new Produto { Id = 4, Nome = "Porção de Batata", ValorCusto = 15.00m, ValorComercial = 25.00m, QuantidadeEstoque = 30, UnidadeVenda = "Porção", Ativo = true, DataCadastro = DateTime.UtcNow },
+            new Produto { Id = 5, Nome = "Sanduíche", ValorCusto = 8.00m, ValorComercial = 15.00m, QuantidadeEstoque = 40, UnidadeVenda = "Unidade", Ativo = true, DataCadastro = DateTime.UtcNow }
         );
 
         // Seed data para Comandas

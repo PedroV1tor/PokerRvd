@@ -11,5 +11,6 @@ public interface IComandaService
     Task<ComandaDto?> FecharComandaAsync(int id);
     Task<bool> DeleteComandaAsync(int id);
     Task<bool> AddItemToComandaAsync(int comandaId, AddItemComandaDto addItemDto);
+    Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto);
     Task<DashboardStatsDto> GetDashboardStatsAsync();
 }

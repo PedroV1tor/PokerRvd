@@ -149,6 +149,41 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
+    /// Adiciona um item de fichas (Buy-in, Re-buy, Add-on) à comanda
+    /// </summary>
+    [HttpPost("{id}/fichas")]
+    public async Task<ActionResult> AddFichasToComanda(int id, [FromBody] AddItemFichasDto addItemDto)
+    {
+        try
+        {
+            _logger.LogInformation("Recebendo requisição para adicionar fichas à comanda {ComandaId}. Nome: {Nome}, Valor: {Valor}", 
+                id, addItemDto?.Nome, addItemDto?.Valor);
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Modelo inválido: {Errors}", 
+                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                return BadRequest(ModelState);
+            }
+
+            var result = await _comandaService.AddItemFichasAsync(id, addItemDto);
+            if (!result)
+            {
+                _logger.LogWarning("Falha ao adicionar fichas à comanda {ComandaId}", id);
+                return BadRequest("Não foi possível adicionar as fichas à comanda");
+            }
+
+            _logger.LogInformation("Fichas adicionadas com sucesso à comanda {ComandaId}", id);
+            return Ok(new { message = "Fichas adicionadas com sucesso" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao adicionar fichas à comanda {ComandaId}", id);
+            return StatusCode(500, new { message = "Erro interno do servidor", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Remove uma comanda
     /// </summary>
     [HttpDelete("{id}")]

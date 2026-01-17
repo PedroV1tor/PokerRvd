@@ -67,7 +67,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
       border: 2px solid #333;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.25rem;
       transition: all 0.3s ease;
       cursor: pointer;
     }
@@ -93,22 +93,22 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
     .jogador-info {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
       flex: 1;
     }
 
     .avatar {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: linear-gradient(135deg, #00FF00 0%, #00AA00 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #000;
-      border: 3px solid #00FF00;
+      border: 2px solid #00FF00;
     }
 
     .nome-mesa {
@@ -120,49 +120,49 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
     .jogador-nome {
       margin: 0;
       color: #fff;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
     }
 
     .mesa-tipo {
       margin: 0;
       color: #00FF00;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .card-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
     .valor-container {
       background-color: #00FF00;
       color: #000;
-      padding: 0.75rem 1.25rem;
+      padding: 0.6rem 1rem;
       border-radius: 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 100px;
+      min-width: 90px;
     }
 
     .moeda {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: bold;
     }
 
     .valor {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: bold;
     }
 
     .btn-status {
-      padding: 0.5rem 1.25rem;
+      padding: 0.45rem 1.1rem;
       border: none;
-      border-radius: 20px;
+      border-radius: 18px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.3s ease;
     }
@@ -185,11 +185,12 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       background: none;
       border: 2px solid #00FF00;
       color: #00FF00;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       cursor: pointer;
       transition: all 0.3s ease;
+      font-size: 1.1rem;
     }
 
     .btn-menu:hover {
@@ -198,27 +199,30 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
     }
 
     .card-detalhes {
-      margin-top: 1rem;
-      padding-top: 1rem;
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
       border-top: 1px solid #333;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.65rem;
     }
 
     .detalhe-item {
       display: flex;
       justify-content: space-between;
       color: #fff;
+      font-size: 0.95rem;
     }
 
     .detalhe-label {
       color: #999;
+      font-size: 0.9rem;
     }
 
     .detalhe-valor {
       font-weight: bold;
       color: #00FF00;
+      font-size: 0.95rem;
     }
 
     .detalhe-valor.bebidas {
@@ -234,7 +238,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
     .btn-adicionar,
     .btn-ver-detalhes {
       flex: 1;
-      padding: 0.6rem;
+      padding: 0.55rem;
       border: none;
       border-radius: 6px;
       font-weight: bold;

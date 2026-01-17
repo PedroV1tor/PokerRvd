@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Models;
@@ -8,10 +9,12 @@ namespace PokerRvd.Api.Services;
 public class ComandaService : IComandaService
 {
     private readonly PokerDbContext _context;
+    private readonly ILogger<ComandaService> _logger;
 
-    public ComandaService(PokerDbContext context)
+    public ComandaService(PokerDbContext context, ILogger<ComandaService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<List<ComandaDto>> GetAllComandasAsync()
@@ -41,10 +44,15 @@ public class ComandaService : IComandaService
     {
         var comanda = await _context.Comandas
             .Include(c => c.Itens)
-            .ThenInclude(i => i.Produto)
             .FirstOrDefaultAsync(c => c.Id == id);
-
+        
         if (comanda == null) return null;
+        
+        // Carregar produtos separadamente para itens que têm ProdutoId
+        foreach (var item in comanda.Itens.Where(i => i.ProdutoId.HasValue))
+        {
+            await _context.Entry(item).Reference(i => i.Produto).LoadAsync();
+        }
 
         return new ComandaDetailsDto
         {
@@ -64,8 +72,8 @@ public class ComandaService : IComandaService
             Itens = comanda.Itens.Select(i => new ItemComandaDto
             {
                 Id = i.Id,
-                ProdutoId = i.ProdutoId,
-                ProdutoNome = i.Produto?.Nome ?? "",
+                ProdutoId = i.ProdutoId ?? 0,
+                ProdutoNome = i.Produto?.Nome ?? i.NomeCustomizado ?? "",
                 Quantidade = i.Quantidade,
                 ValorUnitario = i.ValorUnitario,
                 ValorTotal = i.ValorTotal
@@ -151,10 +159,44 @@ public class ComandaService : IComandaService
 
     public async Task<ComandaDto?> FecharComandaAsync(int id)
     {
-        return await UpdateComandaAsync(id, new UpdateComandaDto
+        var comanda = await _context.Comandas
+            .Include(c => c.Itens)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        
+        if (comanda == null) return null;
+        
+        // Carregar produtos separadamente para itens que têm ProdutoId
+        foreach (var item in comanda.Itens.Where(i => i.ProdutoId.HasValue))
         {
-            Status = StatusComanda.FECHADO
-        });
+            await _context.Entry(item).Reference(i => i.Produto).LoadAsync();
+        }
+
+        // Descontar produtos do estoque ao fechar a comanda
+        foreach (var item in comanda.Itens)
+        {
+            if (item.Produto != null)
+            {
+                // Verificar se há estoque suficiente
+                if (item.Produto.QuantidadeEstoque < item.Quantidade)
+                {
+                    throw new InvalidOperationException(
+                        $"Estoque insuficiente para o produto '{item.Produto.Nome}'. " +
+                        $"Disponível: {item.Produto.QuantidadeEstoque}, Necessário: {item.Quantidade}"
+                    );
+                }
+
+                // Descontar do estoque
+                item.Produto.QuantidadeEstoque -= item.Quantidade;
+            }
+        }
+
+        // Atualizar status para fechado
+        comanda.Status = StatusComanda.FECHADO;
+        comanda.DataFechamento = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return await GetComandaByIdAsync(id);
     }
 
     public async Task<bool> DeleteComandaAsync(int id)
@@ -175,26 +217,61 @@ public class ComandaService : IComandaService
         var produto = await _context.Produtos.FindAsync(addItemDto.ProdutoId);
         if (produto == null || !produto.Ativo) return false;
 
-        if (produto.Estoque < addItemDto.Quantidade) return false;
+        // Verificar se há estoque suficiente (sem descontar ainda)
+        if (produto.QuantidadeEstoque < addItemDto.Quantidade) return false;
 
         var item = new ItemComanda
         {
             ComandaId = comandaId,
             ProdutoId = addItemDto.ProdutoId,
             Quantidade = addItemDto.Quantidade,
-            ValorUnitario = produto.Preco
+            ValorUnitario = produto.ValorComercial
         };
 
         _context.ItensComanda.Add(item);
-        produto.Estoque -= addItemDto.Quantidade;
 
-        // Atualizar valores da comanda
-        if (produto.Categoria == CategoriaProduto.BEBIDA)
-            comanda.ValorBebidas += item.ValorTotal;
-        else
-            comanda.ValorFichas += item.ValorTotal;
+        // Atualizar valores da comanda (produtos vão para bebidas)
+        comanda.ValorBebidas += item.ValorTotal;
 
         await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto)
+    {
+        _logger.LogInformation("AddItemFichasAsync: ComandaId={ComandaId}, Nome={Nome}, Valor={Valor}", 
+            comandaId, addItemDto.Nome, addItemDto.Valor);
+
+        var comanda = await _context.Comandas.FindAsync(comandaId);
+        if (comanda == null)
+        {
+            _logger.LogWarning("Comanda {ComandaId} não encontrada", comandaId);
+            return false;
+        }
+
+        _logger.LogInformation("Comanda encontrada: {ComandaId}, Status: {Status}, ValorFichas atual: {ValorFichas}", 
+            comanda.Id, comanda.Status, comanda.ValorFichas);
+
+        var item = new ItemComanda
+        {
+            ComandaId = comandaId,
+            ProdutoId = null, // Item de fichas não tem produto
+            Produto = null,
+            NomeCustomizado = addItemDto.Nome, // Nome customizado (Buy-in, Re-buy, etc)
+            Quantidade = 1,
+            ValorUnitario = addItemDto.Valor
+        };
+
+        _context.ItensComanda.Add(item);
+
+        // Atualizar valores da comanda (fichas vão para ValorFichas)
+        comanda.ValorFichas += addItemDto.Valor;
+
+        _logger.LogInformation("Salvando item de fichas. Novo ValorFichas: {ValorFichas}", comanda.ValorFichas);
+
+        await _context.SaveChangesAsync();
+        
+        _logger.LogInformation("Item de fichas salvo com sucesso");
         return true;
     }
 

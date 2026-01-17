@@ -69,19 +69,21 @@ public class AddItemComandaDto
     public int Quantidade { get; set; }
 }
 
+public class AddItemFichasDto
+{
+    [Required(ErrorMessage = "Nome do item de ficha é obrigatório")]
+    [MaxLength(50, ErrorMessage = "Nome deve ter no máximo 50 caracteres")]
+    public string Nome { get; set; } = string.Empty;
+    
+    [Required(ErrorMessage = "Valor é obrigatório")]
+    [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "Valor deve ser maior que zero")]
+    public decimal Valor { get; set; }
+}
+
 public class DashboardStatsDto
 {
     public int ComandasAbertas { get; set; }
     public decimal TotalFichas { get; set; }
     public decimal TotalBebidas { get; set; }
     public decimal FaturamentoTotal { get; set; }
-}
-
-public class ProdutoDto
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = string.Empty;
-    public decimal Preco { get; set; }
-    public string Categoria { get; set; } = string.Empty;
-    public int Estoque { get; set; }
 }

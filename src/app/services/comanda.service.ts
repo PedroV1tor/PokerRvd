@@ -43,9 +43,7 @@ export class ComandaService {
   }
 
   fecharComanda(id: number): Observable<Comanda | null> {
-    return this.updateComanda(id, {
-      status: StatusComanda.FECHADO
-    });
+    return this.http.post<Comanda>(`${this.apiUrl}/comandas/${id}/fechar`, {});
   }
 
   deleteComanda(id: number): Observable<boolean> {
@@ -60,14 +58,26 @@ export class ComandaService {
     return this.http.get<DashboardStats>(`${this.apiUrl}/comandas/stats`);
   }
 
-  // ==================== PRODUTOS ====================
+  // ==================== PRODUTOS E FICHAS ====================
   
   adicionarProduto(comandaId: number, produtoId: number, quantidade: number): Observable<boolean> {
-    return this.http.post(`${this.apiUrl}/comandas/${comandaId}/produtos`, {
+    return this.http.post(`${this.apiUrl}/comandas/${comandaId}/itens`, {
       produtoId,
       quantidade
     }).pipe(
       map(() => true)
+    );
+  }
+
+  adicionarFichas(comandaId: number, nome: string, valor: number): Observable<boolean> {
+    const body = { nome, valor };
+    console.log('Enviando requisição para adicionar fichas:', { comandaId, body });
+    
+    return this.http.post(`${this.apiUrl}/comandas/${comandaId}/fichas`, body).pipe(
+      map((response) => {
+        console.log('Resposta da API ao adicionar fichas:', response);
+        return true;
+      })
     );
   }
 

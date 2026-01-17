@@ -335,8 +335,7 @@ export class NavbarComponent implements OnInit {
         this.router.navigate(['/torneios']);
         break;
       case 'produtos':
-        // TODO: Implementar página de produtos
-        console.log('Produtos - Em desenvolvimento');
+        this.router.navigate(['/produtos']);
         break;
       case 'relatorios':
         // TODO: Implementar página de relatórios

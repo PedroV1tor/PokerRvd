@@ -78,7 +78,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 1,
-                            DataAbertura = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(439),
+                            DataAbertura = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8612),
                             JogadorNome = "João Silva",
                             Mesa = "Mesa 5",
                             Status = 0,
@@ -89,7 +89,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 2,
-                            DataAbertura = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(442),
+                            DataAbertura = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8615),
                             JogadorNome = "Maria Santos",
                             Mesa = "Mesa 2",
                             Status = 0,
@@ -100,7 +100,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 3,
-                            DataAbertura = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(444),
+                            DataAbertura = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8617),
                             JogadorNome = "Pedro Costa",
                             Mesa = "Bar",
                             Status = 0,
@@ -111,8 +111,8 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 4,
-                            DataAbertura = new DateTime(2026, 1, 17, 10, 29, 11, 323, DateTimeKind.Utc).AddTicks(446),
-                            DataFechamento = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(458),
+                            DataAbertura = new DateTime(2026, 1, 17, 12, 56, 8, 999, DateTimeKind.Utc).AddTicks(8619),
+                            DataFechamento = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8635),
                             JogadorNome = "Ana Oliveira",
                             Mesa = "Mesa 3",
                             Status = 1,
@@ -157,7 +157,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             BuyIn = 100m,
-                            CreatedAt = new DateTime(2026, 1, 17, 12, 29, 11, 322, DateTimeKind.Utc).AddTicks(8289),
+                            CreatedAt = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(6154),
                             MaxPlayers = 9,
                             Name = "Mesa Principal",
                             Status = 0
@@ -175,7 +175,11 @@ namespace PokerRvd.Api.Migrations
                     b.Property<int>("ComandaId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProdutoId")
+                    b.Property<string>("NomeCustomizado")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("ProdutoId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Quantidade")
@@ -236,7 +240,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             Balance = 1000m,
-                            CreatedAt = new DateTime(2026, 1, 17, 12, 29, 11, 322, DateTimeKind.Utc).AddTicks(8193),
+                            CreatedAt = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(6057),
                             Email = "jogador1@poker.com",
                             IsActive = true,
                             Name = "Jogador 1"
@@ -245,7 +249,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 2,
                             Balance = 1500m,
-                            CreatedAt = new DateTime(2026, 1, 17, 12, 29, 11, 322, DateTimeKind.Utc).AddTicks(8195),
+                            CreatedAt = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(6059),
                             Email = "jogador2@poker.com",
                             IsActive = true,
                             Name = "Jogador 2"
@@ -263,18 +267,27 @@ namespace PokerRvd.Api.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Categoria")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Estoque")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<decimal>("Preco")
+                    b.Property<int>("QuantidadeEstoque")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UnidadeVenda")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("ValorComercial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ValorCusto")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
@@ -287,46 +300,56 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             Ativo = true,
-                            Categoria = 0,
-                            Estoque = 100,
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8579),
                             Nome = "Cerveja",
-                            Preco = 10.00m
+                            QuantidadeEstoque = 100,
+                            UnidadeVenda = "Unidade",
+                            ValorComercial = 10.00m,
+                            ValorCusto = 6.00m
                         },
                         new
                         {
                             Id = 2,
                             Ativo = true,
-                            Categoria = 0,
-                            Estoque = 80,
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8582),
                             Nome = "Refrigerante",
-                            Preco = 7.00m
+                            QuantidadeEstoque = 80,
+                            UnidadeVenda = "Unidade",
+                            ValorComercial = 7.00m,
+                            ValorCusto = 4.00m
                         },
                         new
                         {
                             Id = 3,
                             Ativo = true,
-                            Categoria = 0,
-                            Estoque = 150,
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8584),
                             Nome = "Água",
-                            Preco = 5.00m
+                            QuantidadeEstoque = 150,
+                            UnidadeVenda = "Unidade",
+                            ValorComercial = 5.00m,
+                            ValorCusto = 2.50m
                         },
                         new
                         {
                             Id = 4,
                             Ativo = true,
-                            Categoria = 1,
-                            Estoque = 30,
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8586),
                             Nome = "Porção de Batata",
-                            Preco = 25.00m
+                            QuantidadeEstoque = 30,
+                            UnidadeVenda = "Porção",
+                            ValorComercial = 25.00m,
+                            ValorCusto = 15.00m
                         },
                         new
                         {
                             Id = 5,
                             Ativo = true,
-                            Categoria = 1,
-                            Estoque = 40,
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8588),
                             Nome = "Sanduíche",
-                            Preco = 15.00m
+                            QuantidadeEstoque = 40,
+                            UnidadeVenda = "Unidade",
+                            ValorComercial = 15.00m,
+                            ValorCusto = 8.00m
                         });
                 });
 
@@ -376,7 +399,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(477),
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8655),
                             Email = "admin@pokerrvd.com",
                             Nome = "Administrador",
                             Role = 0,
@@ -386,7 +409,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 2,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(479),
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8657),
                             Email = "gerente@pokerrvd.com",
                             Nome = "Gerente Teste",
                             Role = 1,
@@ -396,7 +419,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 3,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 1, 17, 12, 29, 11, 323, DateTimeKind.Utc).AddTicks(481),
+                            DataCadastro = new DateTime(2026, 1, 17, 14, 56, 8, 999, DateTimeKind.Utc).AddTicks(8659),
                             Email = "atendente@pokerrvd.com",
                             Nome = "Atendente Teste",
                             Role = 2,
@@ -414,9 +437,7 @@ namespace PokerRvd.Api.Migrations
 
                     b.HasOne("PokerRvd.Api.Models.Produto", "Produto")
                         .WithMany()
-                        .HasForeignKey("ProdutoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProdutoId");
 
                     b.Navigation("Comanda");
 
