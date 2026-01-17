@@ -1,0 +1,231 @@
+<div class="torneios-container">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Header -->
+      <div class="page-header">
+        <h1 class="page-title">🏆 Torneios</h1>
+        <button class="btn-novo-torneio" (click)="abrirModalCriar()">
+          <span class="icon">+</span>
+          Novo Torneio
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filtros-section">
+        <button
+          class="filtro-btn"
+          [class.active]="filtroStatus === 'TODOS'"
+          (click)="setFiltro('TODOS')">
+          Todos
+        </button>
+        <button
+          class="filtro-btn"
+          [class.active]="filtroStatus === StatusTorneio.AGUARDANDO"
+          (click)="setFiltro(StatusTorneio.AGUARDANDO)">
+          Aguardando
+        </button>
+        <button
+          class="filtro-btn"
+          [class.active]="filtroStatus === StatusTorneio.EM_ANDAMENTO"
+          (click)="setFiltro(StatusTorneio.EM_ANDAMENTO)">
+          Em Andamento
+        </button>
+        <button
+          class="filtro-btn"
+          [class.active]="filtroStatus === StatusTorneio.FINALIZADO"
+          (click)="setFiltro(StatusTorneio.FINALIZADO)">
+          Finalizados
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando torneios...</p>
+      </div>
+
+      <!-- Lista de Torneios -->
+      <div *ngIf="!loading && torneiosFiltrados.length > 0" class="torneios-grid">
+        <div *ngFor="let torneio of torneiosFiltrados" class="torneio-card">
+          <!-- Header do Card -->
+          <div class="card-header">
+            <div class="card-title-section">
+              <h3 class="torneio-nome">{{ torneio.nome }}</h3>
+              <span class="status-badge" [class]="getStatusClass(torneio.status)">
+                {{ getStatusLabel(torneio.status) }}
+              </span>
+            </div>
+            <div class="card-actions">
+              <button 
+                *ngIf="torneio.status === StatusTorneio.AGUARDANDO"
+                class="btn-action btn-iniciar" 
+                (click)="iniciarTorneio(torneio.id)"
+                title="Iniciar Torneio">
+                ▶
+              </button>
+              <button 
+                *ngIf="torneio.status === StatusTorneio.EM_ANDAMENTO"
+                class="btn-action btn-finalizar" 
+                (click)="finalizarTorneio(torneio.id)"
+                title="Finalizar Torneio">
+                ⏹
+              </button>
+              <button 
+                class="btn-action btn-deletar" 
+                (click)="deletarTorneio(torneio.id)"
+                title="Excluir Torneio">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- Informações do Torneio -->
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Buy-in:</span>
+                <span class="info-value">{{ formatarValor(torneio.valorBuyIn) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Re-buy Simples:</span>
+                <span class="info-value">{{ formatarValor(torneio.valorRebuySimples) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Re-buy Duplo:</span>
+                <span class="info-value">{{ formatarValor(torneio.valorRebuyDuplo) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Add-on:</span>
+                <span class="info-value">{{ formatarValor(torneio.valorAddOn) }}</span>
+              </div>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="footer-item">
+                <span class="footer-icon">👥</span>
+                <span>{{ torneio.participantes }} jogadores</span>
+              </div>
+              <div class="footer-item">
+                <span class="footer-icon">💰</span>
+                <span>{{ formatarValor(torneio.premioTotal || 0) }}</span>
+              </div>
+              <div class="footer-item">
+                <span class="footer-icon">📅</span>
+                <span>{{ formatarData(torneio.dataInicio) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && torneiosFiltrados.length === 0" class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <h3>Nenhum torneio encontrado</h3>
+        <p>Clique em "Novo Torneio" para criar um</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Criar Torneio -->
+<div class="modal-overlay" *ngIf="mostrarModalCriar" (click)="fecharModalCriar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>🏆 Novo Torneio</h3>
+      <button class="btn-close" (click)="fecharModalCriar()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome do Torneio: *</label>
+        <input 
+          type="text" 
+          [(ngModel)]="novoTorneio.nome" 
+          placeholder="Ex: Torneio Texas Hold'em - Sexta"
+          class="form-control"
+          maxlength="100"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Valor Buy-in: *</label>
+          <div class="input-group">
+            <span class="input-prefix">R$</span>
+            <input 
+              type="number" 
+              [(ngModel)]="novoTorneio.valorBuyIn" 
+              placeholder="0.00"
+              class="form-control"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Valor Re-buy Simples:</label>
+          <div class="input-group">
+            <span class="input-prefix">R$</span>
+            <input 
+              type="number" 
+              [(ngModel)]="novoTorneio.valorRebuySimples" 
+              placeholder="0.00"
+              class="form-control"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Valor Re-buy Duplo:</label>
+          <div class="input-group">
+            <span class="input-prefix">R$</span>
+            <input 
+              type="number" 
+              [(ngModel)]="novoTorneio.valorRebuyDuplo" 
+              placeholder="0.00"
+              class="form-control"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Valor Add-on:</label>
+          <div class="input-group">
+            <span class="input-prefix">R$</span>
+            <input 
+              type="number" 
+              [(ngModel)]="novoTorneio.valorAddOn" 
+              placeholder="0.00"
+              class="form-control"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+      </div>
+
+      <p class="form-note">* Campos obrigatórios</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalCriar()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="criarTorneio()" [disabled]="loading">
+        {{ loading ? 'Criando...' : 'Criar Torneio' }}
+      </button>
+    </div>
+  </div>
+</div>

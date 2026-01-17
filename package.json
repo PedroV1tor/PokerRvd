@@ -4,9 +4,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:backend": "cd Backend/PokerRvd.Api && dotnet run",
+    "start:all": "concurrently \"npm:start:backend\" \"npm:start\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
     "build": "ng build",
+    "build:backend": "cd Backend/PokerRvd.Api && dotnet build",
+    "build:all": "npm run build:backend && npm run build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:backend": "cd Backend/PokerRvd.Api && dotnet test",
     "serve:ssr:PokerRvd": "node dist/poker-rvd/server/server.mjs"
   },
   "private": true,

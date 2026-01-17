@@ -1,0 +1,213 @@
+<div class="comanda-detalhes-container" *ngIf="comanda">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <button class="btn-voltar" (click)="voltar()">
+        ← Voltar
+      </button>
+      <div class="logo">
+        <h1>RVD</h1>
+        <span>POKER CLUB</span>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <button class="nav-item">Gerenciar</button>
+      <button class="nav-item">Torneios</button>
+      <button class="nav-item">Produtos</button>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+      <div class="grid-layout">
+        <!-- Coluna Esquerda: Info do Jogador e Ações -->
+        <aside class="sidebar-left">
+          <!-- Info do Jogador -->
+          <div class="player-card">
+            <div class="player-avatar">
+              <div class="avatar-circle">
+                {{ comanda.jogadorNome.charAt(0).toUpperCase() }}
+              </div>
+            </div>
+            <h2 class="player-name">{{ comanda.jogadorNome }}</h2>
+            <div class="player-info">
+              <span class="badge" [class]="getTipoClass(comanda.tipo)">
+                {{ getTipoLabel(comanda.tipo) }}
+              </span>
+              <span class="mesa">{{ comanda.mesa }}</span>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="actions-box">
+            <!-- Info do Torneio -->
+            <div class="torneio-info-box" *ngIf="torneio">
+              <div class="torneio-badge">
+                <span class="torneio-icon">🏆</span>
+                <span class="torneio-nome">{{ torneio.nome }}</span>
+              </div>
+            </div>
+
+            <button class="action-btn" (click)="adicionarBuyIn()">
+              <span class="action-icon">+</span>
+              <div class="btn-content">
+                <span class="btn-label">Add Buy-in</span>
+                <span class="btn-valor" *ngIf="torneio && torneio.valorBuyIn > 0">
+                  R$ {{ torneio.valorBuyIn.toFixed(2) }}
+                </span>
+              </div>
+            </button>
+
+            <button 
+              class="action-btn" 
+              (click)="adicionarRebuySimples()"
+              *ngIf="!torneio || torneio.valorRebuySimples > 0">
+              <span class="action-icon">+</span>
+              <div class="btn-content">
+                <span class="btn-label">Add Re-buy Simples</span>
+                <span class="btn-valor" *ngIf="torneio && torneio.valorRebuySimples > 0">
+                  R$ {{ torneio.valorRebuySimples.toFixed(2) }}
+                </span>
+              </div>
+            </button>
+
+            <button 
+              class="action-btn" 
+              (click)="adicionarRebuyDuplo()"
+              *ngIf="!torneio || torneio.valorRebuyDuplo > 0">
+              <span class="action-icon">+</span>
+              <div class="btn-content">
+                <span class="btn-label">Add Re-buy Duplo</span>
+                <span class="btn-valor" *ngIf="torneio && torneio.valorRebuyDuplo > 0">
+                  R$ {{ torneio.valorRebuyDuplo.toFixed(2) }}
+                </span>
+              </div>
+            </button>
+
+            <button 
+              class="action-btn" 
+              (click)="adicionarAddOn()"
+              *ngIf="torneio && torneio.valorAddOn > 0">
+              <span class="action-icon">+</span>
+              <div class="btn-content">
+                <span class="btn-label">Add Add-on</span>
+                <span class="btn-valor">
+                  R$ {{ torneio.valorAddOn.toFixed(2) }}
+                </span>
+              </div>
+            </button>
+
+            <button class="action-btn action-btn-bebida" (click)="abrirModalBebida()">
+              <span class="action-icon">+</span>
+              <div class="btn-content">
+                <span class="btn-label">Bebida *</span>
+              </div>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Coluna Direita: Tabela de Itens -->
+        <section class="content-right">
+          <div class="items-table-container">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Quantidade</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of itens; let i = index">
+                  <td>{{ item.produtoNome }}</td>
+                  <td class="text-center">{{ item.quantidade }}</td>
+                  <td class="text-right">R$ {{ item.valorTotal.toFixed(2) }}</td>
+                  <td class="text-center">
+                    <button class="btn-remover" (click)="removerItem(i)" title="Remover item">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Total -->
+            <div class="total-section">
+              <div class="total-row">
+                <span class="total-label">Fichas:</span>
+                <span class="total-value">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
+              </div>
+              <div class="total-row">
+                <span class="total-label">Bebidas/Comidas:</span>
+                <span class="total-value">R$ {{ comanda.valorBebidas.toFixed(2) }}</span>
+              </div>
+              <div class="total-row total-final">
+                <span class="total-label">TOTAL:</span>
+                <span class="total-value">R$ {{ valorTotal.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botão Fechar Comanda -->
+          <div class="footer-actions">
+            <button 
+              class="btn-fechar-comanda" 
+              (click)="fecharComanda()"
+              [disabled]="comanda.status === StatusComanda.FECHADO">
+              {{ comanda.status === StatusComanda.FECHADO ? 'Comanda Fechada' : 'Fechar Comanda' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Adicionar Bebida -->
+<div class="modal-overlay" *ngIf="mostrarModalBebida" (click)="fecharModalBebida()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Adicionar Bebida/Comida</h3>
+      <button class="btn-close" (click)="fecharModalBebida()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Produto:</label>
+        <select [(ngModel)]="produtoSelecionadoId" class="form-control">
+          <option *ngFor="let produto of produtos" [value]="produto.id">
+            {{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Quantidade:</label>
+        <input 
+          type="number" 
+          [(ngModel)]="quantidadeProduto" 
+          min="1" 
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalBebida()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="adicionarBebida()">
+        Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Carregando...</p>
+</div>

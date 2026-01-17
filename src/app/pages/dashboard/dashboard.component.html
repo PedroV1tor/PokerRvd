@@ -1,0 +1,103 @@
+<div class="app-container">
+  <!-- Navbar -->
+  <app-navbar (novaComanda)="abrirModalNovaComanda()"></app-navbar>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Barra de Busca e Filtros -->
+      <div class="search-filter-section">
+        <div class="search-box">
+          <input
+            type="text"
+            [(ngModel)]="buscaTexto"
+            (ngModelChange)="onBuscaChange()"
+            placeholder="Buscar jogador ou comanda..."
+            class="search-input"
+          />
+          <button class="btn-search">
+            🔍
+          </button>
+        </div>
+
+        <div class="filter-buttons">
+          <button
+            class="filter-btn"
+            [class.active]="filtroAtivo === TipoComanda.TODOS"
+            (click)="setFiltro(TipoComanda.TODOS)">
+            Todas
+          </button>
+          <button
+            class="filter-btn"
+            [class.active]="filtroAtivo === TipoComanda.TORNEIO"
+            (click)="setFiltro(TipoComanda.TORNEIO)">
+            Torneio
+          </button>
+          <button
+            class="filter-btn"
+            [class.active]="filtroAtivo === TipoComanda.CASH"
+            (click)="setFiltro(TipoComanda.CASH)">
+            Cash
+          </button>
+          <button
+            class="filter-btn"
+            [class.active]="filtroAtivo === TipoComanda.BAR"
+            (click)="setFiltro(TipoComanda.BAR)">
+            Bar
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando comandas...</p>
+      </div>
+
+      <!-- Grid de Comandas Ativas -->
+      <div *ngIf="!loading && comandasAtivas.length > 0" class="comandas-section">
+        <h2 class="section-title">Comandas Ativas ({{ comandasAtivas.length }})</h2>
+        <div class="comandas-grid">
+          <app-comanda-card
+            *ngFor="let comanda of comandasAtivas"
+            [comanda]="comanda"
+            (toggleStatus)="toggleStatusComanda($event)"
+            (adicionarBebida)="adicionarBebida($event)"
+            (verDetalhes)="verDetalhesComanda($event)">
+          </app-comanda-card>
+        </div>
+      </div>
+
+      <!-- Grid de Comandas Fechadas -->
+      <div *ngIf="!loading && comandasFechadas.length > 0" class="comandas-section">
+        <h2 class="section-title">Comandas Fechadas ({{ comandasFechadas.length }})</h2>
+        <div class="comandas-grid">
+          <app-comanda-card
+            *ngFor="let comanda of comandasFechadas"
+            [comanda]="comanda"
+            (toggleStatus)="toggleStatusComanda($event)"
+            (adicionarBebida)="adicionarBebida($event)"
+            (verDetalhes)="verDetalhesComanda($event)">
+          </app-comanda-card>
+        </div>
+      </div>
+
+      <!-- Mensagem quando não há comandas -->
+      <div *ngIf="!loading && comandasFiltradas.length === 0" class="empty-state">
+        <div class="empty-icon">🃏</div>
+        <h3>Nenhuma comanda encontrada</h3>
+        <p>Clique em "Nova Comanda" para começar</p>
+      </div>
+
+      <!-- Dashboard de Estatísticas -->
+      <app-dashboard-stats [stats]="stats"></app-dashboard-stats>
+    </div>
+  </main>
+
+  <!-- Modal Nova Comanda -->
+  <app-nova-comanda-modal
+    [isOpen]="mostrarModalNovaComanda"
+    (close)="fecharModalNovaComanda()"
+    (criar)="criarComanda($event)">
+  </app-nova-comanda-modal>
+</div>
