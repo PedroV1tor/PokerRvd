@@ -52,9 +52,6 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
           <span class="detalhe-valor bebidas">R$ {{ comanda.valorBebidas.toFixed(2) }}</span>
         </div>
         <div class="card-actions-bottom">
-          <button class="btn-adicionar" (click)="onAdicionarBebida()">
-            + Adicionar Bebida
-          </button>
           <button class="btn-ver-detalhes" (click)="onVerDetalhes()">
             Ver Detalhes
           </button>
@@ -235,9 +232,8 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       margin-top: 0.5rem;
     }
 
-    .btn-adicionar,
     .btn-ver-detalhes {
-      flex: 1;
+      width: 100%;
       padding: 0.55rem;
       border: none;
       border-radius: 6px;
@@ -245,20 +241,11 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 0.85rem;
-    }
-
-    .btn-adicionar {
-      background-color: #00FF00;
-      color: #000;
-    }
-
-    .btn-ver-detalhes {
       background-color: transparent;
       color: #00FF00;
       border: 2px solid #00FF00;
     }
 
-    .btn-adicionar:hover,
     .btn-ver-detalhes:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
@@ -280,7 +267,6 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
 export class ComandaCardComponent {
   @Input() comanda!: Comanda;
   @Output() toggleStatus = new EventEmitter<number>();
-  @Output() adicionarBebida = new EventEmitter<number>();
   @Output() verDetalhes = new EventEmitter<number>();
 
   showDetalhes = false;
@@ -302,10 +288,6 @@ export class ComandaCardComponent {
 
   onMenuClick() {
     this.showDetalhes = !this.showDetalhes;
-  }
-
-  onAdicionarBebida() {
-    this.adicionarBebida.emit(this.comanda.id);
   }
 
   onVerDetalhes() {

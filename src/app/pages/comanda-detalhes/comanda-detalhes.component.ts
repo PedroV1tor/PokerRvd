@@ -20,14 +20,14 @@ export class ComandaDetalhesComponent implements OnInit {
   comanda: Comanda | null | undefined = null;
   torneio: Torneio | null = null;
   itens: ItemComanda[] = [];
-  produtos: Produto[] = [];
   loading = false;
   comandaId: number = 0;
 
-  // Modal de adicionar item
+  // Modal de bebida
   mostrarModalBebida = false;
-  produtoSelecionadoId: number = 0;
-  quantidadeProduto: number = 1;
+  produtos: Produto[] = [];
+  produtoSelecionadoId: number | null = null;
+  quantidadeProduto = 1;
 
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
@@ -44,8 +44,8 @@ export class ComandaDetalhesComponent implements OnInit {
     this.comandaId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.comandaId) {
       this.carregarComanda();
-      this.carregarProdutos();
     }
+    this.carregarProdutos();
   }
 
   carregarComanda() {
@@ -82,21 +82,6 @@ export class ComandaDetalhesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erro ao carregar torneio:', error);
-      }
-    });
-  }
-
-  // Método removido - itens agora vêm direto da API no carregarComanda()
-
-  carregarProdutos() {
-    // Carregar lista de produtos cadastrados da API
-    this.produtoService.getProdutos().subscribe({
-      next: (produtos) => {
-        this.produtos = produtos;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar produtos:', error);
-        alert('Erro ao carregar produtos. Verifique se há produtos cadastrados.');
       }
     });
   }
@@ -239,60 +224,6 @@ export class ComandaDetalhesComponent implements OnInit {
     });
   }
 
-  abrirModalBebida() {
-    console.log('Abrindo modal - Produtos disponíveis:', this.produtos);
-    this.mostrarModalBebida = true;
-    this.produtoSelecionadoId = this.produtos.length > 0 ? this.produtos[0].id : 0;
-    this.quantidadeProduto = 1;
-    console.log('Produto pré-selecionado ID:', this.produtoSelecionadoId);
-  }
-
-  fecharModalBebida() {
-    this.mostrarModalBebida = false;
-  }
-
-  adicionarBebida() {
-    if (!this.comanda) return;
-
-    // Converter para number pois o select retorna string
-    const produtoId = Number(this.produtoSelecionadoId);
-    const produto = this.produtos.find(p => p.id === produtoId);
-    
-    console.log('Produto selecionado ID:', this.produtoSelecionadoId, 'Convertido:', produtoId);
-    console.log('Produto encontrado:', produto);
-    console.log('Quantidade:', this.quantidadeProduto);
-    
-    if (!produto || this.quantidadeProduto <= 0) {
-      alert('Selecione um produto e quantidade válida');
-      return;
-    }
-
-    // Verificar estoque disponível
-    if (produto.quantidadeEstoque < this.quantidadeProduto) {
-      alert(`Estoque insuficiente! Disponível: ${produto.quantidadeEstoque} ${produto.unidadeVenda}`);
-      return;
-    }
-
-    // Adicionar item à comanda via API
-    const addItemDto = {
-      produtoId: produto.id,
-      quantidade: this.quantidadeProduto
-    };
-
-    this.comandaService.adicionarProduto(this.comanda.id, addItemDto.produtoId, addItemDto.quantidade).subscribe({
-      next: () => {
-        alert(`${produto.nome} adicionado com sucesso!`);
-        this.carregarComanda(); // Recarregar comanda para atualizar valores
-        this.carregarProdutos(); // Recarregar produtos para atualizar estoque disponível
-        this.fecharModalBebida();
-      },
-      error: (error) => {
-        console.error('Erro ao adicionar produto:', error);
-        alert('Erro ao adicionar produto. Tente novamente.');
-      }
-    });
-  }
-
   removerItem(index: number) {
     if (confirm('Deseja realmente remover este item?')) {
       const item = this.itens[index];
@@ -351,6 +282,48 @@ export class ComandaDetalhesComponent implements OnInit {
         }
       });
     }
+  }
+
+  carregarProdutos() {
+    this.produtoService.getProdutos().subscribe({
+      next: (produtos) => {
+        this.produtos = produtos.filter(p => p.ativo);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar produtos:', error);
+      }
+    });
+  }
+
+  abrirModalBebida() {
+    this.mostrarModalBebida = true;
+    this.produtoSelecionadoId = this.produtos.length > 0 ? this.produtos[0].id : null;
+    this.quantidadeProduto = 1;
+  }
+
+  fecharModalBebida() {
+    this.mostrarModalBebida = false;
+    this.produtoSelecionadoId = null;
+    this.quantidadeProduto = 1;
+  }
+
+  adicionarBebida() {
+    if (!this.produtoSelecionadoId || this.quantidadeProduto < 1) {
+      alert('Selecione um produto e quantidade válidos');
+      return;
+    }
+
+    this.comandaService.adicionarProduto(this.comandaId, this.produtoSelecionadoId, this.quantidadeProduto).subscribe({
+      next: () => {
+        alert('Bebida adicionada com sucesso!');
+        this.fecharModalBebida();
+        this.carregarComanda();
+      },
+      error: (error) => {
+        console.error('Erro ao adicionar bebida:', error);
+        alert('Erro ao adicionar bebida. Tente novamente.');
+      }
+    });
   }
 
   voltar() {

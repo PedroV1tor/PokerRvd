@@ -83,6 +83,13 @@ public class ComandaService : IComandaService
 
     public async Task<ComandaDto> CreateComandaAsync(CreateComandaDto createComandaDto)
     {
+        // Verificar se há um caixa aberto
+        var caixaAberto = await _context.Caixas.AnyAsync(c => c.Status == "ABERTO");
+        if (!caixaAberto)
+        {
+            throw new InvalidOperationException("Não é possível criar comanda. Nenhum caixa está aberto.");
+        }
+
         // Converter string para enum
         TipoComanda tipoEnum;
         if (!Enum.TryParse<TipoComanda>(createComandaDto.Tipo, true, out tipoEnum))
@@ -159,6 +166,13 @@ public class ComandaService : IComandaService
 
     public async Task<ComandaDto?> FecharComandaAsync(int id)
     {
+        // Verificar se há um caixa aberto
+        var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        if (caixaAberto == null)
+        {
+            throw new InvalidOperationException("Não é possível fechar comanda. Nenhum caixa está aberto.");
+        }
+
         var comanda = await _context.Comandas
             .Include(c => c.Itens)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -194,6 +208,27 @@ public class ComandaService : IComandaService
         comanda.Status = StatusComanda.FECHADO;
         comanda.DataFechamento = DateTime.UtcNow;
 
+        // Registrar movimentação no caixa
+        var valorTotal = comanda.ValorTotal;
+        if (valorTotal > 0)
+        {
+            var movimentacao = new MovimentacaoCaixa
+            {
+                CaixaId = caixaAberto.Id,
+                DataHora = DateTime.UtcNow,
+                Tipo = "ENTRADA",
+                Categoria = "Comanda",
+                Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
+                Valor = valorTotal,
+                ComandaId = comanda.Id,
+                ComandaNome = comanda.JogadorNome,
+                UsuarioNome = "Sistema"
+            };
+
+            _context.MovimentacoesCaixa.Add(movimentacao);
+            caixaAberto.TotalEntradas += valorTotal;
+        }
+
         await _context.SaveChangesAsync();
 
         return await GetComandaByIdAsync(id);
@@ -211,6 +246,13 @@ public class ComandaService : IComandaService
 
     public async Task<bool> AddItemToComandaAsync(int comandaId, AddItemComandaDto addItemDto)
     {
+        // Verificar se há um caixa aberto
+        var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        if (caixaAberto == null)
+        {
+            throw new InvalidOperationException("Não é possível adicionar itens. Nenhum caixa está aberto.");
+        }
+
         var comanda = await _context.Comandas.FindAsync(comandaId);
         if (comanda == null) return false;
 
@@ -233,12 +275,36 @@ public class ComandaService : IComandaService
         // Atualizar valores da comanda (produtos vão para bebidas)
         comanda.ValorBebidas += item.ValorTotal;
 
+        // Registrar saída no caixa
+        var movimentacao = new MovimentacaoCaixa
+        {
+            CaixaId = caixaAberto.Id,
+            DataHora = DateTime.UtcNow,
+            Tipo = "SAIDA",
+            Categoria = "Bebida/Produto",
+            Descricao = $"{produto.Nome} (x{addItemDto.Quantidade}) - {comanda.JogadorNome}",
+            Valor = item.ValorTotal,
+            ComandaId = comanda.Id,
+            ComandaNome = comanda.JogadorNome,
+            UsuarioNome = "Sistema"
+        };
+
+        _context.MovimentacoesCaixa.Add(movimentacao);
+        caixaAberto.TotalSaidas += item.ValorTotal;
+
         await _context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto)
     {
+        // Verificar se há um caixa aberto
+        var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        if (caixaAberto == null)
+        {
+            throw new InvalidOperationException("Não é possível adicionar itens. Nenhum caixa está aberto.");
+        }
+
         _logger.LogInformation("AddItemFichasAsync: ComandaId={ComandaId}, Nome={Nome}, Valor={Valor}", 
             comandaId, addItemDto.Nome, addItemDto.Valor);
 
@@ -266,6 +332,23 @@ public class ComandaService : IComandaService
 
         // Atualizar valores da comanda (fichas vão para ValorFichas)
         comanda.ValorFichas += addItemDto.Valor;
+
+        // Registrar saída no caixa
+        var movimentacao = new MovimentacaoCaixa
+        {
+            CaixaId = caixaAberto.Id,
+            DataHora = DateTime.UtcNow,
+            Tipo = "SAIDA",
+            Categoria = "Fichas",
+            Descricao = $"{addItemDto.Nome} - {comanda.JogadorNome}",
+            Valor = addItemDto.Valor,
+            ComandaId = comanda.Id,
+            ComandaNome = comanda.JogadorNome,
+            UsuarioNome = "Sistema"
+        };
+
+        _context.MovimentacoesCaixa.Add(movimentacao);
+        caixaAberto.TotalSaidas += addItemDto.Valor;
 
         _logger.LogInformation("Salvando item de fichas. Novo ValorFichas: {ValorFichas}", comanda.ValorFichas);
 

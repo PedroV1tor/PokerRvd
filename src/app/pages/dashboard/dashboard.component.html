@@ -62,7 +62,6 @@
             *ngFor="let comanda of comandasAtivas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
-            (adicionarBebida)="adicionarBebida($event)"
             (verDetalhes)="verDetalhesComanda($event)">
           </app-comanda-card>
         </div>
@@ -76,7 +75,6 @@
             *ngFor="let comanda of comandasFechadas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
-            (adicionarBebida)="adicionarBebida($event)"
             (verDetalhes)="verDetalhesComanda($event)">
           </app-comanda-card>
         </div>

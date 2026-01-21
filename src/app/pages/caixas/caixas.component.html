@@ -1,0 +1,164 @@
+<div class="app-container">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Cabeçalho -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Caixas</h1>
+          <p class="page-subtitle">Gerencie a abertura e fechamento de caixas</p>
+        </div>
+        <button 
+          class="btn-abrir-caixa" 
+          (click)="abrirModalAbrirCaixa()"
+          [disabled]="caixaAberto !== null">
+          <span class="icon">📦</span>
+          {{ caixaAberto ? 'Caixa Aberto' : 'Abrir Caixa' }}
+        </button>
+      </div>
+
+      <!-- Alerta de Caixa Aberto -->
+      <div class="caixa-aberto-alert" *ngIf="caixaAberto">
+        <div class="alert-icon">✅</div>
+        <div class="alert-content">
+          <strong>Caixa Aberto</strong>
+          <p>Aberto em {{ formatarData(caixaAberto.dataAbertura) }} por {{ caixaAberto.usuarioAbertura }}</p>
+        </div>
+        <button class="btn-ver-caixa" (click)="verDetalhesCaixa(caixaAberto.id)">
+          Ver Detalhes
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando caixas...</p>
+      </div>
+
+      <!-- Lista de Caixas -->
+      <div *ngIf="!loading" class="caixas-list">
+        <div 
+          *ngFor="let caixa of caixas" 
+          class="caixa-card"
+          [class.aberto]="caixa.status === StatusCaixa.ABERTO"
+          (click)="verDetalhesCaixa(caixa.id)">
+          
+          <div class="caixa-header">
+            <div class="caixa-info">
+              <span class="caixa-badge" [class]="caixa.status.toLowerCase()">
+                {{ caixa.status }}
+              </span>
+              <h3 class="caixa-id">Caixa #{{ caixa.id }}</h3>
+            </div>
+            <div class="caixa-saldo">
+              <span class="label">Saldo Esperado:</span>
+              <span class="valor">R$ {{ getSaldoFinalCalculado(caixa).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="caixa-body">
+            <div class="info-row">
+              <div class="info-item">
+                <span class="label">🕐 Abertura:</span>
+                <span class="value">{{ formatarData(caixa.dataAbertura) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">👤 Usuário:</span>
+                <span class="value">{{ caixa.usuarioAbertura }}</span>
+              </div>
+            </div>
+
+            <div class="info-row" *ngIf="caixa.dataFechamento">
+              <div class="info-item">
+                <span class="label">🕐 Fechamento:</span>
+                <span class="value">{{ formatarData(caixa.dataFechamento) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">👤 Usuário:</span>
+                <span class="value">{{ caixa.usuarioFechamento }}</span>
+              </div>
+            </div>
+
+            <div class="resumo-valores">
+              <div class="valor-item">
+                <span class="label">Saldo Inicial:</span>
+                <span class="valor">R$ {{ caixa.saldoInicial.toFixed(2) }}</span>
+              </div>
+              <div class="valor-item entrada">
+                <span class="label">+ Entradas:</span>
+                <span class="valor">R$ {{ caixa.totalEntradas.toFixed(2) }}</span>
+              </div>
+              <div class="valor-item saida">
+                <span class="label">- Saídas:</span>
+                <span class="valor">R$ {{ caixa.totalSaidas.toFixed(2) }}</span>
+              </div>
+              <div class="valor-item total" *ngIf="caixa.saldoFinal">
+                <span class="label">Saldo Final:</span>
+                <span class="valor">R$ {{ caixa.saldoFinal.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="caixa-footer">
+            <button class="btn-detalhes">
+              Ver Detalhes →
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado Vazio -->
+        <div *ngIf="caixas.length === 0" class="empty-state">
+          <div class="empty-icon">📦</div>
+          <h3>Nenhum caixa encontrado</h3>
+          <p>Clique em "Abrir Caixa" para começar</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Abrir Caixa -->
+<div class="modal-overlay" *ngIf="mostrarModalAbrirCaixa" (click)="fecharModalAbrirCaixa()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Abrir Novo Caixa</h3>
+      <button class="btn-close" (click)="fecharModalAbrirCaixa()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Saldo Inicial (R$):</label>
+        <input 
+          type="number" 
+          [(ngModel)]="saldoInicial" 
+          min="0" 
+          step="0.01"
+          class="form-control"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Observações (opcional):</label>
+        <textarea 
+          [(ngModel)]="observacoesAbertura" 
+          class="form-control"
+          rows="3"
+          placeholder="Digite observações sobre a abertura do caixa..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalAbrirCaixa()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="abrirCaixa()">
+        Abrir Caixa
+      </button>
+    </div>
+  </div>
+</div>

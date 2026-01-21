@@ -33,6 +33,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'caixas',
+    loadComponent: () => import('./pages/caixas/caixas.component').then(m => m.CaixasComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'caixa/:id',
+    loadComponent: () => import('./pages/caixa-detalhes/caixa-detalhes.component').then(m => m.CaixaDetalhesComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full'

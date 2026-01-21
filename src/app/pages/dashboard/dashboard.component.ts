@@ -134,19 +134,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  adicionarBebida(id: number) {
-    // Simula adicionar uma bebida de R$ 10
-    this.comandaService.adicionarProduto(id, 1, 1).subscribe({
-      next: () => {
-        console.log('Bebida adicionada à comanda', id);
-        this.carregarDados();
-      },
-      error: (error) => {
-        console.error('Erro ao adicionar bebida:', error);
-      }
-    });
-  }
-
   verDetalhesComanda(id: number) {
     this.router.navigate(['/comanda', id]);
   }

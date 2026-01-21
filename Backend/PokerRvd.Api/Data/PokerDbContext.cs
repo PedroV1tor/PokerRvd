@@ -15,6 +15,8 @@ public class PokerDbContext : DbContext
     public DbSet<ItemComanda> ItensComanda { get; set; }
     public DbSet<Produto> Produtos { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
+    public DbSet<Caixa> Caixas { get; set; }
+    public DbSet<MovimentacaoCaixa> MovimentacoesCaixa { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +86,25 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
             entity.HasIndex(e => e.Email).IsUnique();
             entity.Property(e => e.SenhaHash).IsRequired();
+        });
+
+        // Configurações para Caixas
+        modelBuilder.Entity<Caixa>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SaldoInicial).HasPrecision(18, 2);
+            entity.Property(e => e.SaldoFinal).HasPrecision(18, 2);
+            entity.Property(e => e.TotalEntradas).HasPrecision(18, 2);
+            entity.Property(e => e.TotalSaidas).HasPrecision(18, 2);
+            entity.HasMany(e => e.Movimentacoes).WithOne(m => m.Caixa).HasForeignKey(m => m.CaixaId);
+        });
+
+        modelBuilder.Entity<MovimentacaoCaixa>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Valor).HasPrecision(18, 2);
+            entity.Property(e => e.Categoria).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Descricao).IsRequired().HasMaxLength(500);
         });
 
         // Seed data para Produtos

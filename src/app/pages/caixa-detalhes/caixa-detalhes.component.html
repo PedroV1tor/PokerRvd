@@ -1,0 +1,279 @@
+<div class="caixa-detalhes-container" *ngIf="caixa">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <button class="btn-voltar" (click)="voltar()">
+        ← Voltar
+      </button>
+      <div class="logo">
+        <h1>RVD</h1>
+        <span>POKER CLUB</span>
+      </div>
+    </div>
+
+    <div class="header-info">
+      <span class="caixa-badge" [class]="caixa.status.toLowerCase()">
+        {{ caixa.status }}
+      </span>
+      <h2>Caixa #{{ caixa.id }}</h2>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+      <div class="grid-layout">
+        <!-- Coluna Esquerda: Info do Caixa e Ações -->
+        <aside class="sidebar-left">
+          <!-- Info do Caixa -->
+          <div class="caixa-info-card">
+            <h3 class="card-title">Informações do Caixa</h3>
+            
+            <div class="info-item">
+              <span class="label">🕐 Abertura:</span>
+              <span class="value">{{ formatarData(caixa.dataAbertura) }}</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="label">👤 Usuário Abertura:</span>
+              <span class="value">{{ caixa.usuarioAbertura }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="caixa.observacoesAbertura">
+              <span class="label">📝 Observações:</span>
+              <span class="value">{{ caixa.observacoesAbertura }}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="info-item" *ngIf="caixa.dataFechamento">
+              <span class="label">🕐 Fechamento:</span>
+              <span class="value">{{ formatarData(caixa.dataFechamento) }}</span>
+            </div>
+            
+            <div class="info-item" *ngIf="caixa.usuarioFechamento">
+              <span class="label">👤 Usuário Fechamento:</span>
+              <span class="value">{{ caixa.usuarioFechamento }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="caixa.observacoesFechamento">
+              <span class="label">📝 Observações:</span>
+              <span class="value">{{ caixa.observacoesFechamento }}</span>
+            </div>
+          </div>
+
+          <!-- Resumo Financeiro -->
+          <div class="resumo-card">
+            <h3 class="card-title">Resumo Financeiro</h3>
+            
+            <div class="resumo-item">
+              <span class="label">Saldo Inicial:</span>
+              <span class="valor">R$ {{ caixa.saldoInicial.toFixed(2) }}</span>
+            </div>
+            
+            <div class="resumo-item entrada">
+              <span class="label">+ Entradas:</span>
+              <span class="valor">R$ {{ caixa.totalEntradas.toFixed(2) }}</span>
+            </div>
+            
+            <div class="resumo-item saida">
+              <span class="label">- Saídas:</span>
+              <span class="valor">R$ {{ caixa.totalSaidas.toFixed(2) }}</span>
+            </div>
+
+            <div class="divider"></div>
+            
+            <div class="resumo-item total">
+              <span class="label">Saldo Esperado:</span>
+              <span class="valor">R$ {{ getSaldoEsperado().toFixed(2) }}</span>
+            </div>
+
+            <div class="resumo-item total" *ngIf="caixa.saldoFinal">
+              <span class="label">Saldo Final:</span>
+              <span class="valor">R$ {{ caixa.saldoFinal.toFixed(2) }}</span>
+            </div>
+
+            <div class="resumo-item" *ngIf="caixa.saldoFinal" [class.positivo]="getDiferenca() >= 0" [class.negativo]="getDiferenca() < 0">
+              <span class="label">Diferença:</span>
+              <span class="valor">R$ {{ getDiferenca().toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="actions-card" *ngIf="caixa.status === StatusCaixa.ABERTO">
+            <button class="btn-action primary" (click)="abrirModalMovimentacao()">
+              <span class="icon">➕</span>
+              Nova Movimentação
+            </button>
+            
+            <button class="btn-action danger" (click)="abrirModalFechar()">
+              <span class="icon">🔒</span>
+              Fechar Caixa
+            </button>
+          </div>
+        </aside>
+
+        <!-- Coluna Direita: Movimentações -->
+        <section class="content-right">
+          <div class="movimentacoes-container">
+            <h3 class="section-title">Movimentações</h3>
+
+            <div class="movimentacoes-list">
+              <div 
+                *ngFor="let mov of caixa.movimentacoes" 
+                class="movimentacao-item"
+                [class.entrada]="mov.tipo === TipoMovimentacao.ENTRADA"
+                [class.saida]="mov.tipo === TipoMovimentacao.SAIDA">
+                
+                <div class="mov-header">
+                  <span class="mov-tipo-badge">{{ mov.tipo }}</span>
+                  <span class="mov-categoria">{{ mov.categoria }}</span>
+                  <span class="mov-data">{{ formatarData(mov.dataHora) }}</span>
+                </div>
+
+                <div class="mov-body">
+                  <p class="mov-descricao">{{ mov.descricao }}</p>
+                  <div class="mov-info">
+                    <span class="mov-usuario">👤 {{ mov.usuarioNome }}</span>
+                    <span class="mov-comanda" *ngIf="mov.comandaNome">🎫 {{ mov.comandaNome }}</span>
+                  </div>
+                </div>
+
+                <div class="mov-footer">
+                  <span class="mov-valor">
+                    {{ mov.tipo === TipoMovimentacao.ENTRADA ? '+' : '-' }} R$ {{ mov.valor.toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Estado Vazio -->
+              <div *ngIf="caixa.movimentacoes.length === 0" class="empty-state">
+                <div class="empty-icon">📊</div>
+                <p>Nenhuma movimentação registrada</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Fechar Caixa -->
+<div class="modal-overlay" *ngIf="mostrarModalFechar" (click)="fecharModalFechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Fechar Caixa</h3>
+      <button class="btn-close" (click)="fecharModalFechar()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="resumo-fechamento">
+        <div class="resumo-linha">
+          <span>Saldo Esperado:</span>
+          <span class="destaque">R$ {{ getSaldoEsperado().toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Saldo Final (R$):</label>
+        <input 
+          type="number" 
+          [(ngModel)]="saldoFinal" 
+          step="0.01"
+          class="form-control"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Observações (opcional):</label>
+        <textarea 
+          [(ngModel)]="observacoesFechamento" 
+          class="form-control"
+          rows="3"
+          placeholder="Digite observações sobre o fechamento do caixa..."
+        ></textarea>
+      </div>
+
+      <div class="diferenca-alert" *ngIf="saldoFinal !== getSaldoEsperado()" 
+           [class.positiva]="saldoFinal > getSaldoEsperado()"
+           [class.negativa]="saldoFinal < getSaldoEsperado()">
+        <strong>Diferença:</strong> R$ {{ (saldoFinal - getSaldoEsperado()).toFixed(2) }}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalFechar()">
+        Cancelar
+      </button>
+      <button class="btn btn-danger" (click)="fecharCaixa()">
+        Fechar Caixa
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Movimentação -->
+<div class="modal-overlay" *ngIf="mostrarModalMovimentacao" (click)="fecharModalMovimentacao()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Nova Movimentação</h3>
+      <button class="btn-close" (click)="fecharModalMovimentacao()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tipo:</label>
+        <select [(ngModel)]="tipoMovimentacao" class="form-control">
+          <option [value]="TipoMovimentacao.ENTRADA">Entrada</option>
+          <option [value]="TipoMovimentacao.SAIDA">Saída</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Categoria:</label>
+        <select [(ngModel)]="categoriaMovimentacao" class="form-control">
+          <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="descricaoMovimentacao" 
+          class="form-control"
+          placeholder="Descreva a movimentação..."
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Valor (R$):</label>
+        <input 
+          type="number" 
+          [(ngModel)]="valorMovimentacao" 
+          min="0.01"
+          step="0.01"
+          class="form-control"
+          placeholder="0.00"
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalMovimentacao()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="adicionarMovimentacao()">
+        Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Carregando...</p>
+</div>

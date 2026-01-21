@@ -35,6 +35,7 @@ builder.Services.AddScoped<IPokerService, PokerService>();
 builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
+builder.Services.AddScoped<ICaixaService, CaixaService>();
 
 var app = builder.Build();
 

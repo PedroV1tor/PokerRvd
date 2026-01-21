@@ -37,9 +37,9 @@ import { User } from '../../models/auth.model';
           </button>
           <button 
             class="nav-item"
-            [class.active]="activeMenu === 'relatorios'"
-            (click)="setActiveMenu('relatorios')">
-            Relatórios
+            [class.active]="activeMenu === 'caixas'"
+            (click)="setActiveMenu('caixas')">
+            Caixas
           </button>
         </div>
 
@@ -337,9 +337,8 @@ export class NavbarComponent implements OnInit {
       case 'produtos':
         this.router.navigate(['/produtos']);
         break;
-      case 'relatorios':
-        // TODO: Implementar página de relatórios
-        console.log('Relatórios - Em desenvolvimento');
+      case 'caixas':
+        this.router.navigate(['/caixas']);
         break;
     }
   }
