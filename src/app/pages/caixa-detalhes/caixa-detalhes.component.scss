@@ -249,6 +249,36 @@
   border-bottom: 1px solid #333;
 }
 
+// Abas
+.tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #333;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #999;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px;
+
+  &:hover {
+    color: #00FF00;
+  }
+
+  &.active {
+    color: #00FF00;
+    border-bottom-color: #00FF00;
+  }
+}
+
 .movimentacoes-list {
   display: flex;
   flex-direction: column;
@@ -354,6 +384,146 @@
   .empty-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
+  }
+}
+
+// Resumo
+.resumo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.resumo-section {
+  background: #0a0a0a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 2px solid #333;
+}
+
+.resumo-section-title {
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #333;
+
+  &.entrada {
+    color: #00FF00;
+    border-bottom-color: #00FF00;
+  }
+
+  &.saida {
+    color: #FF6B6B;
+    border-bottom-color: #FF6B6B;
+  }
+}
+
+.resumo-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resumo-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 80px 120px;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #1a1a1a;
+  border-radius: 6px;
+  font-weight: bold;
+  color: #00FF00;
+  font-size: 0.9rem;
+}
+
+.resumo-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 80px 120px;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #0f0f0f;
+  border-radius: 6px;
+  border-left: 3px solid;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #1a1a1a;
+  }
+
+  &.entrada {
+    border-left-color: #00FF00;
+
+    .col-total {
+      color: #00FF00;
+      font-weight: bold;
+    }
+  }
+
+  &.saida {
+    border-left-color: #FF6B6B;
+
+    .col-total {
+      color: #FF6B6B;
+      font-weight: bold;
+    }
+  }
+
+  .col-categoria {
+    color: #999;
+    font-size: 0.85rem;
+  }
+
+  .col-descricao {
+    color: #fff;
+  }
+
+  .col-quantidade {
+    color: #999;
+    text-align: center;
+  }
+
+  .col-total {
+    text-align: right;
+  }
+}
+
+.resumo-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid #333;
+  font-weight: bold;
+
+  &.entrada {
+    border-top-color: #00FF00;
+
+    .label {
+      color: #00FF00;
+    }
+
+    .valor {
+      color: #00FF00;
+      font-size: 1.3rem;
+    }
+  }
+
+  &.saida {
+    border-top-color: #FF6B6B;
+
+    .label {
+      color: #FF6B6B;
+    }
+
+    .valor {
+      color: #FF6B6B;
+      font-size: 1.3rem;
+    }
+  }
+
+  .label {
+    font-size: 1rem;
   }
 }
 

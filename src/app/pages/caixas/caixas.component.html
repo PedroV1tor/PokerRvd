@@ -38,83 +38,51 @@
         <p>Carregando caixas...</p>
       </div>
 
-      <!-- Lista de Caixas -->
-      <div *ngIf="!loading" class="caixas-list">
-        <div 
-          *ngFor="let caixa of caixas" 
-          class="caixa-card"
-          [class.aberto]="caixa.status === StatusCaixa.ABERTO"
-          (click)="verDetalhesCaixa(caixa.id)">
-          
-          <div class="caixa-header">
-            <div class="caixa-info">
-              <span class="caixa-badge" [class]="caixa.status.toLowerCase()">
-                {{ caixa.status }}
-              </span>
-              <h3 class="caixa-id">Caixa #{{ caixa.id }}</h3>
-            </div>
-            <div class="caixa-saldo">
-              <span class="label">Saldo Esperado:</span>
-              <span class="valor">R$ {{ getSaldoFinalCalculado(caixa).toFixed(2) }}</span>
-            </div>
-          </div>
+      <!-- Lista de Caixas em Formato de Tabela -->
+      <div *ngIf="!loading && caixas.length > 0" class="caixas-table-container">
+        <table class="caixas-table">
+          <thead>
+            <tr>
+              <th>Turno</th>
+              <th>Data/Hora Abertura</th>
+              <th>Data/Hora Fechamento</th>
+              <th>Responsável</th>
+              <th>Total de Entradas (+)</th>
+              <th>Total de Saídas (-)</th>
+              <th>Saldo de Fechamento</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              *ngFor="let caixa of caixas; let i = index" 
+              class="caixa-row"
+              [class.aberto]="caixa.status === 'ABERTO'"
+              [class.fechado]="caixa.status === 'FECHADO'"
+              (dblclick)="verDetalhesCaixa(caixa.id)">
+              
+              <td class="turno">{{ caixas.length - i }}</td>
+              <td class="data">{{ formatarDataHora(caixa.dataAbertura) }}</td>
+              <td class="data">{{ caixa.dataFechamento ? formatarDataHora(caixa.dataFechamento) : '-' }}</td>
+              <td class="responsavel">{{ caixa.usuarioAbertura }}</td>
+              <td class="valor entrada">R$ {{ caixa.totalEntradas.toFixed(2) }}</td>
+              <td class="valor saida">R$ {{ caixa.totalSaidas.toFixed(2) }}</td>
+              <td class="valor saldo">R$ {{ getSaldoFinalCalculado(caixa).toFixed(2) }}</td>
+              <td class="status">
+                <span class="status-badge" [class]="caixa.status.toLowerCase()">
+                  {{ caixa.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <div class="caixa-body">
-            <div class="info-row">
-              <div class="info-item">
-                <span class="label">🕐 Abertura:</span>
-                <span class="value">{{ formatarData(caixa.dataAbertura) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="label">👤 Usuário:</span>
-                <span class="value">{{ caixa.usuarioAbertura }}</span>
-              </div>
-            </div>
-
-            <div class="info-row" *ngIf="caixa.dataFechamento">
-              <div class="info-item">
-                <span class="label">🕐 Fechamento:</span>
-                <span class="value">{{ formatarData(caixa.dataFechamento) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="label">👤 Usuário:</span>
-                <span class="value">{{ caixa.usuarioFechamento }}</span>
-              </div>
-            </div>
-
-            <div class="resumo-valores">
-              <div class="valor-item">
-                <span class="label">Saldo Inicial:</span>
-                <span class="valor">R$ {{ caixa.saldoInicial.toFixed(2) }}</span>
-              </div>
-              <div class="valor-item entrada">
-                <span class="label">+ Entradas:</span>
-                <span class="valor">R$ {{ caixa.totalEntradas.toFixed(2) }}</span>
-              </div>
-              <div class="valor-item saida">
-                <span class="label">- Saídas:</span>
-                <span class="valor">R$ {{ caixa.totalSaidas.toFixed(2) }}</span>
-              </div>
-              <div class="valor-item total" *ngIf="caixa.saldoFinal">
-                <span class="label">Saldo Final:</span>
-                <span class="valor">R$ {{ caixa.saldoFinal.toFixed(2) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="caixa-footer">
-            <button class="btn-detalhes">
-              Ver Detalhes →
-            </button>
-          </div>
-        </div>
-
-        <!-- Estado Vazio -->
-        <div *ngIf="caixas.length === 0" class="empty-state">
-          <div class="empty-icon">📦</div>
-          <h3>Nenhum caixa encontrado</h3>
-          <p>Clique em "Abrir Caixa" para começar</p>
-        </div>
+      <!-- Estado Vazio -->
+      <div *ngIf="!loading && caixas.length === 0" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>Nenhum caixa encontrado</h3>
+        <p>Clique em "Abrir Caixa" para começar</p>
       </div>
     </div>
   </main>

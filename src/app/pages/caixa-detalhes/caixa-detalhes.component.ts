@@ -34,6 +34,9 @@ export class CaixaDetalhesComponent implements OnInit {
 
   categorias = ['Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
 
+  // Controle de abas
+  abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' = 'todas';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -158,5 +161,58 @@ export class CaixaDetalhesComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  selecionarAba(aba: 'todas' | 'entradas' | 'saidas' | 'resumo') {
+    this.abaAtiva = aba;
+  }
+
+  getMovimentacoesFiltradas() {
+    if (!this.caixa) return [];
+    
+    if (this.abaAtiva === 'entradas') {
+      return this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
+    } else if (this.abaAtiva === 'saidas') {
+      return this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
+    }
+    
+    return this.caixa.movimentacoes;
+  }
+
+  getResumoEntradas() {
+    if (!this.caixa) return [];
+    
+    const entradas = this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
+    return this.agruparMovimentacoes(entradas);
+  }
+
+  getResumoSaidas() {
+    if (!this.caixa) return [];
+    
+    const saidas = this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
+    return this.agruparMovimentacoes(saidas);
+  }
+
+  private agruparMovimentacoes(movimentacoes: any[]) {
+    const grupos = new Map<string, { categoria: string; descricao: string; quantidade: number; total: number }>();
+    
+    movimentacoes.forEach(mov => {
+      const chave = `${mov.categoria}|${mov.descricao}`;
+      
+      if (grupos.has(chave)) {
+        const grupo = grupos.get(chave)!;
+        grupo.quantidade++;
+        grupo.total += mov.valor;
+      } else {
+        grupos.set(chave, {
+          categoria: mov.categoria,
+          descricao: mov.descricao,
+          quantidade: 1,
+          total: mov.valor
+        });
+      }
+    });
+    
+    return Array.from(grupos.values()).sort((a, b) => b.total - a.total);
   }
 }

@@ -118,9 +118,40 @@
           <div class="movimentacoes-container">
             <h3 class="section-title">Movimentações</h3>
 
-            <div class="movimentacoes-list">
+            <!-- Abas -->
+            <div class="tabs-container">
+              <button 
+                class="tab" 
+                [class.active]="abaAtiva === 'todas'"
+                (click)="selecionarAba('todas')">
+                Todas
+              </button>
+              <button 
+                class="tab" 
+                [class.active]="abaAtiva === 'entradas'"
+                (click)="selecionarAba('entradas')">
+                Entradas
+              </button>
+              <button 
+                class="tab" 
+                [class.active]="abaAtiva === 'saidas'"
+                (click)="selecionarAba('saidas')">
+                Saídas
+              </button>
+              <button 
+                class="tab" 
+                [class.active]="abaAtiva === 'resumo'"
+                (click)="selecionarAba('resumo')">
+                Resumo
+              </button>
+            </div>
+
+            <!-- Conteúdo das Abas -->
+            
+            <!-- Aba: Todas / Entradas / Saídas -->
+            <div class="movimentacoes-list" *ngIf="abaAtiva !== 'resumo'">
               <div 
-                *ngFor="let mov of caixa.movimentacoes" 
+                *ngFor="let mov of getMovimentacoesFiltradas()" 
                 class="movimentacao-item"
                 [class.entrada]="mov.tipo === TipoMovimentacao.ENTRADA"
                 [class.saida]="mov.tipo === TipoMovimentacao.SAIDA">
@@ -147,9 +178,69 @@
               </div>
 
               <!-- Estado Vazio -->
-              <div *ngIf="caixa.movimentacoes.length === 0" class="empty-state">
+              <div *ngIf="getMovimentacoesFiltradas().length === 0" class="empty-state">
                 <div class="empty-icon">📊</div>
                 <p>Nenhuma movimentação registrada</p>
+              </div>
+            </div>
+
+            <!-- Aba: Resumo -->
+            <div class="resumo-container" *ngIf="abaAtiva === 'resumo'">
+              
+              <!-- Resumo de Entradas -->
+              <div class="resumo-section">
+                <h4 class="resumo-section-title entrada">📈 Entradas</h4>
+                <div class="resumo-table">
+                  <div class="resumo-header">
+                    <span class="col-categoria">Categoria</span>
+                    <span class="col-descricao">Descrição</span>
+                    <span class="col-quantidade">Qtd</span>
+                    <span class="col-total">Total</span>
+                  </div>
+                  <div 
+                    *ngFor="let item of getResumoEntradas()" 
+                    class="resumo-row entrada">
+                    <span class="col-categoria">{{ item.categoria }}</span>
+                    <span class="col-descricao">{{ item.descricao }}</span>
+                    <span class="col-quantidade">{{ item.quantidade }}x</span>
+                    <span class="col-total">R$ {{ item.total.toFixed(2) }}</span>
+                  </div>
+                  <div class="resumo-total entrada">
+                    <span class="label">Total de Entradas:</span>
+                    <span class="valor">R$ {{ caixa.totalEntradas.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Resumo de Saídas -->
+              <div class="resumo-section">
+                <h4 class="resumo-section-title saida">📉 Saídas</h4>
+                <div class="resumo-table">
+                  <div class="resumo-header">
+                    <span class="col-categoria">Categoria</span>
+                    <span class="col-descricao">Descrição</span>
+                    <span class="col-quantidade">Qtd</span>
+                    <span class="col-total">Total</span>
+                  </div>
+                  <div 
+                    *ngFor="let item of getResumoSaidas()" 
+                    class="resumo-row saida">
+                    <span class="col-categoria">{{ item.categoria }}</span>
+                    <span class="col-descricao">{{ item.descricao }}</span>
+                    <span class="col-quantidade">{{ item.quantidade }}x</span>
+                    <span class="col-total">R$ {{ item.total.toFixed(2) }}</span>
+                  </div>
+                  <div class="resumo-total saida">
+                    <span class="label">Total de Saídas:</span>
+                    <span class="valor">R$ {{ caixa.totalSaidas.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estado Vazio -->
+              <div *ngIf="getResumoEntradas().length === 0 && getResumoSaidas().length === 0" class="empty-state">
+                <div class="empty-icon">📊</div>
+                <p>Nenhuma movimentação para resumir</p>
               </div>
             </div>
           </div>
