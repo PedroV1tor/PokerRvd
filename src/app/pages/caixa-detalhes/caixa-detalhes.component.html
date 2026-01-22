@@ -259,10 +259,31 @@
     </div>
 
     <div class="modal-body">
+      <!-- Aviso de Comandas Abertas -->
+      <div class="aviso-comandas-abertas" *ngIf="mostrarAvisoComandas">
+        <div class="aviso-header">
+          <span class="aviso-icon">⚠️</span>
+          <strong>Comandas em Aberto</strong>
+        </div>
+        <div class="aviso-content">
+          <p>Existem <strong>{{ comandasAbertas.length }}</strong> comanda(s) ainda aberta(s).</p>
+          <p class="valor-pendente">
+            <strong>Valor Pendente:</strong> R$ {{ valorPendente.toFixed(2) }}
+          </p>
+          <p class="aviso-texto">
+            Se você fechar o caixa agora, este valor ficará pendente e deverá ser registrado quando as comandas forem fechadas.
+          </p>
+        </div>
+      </div>
+
       <div class="resumo-fechamento">
         <div class="resumo-linha">
           <span>Saldo Esperado:</span>
           <span class="destaque">R$ {{ getSaldoEsperado().toFixed(2) }}</span>
+        </div>
+        <div class="resumo-linha" *ngIf="mostrarAvisoComandas">
+          <span>Valor Pendente (Comandas Abertas):</span>
+          <span class="destaque pendente">R$ {{ valorPendente.toFixed(2) }}</span>
         </div>
       </div>
 

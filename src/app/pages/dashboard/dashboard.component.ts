@@ -52,10 +52,11 @@ export class DashboardComponent implements OnInit {
   carregarDados() {
     this.loading = true;
 
-    // Carregar comandas
+    // Carregar apenas comandas ativas
     this.comandaService.getComandas().subscribe({
       next: (comandas) => {
-        this.comandas = comandas;
+        // Filtrar apenas comandas ativas
+        this.comandas = comandas.filter(c => c.status === StatusComanda.ATIVO);
         this.aplicarFiltros();
         this.loading = false;
       },
@@ -136,13 +137,5 @@ export class DashboardComponent implements OnInit {
 
   verDetalhesComanda(id: number) {
     this.router.navigate(['/comanda', id]);
-  }
-
-  get comandasAtivas(): Comanda[] {
-    return this.comandasFiltradas.filter(c => c.status === StatusComanda.ATIVO);
-  }
-
-  get comandasFechadas(): Comanda[] {
-    return this.comandasFiltradas.filter(c => c.status === StatusComanda.FECHADO);
   }
 }

@@ -51,7 +51,6 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
               (ngModelChange)="onTipoChange()"
               required
             >
-              <option [value]="TipoComanda.TORNEIO">Torneio Genérico</option>
               <option [value]="TipoComanda.CASH">Cash Game</option>
               <option [value]="TipoComanda.BAR">Bar</option>
               <optgroup label="Torneios em Andamento" *ngIf="torneiosEmAndamento.length > 0">
@@ -343,7 +342,7 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
   formData: CreateComandaDto = {
     jogadorNome: '',
     mesa: '',
-    tipo: TipoComanda.TORNEIO,
+    tipo: TipoComanda.CASH,
     valorFichas: 0
   };
 
@@ -429,7 +428,7 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
     this.formData = {
       jogadorNome: '',
       mesa: '',
-      tipo: TipoComanda.TORNEIO,
+      tipo: TipoComanda.CASH,
       valorFichas: 0
     };
     this.torneioSelecionado = null;

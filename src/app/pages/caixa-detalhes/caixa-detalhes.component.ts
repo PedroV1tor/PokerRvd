@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CaixaService } from '../../services/caixa.service';
+import { ComandaService } from '../../services/comanda.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
+import { Comanda, StatusComanda } from '../../models/comanda.model';
 
 @Component({
   selector: 'app-caixa-detalhes',
@@ -37,10 +39,16 @@ export class CaixaDetalhesComponent implements OnInit {
   // Controle de abas
   abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' = 'todas';
 
+  // Verificação de comandas abertas
+  comandasAbertas: Comanda[] = [];
+  valorPendente: number = 0;
+  mostrarAvisoComandas: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private caixaService: CaixaService
+    private caixaService: CaixaService,
+    private comandaService: ComandaService
   ) {}
 
   ngOnInit() {
@@ -68,9 +76,27 @@ export class CaixaDetalhesComponent implements OnInit {
   }
 
   abrirModalFechar() {
+    // Verificar comandas abertas antes de abrir o modal
+    this.verificarComandasAbertas();
     this.mostrarModalFechar = true;
     this.saldoFinal = this.getSaldoEsperado();
     this.observacoesFechamento = '';
+  }
+
+  verificarComandasAbertas() {
+    this.comandaService.getComandas().subscribe({
+      next: (comandas) => {
+        this.comandasAbertas = comandas.filter(c => c.status === StatusComanda.ATIVO);
+        this.valorPendente = this.comandasAbertas.reduce((total, c) => total + c.valorTotal, 0);
+        this.mostrarAvisoComandas = this.comandasAbertas.length > 0;
+      },
+      error: (error) => {
+        console.error('Erro ao verificar comandas abertas:', error);
+        this.comandasAbertas = [];
+        this.valorPendente = 0;
+        this.mostrarAvisoComandas = false;
+      }
+    });
   }
 
   fecharModalFechar() {

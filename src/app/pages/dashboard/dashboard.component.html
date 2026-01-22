@@ -55,24 +55,11 @@
       </div>
 
       <!-- Grid de Comandas Ativas -->
-      <div *ngIf="!loading && comandasAtivas.length > 0" class="comandas-section">
-        <h2 class="section-title">Comandas Ativas ({{ comandasAtivas.length }})</h2>
+      <div *ngIf="!loading && comandasFiltradas.length > 0" class="comandas-section">
+        <h2 class="section-title">Comandas Ativas ({{ comandasFiltradas.length }})</h2>
         <div class="comandas-grid">
           <app-comanda-card
-            *ngFor="let comanda of comandasAtivas"
-            [comanda]="comanda"
-            (toggleStatus)="toggleStatusComanda($event)"
-            (verDetalhes)="verDetalhesComanda($event)">
-          </app-comanda-card>
-        </div>
-      </div>
-
-      <!-- Grid de Comandas Fechadas -->
-      <div *ngIf="!loading && comandasFechadas.length > 0" class="comandas-section">
-        <h2 class="section-title">Comandas Fechadas ({{ comandasFechadas.length }})</h2>
-        <div class="comandas-grid">
-          <app-comanda-card
-            *ngFor="let comanda of comandasFechadas"
+            *ngFor="let comanda of comandasFiltradas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
             (verDetalhes)="verDetalhesComanda($event)">

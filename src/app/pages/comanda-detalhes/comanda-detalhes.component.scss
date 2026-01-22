@@ -259,6 +259,19 @@
       }
     }
   }
+
+  &.action-btn-fichas {
+    border-color: #FFD700;
+    
+    &:hover {
+      background: #FFD700;
+      color: #000;
+
+      .action-icon {
+        color: #000;
+      }
+    }
+  }
 }
 
 .action-icon {

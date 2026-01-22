@@ -587,6 +587,59 @@
   padding: 1.5rem;
 }
 
+.aviso-comandas-abertas {
+  background: rgba(255, 193, 7, 0.1);
+  border: 2px solid #FFC107;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  .aviso-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: #FFC107;
+    font-size: 1.1rem;
+    font-weight: bold;
+
+    .aviso-icon {
+      font-size: 1.5rem;
+    }
+  }
+
+  .aviso-content {
+    color: #fff;
+    font-size: 0.9rem;
+    line-height: 1.6;
+
+    p {
+      margin: 0.5rem 0;
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .valor-pendente {
+      color: #FFD700;
+      font-size: 1rem;
+      font-weight: bold;
+      margin: 0.75rem 0;
+    }
+
+    .aviso-texto {
+      color: #ccc;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+  }
+}
+
 .resumo-fechamento {
   background: #0a0a0a;
   border: 1px solid #333;
@@ -601,10 +654,19 @@
   align-items: center;
   color: #fff;
   font-weight: bold;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   .destaque {
     color: #00FF00;
     font-size: 1.3rem;
+
+    &.pendente {
+      color: #FFD700;
+    }
   }
 }
 

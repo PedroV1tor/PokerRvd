@@ -29,6 +29,12 @@ export class ComandaDetalhesComponent implements OnInit {
   produtoSelecionadoId: number | null = null;
   quantidadeProduto = 1;
 
+  // Modal de fichas (usado para Fichas, Buy-in, Re-buy, Add-on)
+  mostrarModalFichas = false;
+  valorFichas: number = 0;
+  nomeFichas: string = 'Fichas';
+  tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
+
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
 
@@ -89,137 +95,106 @@ export class ComandaDetalhesComponent implements OnInit {
   adicionarBuyIn() {
     if (!this.comanda) return;
 
-    let valorNumerico: number;
-
-    // Se houver torneio vinculado, usar valor do torneio
+    // Se houver torneio vinculado, usar valor do torneio e adicionar diretamente
     if (this.torneio && this.torneio.valorBuyIn > 0) {
-      valorNumerico = this.torneio.valorBuyIn;
+      this.adicionarFichasDireto('Buy-in', this.torneio.valorBuyIn);
     } else {
-      // Caso contrário, perguntar o valor
-      const valor = prompt('Digite o valor do Buy-in:');
-      if (!valor) return;
-      
-      valorNumerico = parseFloat(valor);
-      if (isNaN(valorNumerico) || valorNumerico <= 0) {
-        alert('Valor inválido');
-        return;
-      }
+      // Caso contrário, abrir modal para digitar o valor
+      this.tipoFichaAtual = 'Buy-in';
+      this.nomeFichas = 'Buy-in';
+      this.abrirModalFichas();
     }
-
-    // Adicionar via API
-    console.log('Chamando adicionarFichas com:', { comandaId: this.comanda.id, nome: 'Buy-in', valor: valorNumerico });
-    
-    this.comandaService.adicionarFichas(this.comanda.id, 'Buy-in', valorNumerico).subscribe({
-      next: () => {
-        console.log('Buy-in adicionado com sucesso');
-        alert(`Buy-in de R$ ${valorNumerico.toFixed(2)} adicionado!`);
-        this.carregarComanda(); // Recarregar para atualizar itens e valores
-      },
-      error: (error) => {
-        console.error('Erro completo ao adicionar Buy-in:', error);
-        console.error('Status:', error.status);
-        console.error('Mensagem:', error.message);
-        console.error('Erro do servidor:', error.error);
-        alert('Erro ao adicionar Buy-in. Tente novamente.');
-      }
-    });
   }
 
   adicionarRebuySimples() {
     if (!this.comanda) return;
 
-    let valorNumerico: number;
-
-    // Se houver torneio vinculado, usar valor do torneio
+    // Se houver torneio vinculado, usar valor do torneio e adicionar diretamente
     if (this.torneio && this.torneio.valorRebuySimples > 0) {
-      valorNumerico = this.torneio.valorRebuySimples;
+      this.adicionarFichasDireto('Re-buy Simples', this.torneio.valorRebuySimples);
     } else {
-      // Caso contrário, perguntar o valor
-      const valor = prompt('Digite o valor do Re-buy Simples:');
-      if (!valor) return;
-      
-      valorNumerico = parseFloat(valor);
-      if (isNaN(valorNumerico) || valorNumerico <= 0) {
-        alert('Valor inválido');
-        return;
-      }
+      // Caso contrário, abrir modal para digitar o valor
+      this.tipoFichaAtual = 'Re-buy Simples';
+      this.nomeFichas = 'Re-buy Simples';
+      this.abrirModalFichas();
     }
-
-    // Adicionar via API
-    this.comandaService.adicionarFichas(this.comanda.id, 'Re-buy Simples', valorNumerico).subscribe({
-      next: () => {
-        alert(`Re-buy Simples de R$ ${valorNumerico.toFixed(2)} adicionado!`);
-        this.carregarComanda();
-      },
-      error: (error) => {
-        console.error('Erro ao adicionar Re-buy:', error);
-        alert('Erro ao adicionar Re-buy. Tente novamente.');
-      }
-    });
   }
 
   adicionarRebuyDuplo() {
     if (!this.comanda) return;
 
-    let valorNumerico: number;
-
-    // Se houver torneio vinculado, usar valor do torneio
+    // Se houver torneio vinculado, usar valor do torneio e adicionar diretamente
     if (this.torneio && this.torneio.valorRebuyDuplo > 0) {
-      valorNumerico = this.torneio.valorRebuyDuplo;
+      this.adicionarFichasDireto('Re-buy Duplo', this.torneio.valorRebuyDuplo);
     } else {
-      // Caso contrário, perguntar o valor
-      const valor = prompt('Digite o valor do Re-buy Duplo:');
-      if (!valor) return;
-      
-      valorNumerico = parseFloat(valor);
-      if (isNaN(valorNumerico) || valorNumerico <= 0) {
-        alert('Valor inválido');
-        return;
-      }
+      // Caso contrário, abrir modal para digitar o valor
+      this.tipoFichaAtual = 'Re-buy Duplo';
+      this.nomeFichas = 'Re-buy Duplo';
+      this.abrirModalFichas();
     }
-
-    // Adicionar via API
-    this.comandaService.adicionarFichas(this.comanda.id, 'Re-buy Duplo', valorNumerico).subscribe({
-      next: () => {
-        alert(`Re-buy Duplo de R$ ${valorNumerico.toFixed(2)} adicionado!`);
-        this.carregarComanda();
-      },
-      error: (error) => {
-        console.error('Erro ao adicionar Re-buy Duplo:', error);
-        alert('Erro ao adicionar Re-buy Duplo. Tente novamente.');
-      }
-    });
   }
 
   adicionarAddOn() {
     if (!this.comanda) return;
 
-    let valorNumerico: number;
-
-    // Se houver torneio vinculado, usar valor do torneio
+    // Se houver torneio vinculado, usar valor do torneio e adicionar diretamente
     if (this.torneio && this.torneio.valorAddOn > 0) {
-      valorNumerico = this.torneio.valorAddOn;
+      this.adicionarFichasDireto('Add-on', this.torneio.valorAddOn);
     } else {
-      // Caso contrário, perguntar o valor
-      const valor = prompt('Digite o valor do Add-on:');
-      if (!valor) return;
-      
-      valorNumerico = parseFloat(valor);
-      if (isNaN(valorNumerico) || valorNumerico <= 0) {
-        alert('Valor inválido');
-        return;
-      }
+      // Caso contrário, abrir modal para digitar o valor
+      this.tipoFichaAtual = 'Add-on';
+      this.nomeFichas = 'Add-on';
+      this.abrirModalFichas();
+    }
+  }
+
+  adicionarFichasCashGame() {
+    this.tipoFichaAtual = 'Fichas';
+    this.nomeFichas = 'Fichas';
+    this.abrirModalFichas();
+  }
+
+  abrirModalFichas() {
+    this.mostrarModalFichas = true;
+    this.valorFichas = 0;
+  }
+
+  fecharModalFichas() {
+    this.mostrarModalFichas = false;
+    this.valorFichas = 0;
+    this.nomeFichas = 'Fichas';
+    this.tipoFichaAtual = 'Fichas';
+  }
+
+  confirmarAdicionarFichas() {
+    if (!this.comanda) return;
+
+    if (!this.nomeFichas || this.nomeFichas.trim() === '') {
+      alert('Digite um nome para as fichas');
+      return;
     }
 
+    if (!this.valorFichas || this.valorFichas <= 0) {
+      alert('Digite um valor válido');
+      return;
+    }
+
+    this.adicionarFichasDireto(this.nomeFichas.trim(), this.valorFichas);
+  }
+
+  adicionarFichasDireto(nome: string, valor: number) {
+    if (!this.comanda) return;
+
     // Adicionar via API
-    this.comandaService.adicionarFichas(this.comanda.id, 'Add-on', valorNumerico).subscribe({
+    this.comandaService.adicionarFichas(this.comanda.id, nome, valor).subscribe({
       next: () => {
-        alert(`Add-on de R$ ${valorNumerico.toFixed(2)} adicionado!`);
+        alert(`${nome} de R$ ${valor.toFixed(2)} adicionado com sucesso!`);
+        this.fecharModalFichas();
         this.carregarComanda();
       },
       error: (error) => {
-        console.error('Erro ao adicionar Add-on:', error);
-        alert('Erro ao adicionar Add-on. Tente novamente.');
+        console.error(`Erro ao adicionar ${nome}:`, error);
+        alert(`Erro ao adicionar ${nome}. Tente novamente.`);
       }
     });
   }
