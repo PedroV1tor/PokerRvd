@@ -107,18 +107,22 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
-    /// Fecha uma comanda
+    /// Fecha uma comanda, opcionalmente informando as formas de pagamento
     /// </summary>
     [HttpPost("{id}/fechar")]
-    public async Task<ActionResult<ComandaDto>> FecharComanda(int id)
+    public async Task<ActionResult<ComandaDto>> FecharComanda(int id, [FromBody] FecharComandaDto? fecharComandaDto = null)
     {
         try
         {
-            var comanda = await _comandaService.FecharComandaAsync(id);
+            var comanda = await _comandaService.FecharComandaAsync(id, fecharComandaDto);
             if (comanda == null)
                 return NotFound($"Comanda com ID {id} não encontrada");
 
             return Ok(comanda);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {

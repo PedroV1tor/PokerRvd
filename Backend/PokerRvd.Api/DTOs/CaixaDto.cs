@@ -32,6 +32,7 @@ public class MovimentacaoCaixaDto
     public decimal Valor { get; set; }
     public int? ComandaId { get; set; }
     public string? ComandaNome { get; set; }
+    public string? FormaPagamento { get; set; }
     public string UsuarioNome { get; set; } = string.Empty;
 }
 

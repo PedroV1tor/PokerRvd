@@ -103,16 +103,16 @@ export class DashboardComponent implements OnInit {
   }
 
   criarComanda(comanda: CreateComandaDto) {
-    console.log('Enviando comanda:', JSON.stringify(comanda, null, 2));
     this.comandaService.createComanda(comanda).subscribe({
-      next: (novaComanda) => {
-        console.log('Comanda criada:', novaComanda);
+      next: () => {
         this.carregarDados();
       },
       error: (error) => {
         console.error('Erro ao criar comanda:', error);
-        console.error('Detalhes do erro:', error.error);
-        alert('Erro ao criar comanda: ' + (error.error?.title || error.message));
+        const msg = typeof error.error === 'object' && error.error?.message
+          ? error.error.message
+          : error.error?.title || error.message;
+        alert('Erro ao criar comanda: ' + msg);
       }
     });
   }

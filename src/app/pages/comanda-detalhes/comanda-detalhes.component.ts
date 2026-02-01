@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ComandaService } from '../../services/comanda.service';
 import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
-import { Comanda, TipoComanda, StatusComanda, ItemComanda } from '../../models/comanda.model';
+import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor } from '../../models/comanda.model';
 import { Torneio } from '../../models/torneio.model';
 import { Produto } from '../../models/produto.model';
 
@@ -34,6 +34,11 @@ export class ComandaDetalhesComponent implements OnInit {
   valorFichas: number = 0;
   nomeFichas: string = 'Fichas';
   tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
+
+  // Modal de fechar comanda (formas de pagamento)
+  mostrarModalFechar = false;
+  formasPagamento: FormaPagamentoValor[] = [];
+  formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
 
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
@@ -238,25 +243,58 @@ export class ComandaDetalhesComponent implements OnInit {
     return this.comanda.valorFichas + this.comanda.valorBebidas;
   }
 
+  abrirModalFechar() {
+    this.formasPagamento = [{ formaPagamento: 'Dinheiro', valor: 0 }];
+    this.mostrarModalFechar = true;
+  }
+
+  fecharModalFechar() {
+    this.mostrarModalFechar = false;
+    this.formasPagamento = [];
+  }
+
+  adicionarFormaPagamento() {
+    this.formasPagamento.push({ formaPagamento: 'Dinheiro', valor: 0 });
+  }
+
+  removerFormaPagamento(index: number) {
+    if (this.formasPagamento.length > 1) {
+      this.formasPagamento.splice(index, 1);
+    }
+  }
+
+  get somaFormasPagamento(): number {
+    return this.formasPagamento.reduce((s, f) => s + (f.valor || 0), 0);
+  }
+
+  get totalBateComFormas(): boolean {
+    return Math.abs(this.somaFormasPagamento - this.valorTotal) < 0.01;
+  }
+
   fecharComanda() {
     if (!this.comanda) return;
 
-    const confirmar = confirm(
-      `Fechar comanda de ${this.comanda.jogadorNome}?\n\nTotal: R$ ${this.valorTotal.toFixed(2)}`
-    );
-
-    if (confirmar) {
-      this.comandaService.fecharComanda(this.comandaId).subscribe({
-        next: () => {
-          alert('Comanda fechada com sucesso!');
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          console.error('Erro ao fechar comanda:', error);
-          alert('Erro ao fechar comanda. Tente novamente.');
-        }
-      });
+    const comFormas = this.formasPagamento.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
+    if (comFormas.length === 0) {
+      alert('Informe pelo menos uma forma de pagamento com valor maior que zero.');
+      return;
     }
+    if (!this.totalBateComFormas) {
+      alert(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao total da comanda (R$ ${this.valorTotal.toFixed(2)}).`);
+      return;
+    }
+
+    this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas }).subscribe({
+      next: () => {
+        alert('Comanda fechada com sucesso!');
+        this.fecharModalFechar();
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Erro ao fechar comanda:', error);
+        alert(error.error?.message || error.error || 'Erro ao fechar comanda. Tente novamente.');
+      }
+    });
   }
 
   carregarProdutos() {

@@ -105,6 +105,7 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.Valor).HasPrecision(18, 2);
             entity.Property(e => e.Categoria).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.FormaPagamento).HasMaxLength(50);
         });
 
         // Seed data para Produtos

@@ -167,6 +167,7 @@
                   <div class="mov-info">
                     <span class="mov-usuario">👤 {{ mov.usuarioNome }}</span>
                     <span class="mov-comanda" *ngIf="mov.comandaNome">🎫 {{ mov.comandaNome }}</span>
+                    <span class="mov-forma-pagamento" *ngIf="mov.formaPagamento">💳 {{ mov.formaPagamento }}</span>
                   </div>
                 </div>
 
@@ -187,6 +188,25 @@
             <!-- Aba: Resumo -->
             <div class="resumo-container" *ngIf="abaAtiva === 'resumo'">
               
+              <!-- Resumo por Forma de Pagamento -->
+              <div class="resumo-section resumo-forma-pagamento" *ngIf="getResumoPorFormaPagamento().length > 0">
+                <h4 class="resumo-section-title forma-pagamento">💳 Por Forma de Pagamento</h4>
+                <div class="resumo-table">
+                  <div class="resumo-header resumo-header-3col">
+                    <span class="col-categoria">Forma de Pagamento</span>
+                    <span class="col-quantidade">Qtd</span>
+                    <span class="col-total">Total</span>
+                  </div>
+                  <div 
+                    *ngFor="let item of getResumoPorFormaPagamento()" 
+                    class="resumo-row resumo-row-3col forma-pagamento">
+                    <span class="col-categoria">{{ item.formaPagamento }}</span>
+                    <span class="col-quantidade">{{ item.quantidade }}x</span>
+                    <span class="col-total">R$ {{ item.total.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Resumo de Entradas -->
               <div class="resumo-section">
                 <h4 class="resumo-section-title entrada">📈 Entradas</h4>
@@ -344,7 +364,12 @@
       </div>
 
       <div class="form-group">
-        <label>Categoria:</label>
+        <div class="label-with-button">
+          <label>Categoria:</label>
+          <button type="button" class="btn-criar-categoria" (click)="abrirModalNovaCategoria()" title="Criar nova categoria">
+            + Nova Categoria
+          </button>
+        </div>
         <select [(ngModel)]="categoriaMovimentacao" class="form-control">
           <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
         </select>
@@ -379,6 +404,39 @@
       </button>
       <button class="btn btn-primary" (click)="adicionarMovimentacao()">
         Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Categoria -->
+<div class="modal-overlay" *ngIf="mostrarModalNovaCategoria" (click)="fecharModalNovaCategoria()">
+  <div class="modal-content modal-content-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Nova Categoria</h3>
+      <button class="btn-close" (click)="fecharModalNovaCategoria()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome da Categoria:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="novaCategoria" 
+          class="form-control"
+          placeholder="Digite o nome da categoria..."
+          (keyup.enter)="criarCategoria()"
+          autofocus
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalNovaCategoria()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="criarCategoria()" [disabled]="!novaCategoria || novaCategoria.trim() === ''">
+        Criar
       </button>
     </div>
   </div>

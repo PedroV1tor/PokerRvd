@@ -7,7 +7,8 @@ import {
   UpdateComandaDto, 
   DashboardStats,
   StatusComanda,
-  TipoComanda
+  TipoComanda,
+  FecharComandaDto
 } from '../models/comanda.model';
 
 @Injectable({
@@ -42,8 +43,8 @@ export class ComandaService {
     return this.http.put<Comanda>(`${this.apiUrl}/comandas/${id}`, update);
   }
 
-  fecharComanda(id: number): Observable<Comanda | null> {
-    return this.http.post<Comanda>(`${this.apiUrl}/comandas/${id}/fechar`, {});
+  fecharComanda(id: number, formasPagamento?: FecharComandaDto): Observable<Comanda | null> {
+    return this.http.post<Comanda>(`${this.apiUrl}/comandas/${id}/fechar`, formasPagamento ?? {});
   }
 
   deleteComanda(id: number): Observable<boolean> {

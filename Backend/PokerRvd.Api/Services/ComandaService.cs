@@ -84,8 +84,8 @@ public class ComandaService : IComandaService
     public async Task<ComandaDto> CreateComandaAsync(CreateComandaDto createComandaDto)
     {
         // Verificar se há um caixa aberto
-        var caixaAberto = await _context.Caixas.AnyAsync(c => c.Status == "ABERTO");
-        if (!caixaAberto)
+        var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        if (caixaAberto == null)
         {
             throw new InvalidOperationException("Não é possível criar comanda. Nenhum caixa está aberto.");
         }
@@ -97,6 +97,10 @@ public class ComandaService : IComandaService
             tipoEnum = TipoComanda.TORNEIO; // Valor padrão
         }
 
+        var valorFichasInicial = createComandaDto.ValorFichas ?? 0;
+        // Para comanda de torneio: buy-in será adicionado como item depois; comanda começa com 0 em ValorFichas
+        var isTorneioComBuyIn = tipoEnum == TipoComanda.TORNEIO && valorFichasInicial > 0;
+
         var comanda = new Comanda
         {
             JogadorNome = createComandaDto.JogadorNome,
@@ -104,7 +108,7 @@ public class ComandaService : IComandaService
             Tipo = tipoEnum,
             TorneioId = createComandaDto.TorneioId,
             TorneioNome = createComandaDto.TorneioNome,
-            ValorFichas = createComandaDto.ValorFichas ?? 0,
+            ValorFichas = isTorneioComBuyIn ? 0 : valorFichasInicial,
             ValorBebidas = 0,
             Status = StatusComanda.ATIVO,
             DataAbertura = DateTime.UtcNow
@@ -112,6 +116,40 @@ public class ComandaService : IComandaService
 
         _context.Comandas.Add(comanda);
         await _context.SaveChangesAsync();
+
+        // Para torneio: adicionar o Buy-in como ITEM na comanda (não como "valor em fichas"),
+        // para aparecer na lista de itens da comanda.
+        if (isTorneioComBuyIn)
+        {
+            var itemBuyIn = new ItemComanda
+            {
+                ComandaId = comanda.Id,
+                Comanda = comanda,
+                ProdutoId = null,
+                NomeCustomizado = "Buy-in",
+                Quantidade = 1,
+                ValorUnitario = valorFichasInicial
+            };
+            comanda.Itens.Add(itemBuyIn);
+            _context.ItensComanda.Add(itemBuyIn);
+            comanda.ValorFichas = valorFichasInicial;
+
+            var movimentacao = new MovimentacaoCaixa
+            {
+                CaixaId = caixaAberto.Id,
+                DataHora = DateTime.UtcNow,
+                Tipo = "SAIDA",
+                Categoria = "Fichas",
+                Descricao = $"Buy-in - {comanda.JogadorNome}",
+                Valor = valorFichasInicial,
+                ComandaId = comanda.Id,
+                ComandaNome = comanda.JogadorNome,
+                UsuarioNome = "Sistema"
+            };
+            _context.MovimentacoesCaixa.Add(movimentacao);
+            caixaAberto.TotalSaidas += valorFichasInicial;
+            await _context.SaveChangesAsync();
+        }
 
         return new ComandaDto
         {
@@ -164,7 +202,7 @@ public class ComandaService : IComandaService
         };
     }
 
-    public async Task<ComandaDto?> FecharComandaAsync(int id)
+    public async Task<ComandaDto?> FecharComandaAsync(int id, FecharComandaDto? fecharComandaDto = null)
     {
         // Verificar se há um caixa aberto
         var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
@@ -208,25 +246,57 @@ public class ComandaService : IComandaService
         comanda.Status = StatusComanda.FECHADO;
         comanda.DataFechamento = DateTime.UtcNow;
 
-        // Registrar movimentação no caixa
         var valorTotal = comanda.ValorTotal;
         if (valorTotal > 0)
         {
-            var movimentacao = new MovimentacaoCaixa
+            // Se foram informadas formas de pagamento, validar soma e criar uma movimentação por forma
+            if (fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
             {
-                CaixaId = caixaAberto.Id,
-                DataHora = DateTime.UtcNow,
-                Tipo = "ENTRADA",
-                Categoria = "Comanda",
-                Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
-                Valor = valorTotal,
-                ComandaId = comanda.Id,
-                ComandaNome = comanda.JogadorNome,
-                UsuarioNome = "Sistema"
-            };
+                var somaFormas = fecharComandaDto.FormasPagamento.Sum(f => f.Valor);
+                if (Math.Abs(somaFormas - valorTotal) > 0.01m)
+                {
+                    throw new InvalidOperationException(
+                        $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao total da comanda (R$ {valorTotal:N2}).");
+                }
 
-            _context.MovimentacoesCaixa.Add(movimentacao);
-            caixaAberto.TotalEntradas += valorTotal;
+                foreach (var forma in fecharComandaDto.FormasPagamento.Where(f => f.Valor > 0))
+                {
+                    var movimentacao = new MovimentacaoCaixa
+                    {
+                        CaixaId = caixaAberto.Id,
+                        DataHora = DateTime.UtcNow,
+                        Tipo = "ENTRADA",
+                        Categoria = "Comanda",
+                        Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
+                        Valor = forma.Valor,
+                        ComandaId = comanda.Id,
+                        ComandaNome = comanda.JogadorNome,
+                        FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
+                        UsuarioNome = "Sistema"
+                    };
+                    _context.MovimentacoesCaixa.Add(movimentacao);
+                    caixaAberto.TotalEntradas += forma.Valor;
+                }
+            }
+            else
+            {
+                // Comportamento anterior: uma única movimentação sem forma de pagamento
+                var movimentacao = new MovimentacaoCaixa
+                {
+                    CaixaId = caixaAberto.Id,
+                    DataHora = DateTime.UtcNow,
+                    Tipo = "ENTRADA",
+                    Categoria = "Comanda",
+                    Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
+                    Valor = valorTotal,
+                    ComandaId = comanda.Id,
+                    ComandaNome = comanda.JogadorNome,
+                    FormaPagamento = null,
+                    UsuarioNome = "Sistema"
+                };
+                _context.MovimentacoesCaixa.Add(movimentacao);
+                caixaAberto.TotalEntradas += valorTotal;
+            }
         }
 
         await _context.SaveChangesAsync();

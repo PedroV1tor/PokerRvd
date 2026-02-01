@@ -24,6 +24,7 @@ export interface MovimentacaoCaixa {
   valor: number;
   comandaId?: number;
   comandaNome?: string;
+  formaPagamento?: string;
   usuarioNome: string;
 }
 

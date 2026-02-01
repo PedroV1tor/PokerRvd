@@ -87,3 +87,20 @@ public class DashboardStatsDto
     public decimal TotalBebidas { get; set; }
     public decimal FaturamentoTotal { get; set; }
 }
+
+/// <summary>
+/// Forma de pagamento e valor ao fechar a comanda
+/// </summary>
+public class FormaPagamentoValorDto
+{
+    public string FormaPagamento { get; set; } = string.Empty; // Dinheiro, PIX, Cartão Débito, Cartão Crédito, etc.
+    public decimal Valor { get; set; }
+}
+
+/// <summary>
+/// DTO para fechar comanda informando as formas de pagamento
+/// </summary>
+public class FecharComandaDto
+{
+    public List<FormaPagamentoValorDto> FormasPagamento { get; set; } = new();
+}

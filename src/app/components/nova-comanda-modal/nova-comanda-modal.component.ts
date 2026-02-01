@@ -84,7 +84,7 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" *ngIf="!torneioSelecionado">
             <label for="valorFichas">Valor Inicial em Fichas (opcional)</label>
             <input
               type="number"
@@ -398,17 +398,14 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
 
   onSubmit() {
     if (this.isFormValid()) {
-      // Normalizar o tipo para TORNEIO se for um torneio específico
+      // Normalizar o tipo para TORNEIO se for um torneio específico e garantir valor do buy-in
       const comandaData = { ...this.formData };
       if ((comandaData.tipo as string).startsWith('TORNEIO_')) {
         comandaData.tipo = TipoComanda.TORNEIO;
+        // Garantir que o buy-in seja enviado para o backend adicionar como item na comanda
+        comandaData.valorFichas = this.torneioSelecionado?.valorBuyIn ?? comandaData.valorFichas ?? 0;
       }
-      
-      console.log('Modal - Dados da comanda antes de enviar:', comandaData);
-      console.log('Modal - Tipo:', comandaData.tipo);
-      console.log('Modal - JogadorNome:', comandaData.jogadorNome);
-      console.log('Modal - Mesa:', comandaData.mesa);
-      
+
       this.criar.emit(comandaData);
       this.resetForm();
       this.onClose();

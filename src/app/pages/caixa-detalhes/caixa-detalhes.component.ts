@@ -31,6 +31,10 @@ export class CaixaDetalhesComponent implements OnInit {
   descricaoMovimentacao: string = '';
   valorMovimentacao: number = 0;
 
+  // Modal de nova categoria
+  mostrarModalNovaCategoria = false;
+  novaCategoria: string = '';
+
   StatusCaixa = StatusCaixa;
   TipoMovimentacao = TipoMovimentacao;
 
@@ -62,13 +66,22 @@ export class CaixaDetalhesComponent implements OnInit {
     this.loading = true;
     this.caixaService.getCaixa(this.caixaId).subscribe({
       next: (caixa) => {
-        this.caixa = caixa;
+        // Garante que movimentacoes seja sempre um array (evita erro se API retornar null)
+        this.caixa = {
+          ...caixa,
+          movimentacoes: Array.isArray(caixa.movimentacoes) ? caixa.movimentacoes : []
+        };
         this.saldoFinal = this.getSaldoEsperado();
         this.loading = false;
       },
       error: (error) => {
         console.error('Erro ao carregar caixa:', error);
-        alert('Erro ao carregar caixa');
+        const msg = typeof error.error === 'object' && error.error?.message
+          ? error.error.message
+          : typeof error.error === 'string'
+            ? error.error
+            : (error.status === 0 ? 'Verifique se o backend está rodando.' : 'Erro ao carregar caixa.');
+        alert(msg);
         this.router.navigate(['/caixas']);
         this.loading = false;
       }
@@ -136,6 +149,40 @@ export class CaixaDetalhesComponent implements OnInit {
     this.mostrarModalMovimentacao = false;
   }
 
+  abrirModalNovaCategoria() {
+    this.mostrarModalNovaCategoria = true;
+    this.novaCategoria = '';
+  }
+
+  fecharModalNovaCategoria() {
+    this.mostrarModalNovaCategoria = false;
+    this.novaCategoria = '';
+  }
+
+  criarCategoria() {
+    if (!this.novaCategoria || this.novaCategoria.trim() === '') {
+      alert('Digite um nome para a categoria');
+      return;
+    }
+
+    const categoriaTrimmed = this.novaCategoria.trim();
+    
+    // Verificar se a categoria já existe
+    if (this.categorias.includes(categoriaTrimmed)) {
+      alert('Esta categoria já existe');
+      return;
+    }
+
+    // Adicionar a nova categoria à lista
+    this.categorias.push(categoriaTrimmed);
+    
+    // Selecionar a nova categoria automaticamente
+    this.categoriaMovimentacao = categoriaTrimmed;
+    
+    // Fechar o modal
+    this.fecharModalNovaCategoria();
+  }
+
   adicionarMovimentacao() {
     if (!this.caixa) return;
 
@@ -195,28 +242,52 @@ export class CaixaDetalhesComponent implements OnInit {
 
   getMovimentacoesFiltradas() {
     if (!this.caixa) return [];
-    
+    const movs = this.caixa.movimentacoes ?? [];
     if (this.abaAtiva === 'entradas') {
-      return this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
+      return movs.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
     } else if (this.abaAtiva === 'saidas') {
-      return this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
+      return movs.filter(m => m.tipo === TipoMovimentacao.SAIDA);
     }
-    
-    return this.caixa.movimentacoes;
+    return movs;
   }
 
   getResumoEntradas() {
     if (!this.caixa) return [];
-    
-    const entradas = this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
+    const movs = this.caixa.movimentacoes ?? [];
+    const entradas = movs.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
     return this.agruparMovimentacoes(entradas);
   }
 
   getResumoSaidas() {
     if (!this.caixa) return [];
-    
-    const saidas = this.caixa.movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
+    const movs = this.caixa.movimentacoes ?? [];
+    const saidas = movs.filter(m => m.tipo === TipoMovimentacao.SAIDA);
     return this.agruparMovimentacoes(saidas);
+  }
+
+  /** Resumo de entradas agrupado por forma de pagamento (fechamento de comandas) */
+  getResumoPorFormaPagamento(): { formaPagamento: string; quantidade: number; total: number }[] {
+    if (!this.caixa) return [];
+    const movs = this.caixa.movimentacoes ?? [];
+    const entradas = movs.filter(
+      m => m.tipo === TipoMovimentacao.ENTRADA && m.formaPagamento && String(m.formaPagamento).trim() !== ''
+    );
+    const grupos = new Map<string, { quantidade: number; total: number }>();
+    
+    entradas.forEach(mov => {
+      const forma = String(mov.formaPagamento).trim();
+      if (grupos.has(forma)) {
+        const g = grupos.get(forma)!;
+        g.quantidade++;
+        g.total += mov.valor;
+      } else {
+        grupos.set(forma, { quantidade: 1, total: mov.valor });
+      }
+    });
+    
+    return Array.from(grupos.entries())
+      .map(([formaPagamento, { quantidade, total }]) => ({ formaPagamento, quantidade, total }))
+      .sort((a, b) => b.total - a.total);
   }
 
   private agruparMovimentacoes(movimentacoes: any[]) {

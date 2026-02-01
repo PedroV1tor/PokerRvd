@@ -149,9 +149,9 @@
               </tbody>
             </table>
 
-            <!-- Total -->
+            <!-- Total (em torneio não mostra "Fichas" – entram só itens como Buy-in, Re-buy, Add-on) -->
             <div class="total-section">
-              <div class="total-row">
+              <div class="total-row" *ngIf="comanda.tipo !== TipoComanda.TORNEIO">
                 <span class="total-label">Fichas:</span>
                 <span class="total-value">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
               </div>
@@ -170,7 +170,7 @@
           <div class="footer-actions">
             <button 
               class="btn-fechar-comanda" 
-              (click)="fecharComanda()"
+              (click)="abrirModalFechar()"
               [disabled]="comanda.status === StatusComanda.FECHADO">
               {{ comanda.status === StatusComanda.FECHADO ? 'Comanda Fechada' : 'Fechar Comanda' }}
             </button>
@@ -216,6 +216,60 @@
       </button>
       <button class="btn btn-primary" (click)="adicionarBebida()">
         Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Fechar Comanda (Formas de Pagamento) -->
+<div class="modal-overlay" *ngIf="mostrarModalFechar" (click)="fecharModalFechar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Fechar Comanda - Formas de Pagamento</h3>
+      <button class="btn-close" (click)="fecharModalFechar()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-total-info">
+        Total da comanda: <strong>R$ {{ valorTotal.toFixed(2) }}</strong>
+      </p>
+      <p class="modal-instruction">Informe como foi realizado o pagamento. A soma deve ser igual ao total.</p>
+
+      <div class="formas-pagamento-list">
+        <div *ngFor="let forma of formasPagamento; let i = index" class="forma-pagamento-row">
+          <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
+            <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
+          </select>
+          <input 
+            type="number" 
+            [(ngModel)]="forma.valor" 
+            min="0"
+            step="0.01"
+            class="form-control forma-valor"
+            placeholder="0,00"
+          />
+          <button type="button" class="btn-remover-forma" (click)="removerFormaPagamento(i)" 
+                  [disabled]="formasPagamento.length === 1" title="Remover">✕</button>
+        </div>
+        <button type="button" class="btn-add-forma" (click)="adicionarFormaPagamento()">
+          + Adicionar forma de pagamento
+        </button>
+      </div>
+
+      <div class="resumo-formas" [class.erro]="!totalBateComFormas && somaFormasPagamento > 0">
+        <span>Soma das formas:</span>
+        <span>R$ {{ somaFormasPagamento.toFixed(2) }}</span>
+        <span *ngIf="totalBateComFormas" class="ok-badge">✓ Confere</span>
+        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Soma deve ser R$ {{ valorTotal.toFixed(2) }}</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalFechar()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="!totalBateComFormas || somaFormasPagamento <= 0">
+        Fechar Comanda
       </button>
     </div>
   </div>

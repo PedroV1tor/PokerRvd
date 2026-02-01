@@ -51,6 +51,17 @@ export interface UpdateComandaDto {
   status?: StatusComanda;
 }
 
+/** Forma de pagamento e valor ao fechar a comanda */
+export interface FormaPagamentoValor {
+  formaPagamento: string;
+  valor: number;
+}
+
+/** DTO para fechar comanda informando as formas de pagamento */
+export interface FecharComandaDto {
+  formasPagamento: FormaPagamentoValor[];
+}
+
 export interface DashboardStats {
   comandasAbertas: number;
   totalFichas: number;

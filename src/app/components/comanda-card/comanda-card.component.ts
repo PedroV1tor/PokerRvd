@@ -43,7 +43,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       </div>
 
       <div class="card-detalhes" *ngIf="showDetalhes">
-        <div class="detalhe-item">
+        <div class="detalhe-item" *ngIf="comanda.tipo !== 'TORNEIO'">
           <span class="detalhe-label">Fichas:</span>
           <span class="detalhe-valor">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
         </div>

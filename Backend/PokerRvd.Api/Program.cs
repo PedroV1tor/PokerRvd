@@ -39,6 +39,23 @@ builder.Services.AddScoped<ICaixaService, CaixaService>();
 
 var app = builder.Build();
 
+// Verificar conexão com o banco na inicialização (apenas log, não bloqueia)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PokerDbContext>();
+    try
+    {
+        if (await db.Database.CanConnectAsync())
+            app.Logger.LogInformation("Conexão com o banco de dados PostgreSQL OK.");
+        else
+            app.Logger.LogWarning("Não foi possível conectar ao banco de dados.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Erro ao conectar ao banco de dados. Verifique ConnectionStrings:DefaultConnection em appsettings.json (Host, Port, Database, Username, Password) e se o PostgreSQL está rodando.");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

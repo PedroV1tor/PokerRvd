@@ -30,6 +30,7 @@ public class MovimentacaoCaixa
     public decimal Valor { get; set; }
     public int? ComandaId { get; set; }
     public string? ComandaNome { get; set; }
+    public string? FormaPagamento { get; set; } // Dinheiro, PIX, Cartão Débito, Cartão Crédito, etc.
     public string UsuarioNome { get; set; } = string.Empty;
     
     // Navegação

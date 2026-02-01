@@ -31,7 +31,7 @@ public class CaixasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar caixas");
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
@@ -45,14 +45,14 @@ public class CaixasController : ControllerBase
         {
             var caixa = await _caixaService.GetCaixaByIdAsync(id);
             if (caixa == null)
-                return NotFound($"Caixa com ID {id} não encontrado");
+                return NotFound(new { message = $"Caixa com ID {id} não encontrado" });
 
             return Ok(caixa);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar caixa {CaixaId}", id);
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
@@ -66,14 +66,14 @@ public class CaixasController : ControllerBase
         {
             var caixa = await _caixaService.GetCaixaAbertoAsync();
             if (caixa == null)
-                return NotFound("Nenhum caixa aberto no momento");
+                return NotFound(new { message = "Nenhum caixa aberto no momento" });
 
             return Ok(caixa);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar caixa aberto");
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
@@ -96,12 +96,12 @@ public class CaixasController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao abrir caixa");
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
@@ -121,18 +121,18 @@ public class CaixasController : ControllerBase
 
             var caixa = await _caixaService.FecharCaixaAsync(id, dto, usuarioNome);
             if (caixa == null)
-                return NotFound($"Caixa com ID {id} não encontrado");
+                return NotFound(new { message = $"Caixa com ID {id} não encontrado" });
 
             return Ok(caixa);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao fechar caixa {CaixaId}", id);
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
@@ -152,14 +152,14 @@ public class CaixasController : ControllerBase
 
             var result = await _caixaService.AddMovimentacaoAsync(id, dto, usuarioNome);
             if (!result)
-                return BadRequest("Não foi possível adicionar a movimentação. Verifique se o caixa está aberto.");
+                return BadRequest(new { message = "Não foi possível adicionar a movimentação. Verifique se o caixa está aberto." });
 
             return Ok(new { message = "Movimentação adicionada com sucesso" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao adicionar movimentação ao caixa {CaixaId}", id);
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 }
