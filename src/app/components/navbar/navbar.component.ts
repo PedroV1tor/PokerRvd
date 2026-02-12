@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -15,8 +15,18 @@ import { User } from '../../models/auth.model';
           <span class="logo-text">R♦D</span>
           <span class="logo-subtitle">POKER CLUB</span>
         </div>
+
+        <button 
+          class="mobile-menu-toggle" 
+          (click)="toggleMobileMenu()"
+          [class.active]="showMobileMenu"
+          aria-label="Toggle menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
         
-        <div class="nav-menu">
+        <div class="nav-menu" [class.mobile-open]="showMobileMenu">
           <button 
             *ngIf="hasPermissionComandas()"
             class="nav-item" 
@@ -92,6 +102,7 @@ import { User } from '../../models/auth.model';
       gap: 2rem;
     }
 
+
     .logo {
       display: flex;
       align-items: center;
@@ -113,6 +124,52 @@ import { User } from '../../models/auth.model';
       color: #00FF00;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: transparent;
+      border: 2px solid #00FF00;
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.3s ease;
+      z-index: 1001;
+    }
+
+    .mobile-menu-toggle:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+
+    .mobile-menu-toggle.active {
+      background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    .hamburger-line {
+      width: 24px;
+      height: 3px;
+      background-color: #00FF00;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      display: block;
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+      transform: rotate(45deg) translate(7px, 7px);
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+      opacity: 0;
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
     }
 
     .nav-menu {
@@ -212,10 +269,12 @@ import { User } from '../../models/auth.model';
       from {
         opacity: 0;
         transform: translateY(-10px);
+        max-height: 0;
       }
       to {
         opacity: 1;
         transform: translateY(0);
+        max-height: 500px;
       }
     }
 
@@ -266,25 +325,196 @@ import { User } from '../../models/auth.model';
       font-size: 1.2rem;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
+      .navbar {
+        padding: 0.875rem;
+        overflow-x: hidden;
+      }
+
       .navbar-container {
+        max-width: 100%;
+        overflow-x: hidden;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0;
+        position: relative;
+      }
+
+      .logo {
+        width: 100%;
+        margin-bottom: 0.75rem;
+      }
+
+      .mobile-menu-toggle {
+        display: flex;
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+      }
+
+      .user-menu {
+        position: absolute;
+        right: 3.5rem;
+        top: 0.5rem;
       }
 
       .nav-menu {
         width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0.75rem 0.5rem;
+      }
+
+      .navbar-container {
+        gap: 0;
+        max-width: 100%;
+      }
+
+      .logo {
+        width: auto;
+        margin-bottom: 0.75rem;
+        margin-right: auto;
+      }
+
+      .mobile-menu-toggle {
+        right: 0.4rem;
+        top: 0.4rem;
+      }
+
+      .user-menu {
+        right: 3rem;
+        top: 0.4rem;
+      }
+
+      .logo {
+        padding: 0.3rem 0.65rem;
+      }
+
+      .logo-text {
+        font-size: 1.3rem;
+      }
+
+      .logo-subtitle {
+        font-size: 0.7rem;
+      }
+
+      .mobile-menu-toggle {
+        width: 40px;
+        height: 40px;
+        padding: 0.4rem;
+      }
+
+      .hamburger-line {
+        width: 22px;
+        height: 2.5px;
+      }
+
+      .nav-menu {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+        padding-top: 0;
+        border-top: none;
+        margin-top: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+      }
+
+      .nav-menu.mobile-open {
+        display: flex;
+        max-height: 500px;
+        padding-top: 1rem;
+        margin-top: 0.75rem;
+        border-top: 2px solid rgba(0, 255, 0, 0.2);
+        opacity: 1;
+        animation: slideDown 0.3s ease;
       }
 
       .nav-item {
-        flex: 1;
-        min-width: 120px;
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        text-align: left;
+        border-radius: 8px;
+        justify-content: flex-start;
       }
 
       .user-name {
         display: none;
+      }
+
+      .user-info {
+        padding: 0.4rem 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 0.65rem 0.4rem;
+      }
+
+      .logo {
+        padding: 0.25rem 0.5rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .mobile-menu-toggle {
+        right: 0.3rem;
+        top: 0.3rem;
+      }
+
+      .user-menu {
+        right: 2.8rem;
+        top: 0.3rem;
+      }
+
+      .logo-text {
+        font-size: 1.15rem;
+        letter-spacing: 1px;
+      }
+
+      .logo-subtitle {
+        font-size: 0.65rem;
+      }
+
+      .mobile-menu-toggle {
+        width: 38px;
+        height: 38px;
+        padding: 0.35rem;
+      }
+
+      .hamburger-line {
+        width: 20px;
+        height: 2px;
+      }
+
+      .nav-menu {
+        gap: 0.4rem;
+      }
+
+      .nav-item {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .user-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+      }
+
+      .user-info {
+        padding: 0.35rem 0.7rem;
+      }
+
+      .user-dropdown {
+        min-width: 180px;
+        max-width: calc(100vw - 1rem);
       }
     }
   `]
@@ -293,6 +523,7 @@ export class NavbarComponent implements OnInit {
   activeMenu = 'comandas';
   currentUser: User | null = null;
   showUserMenu = false;
+  showMobileMenu = false;
 
   constructor(
     private authService: AuthService,
@@ -305,8 +536,26 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const navbar = target.closest('.navbar');
+    const toggleButton = target.closest('.mobile-menu-toggle');
+    
+    // Se clicou fora da navbar e o menu está aberto, fecha
+    if (!navbar && this.showMobileMenu) {
+      this.showMobileMenu = false;
+    }
+    
+    // Se clicou no botão toggle, não faz nada (o toggle já trata)
+    if (toggleButton) {
+      return;
+    }
+  }
+
   setActiveMenu(menu: string) {
     this.activeMenu = menu;
+    this.showMobileMenu = false; // Fecha o menu mobile ao clicar
     
     // Navegar para a página correspondente
     switch (menu) {
@@ -328,8 +577,16 @@ export class NavbarComponent implements OnInit {
     }
   }
 
+  toggleMobileMenu() {
+    this.showMobileMenu = !this.showMobileMenu;
+  }
+
   toggleUserMenu() {
     this.showUserMenu = !this.showUserMenu;
+    // Fecha o menu mobile quando abre o menu do usuário
+    if (this.showUserMenu) {
+      this.showMobileMenu = false;
+    }
   }
 
   getUserInitials(): string {

@@ -45,7 +45,9 @@ export class ComandaService {
   }
 
   fecharComanda(id: number, formasPagamento?: FecharComandaDto): Observable<Comanda | null> {
-    return this.http.post<Comanda>(`${this.apiUrl}/comandas/${id}/fechar`, formasPagamento ?? {});
+    return this.http.post(`${this.apiUrl}/comandas/${id}/fechar`, formasPagamento ?? {}, { responseType: 'text' }).pipe(
+      map(text => (text ? JSON.parse(text) as Comanda : null))
+    );
   }
 
   deleteComanda(id: number): Observable<boolean> {

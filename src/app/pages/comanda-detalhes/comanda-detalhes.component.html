@@ -218,20 +218,27 @@
 </div>
 
 <!-- Modal Fechar Comanda (Formas de Pagamento) -->
-<div class="modal-overlay" *ngIf="mostrarModalFechar" (click)="fecharModalFechar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+<div class="modal-overlay modal-fechar-overlay" *ngIf="mostrarModalFechar" (click)="fecharModalFechar()">
+  <div class="modal-content modal-fechar-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Fechar Comanda - Formas de Pagamento</h3>
-      <button class="btn-close" (click)="fecharModalFechar()">✕</button>
+      <h3>Fechar Comanda</h3>
+      <button class="btn-close" (click)="fecharModalFechar()" aria-label="Fechar">✕</button>
     </div>
 
-    <div class="modal-body">
-      <p class="modal-total-info">
-        Total da comanda: <strong>R$ {{ valorTotal.toFixed(2) }}</strong>
-      </p>
-      <p class="modal-instruction">Informe como foi realizado o pagamento. A soma deve ser igual ao total.</p>
+    <div class="modal-body modal-fechar-body">
+      <div class="fechar-total-box">
+        <span class="fechar-total-label">Total da comanda</span>
+        <span class="fechar-total-value">R$ {{ valorTotal.toFixed(2) }}</span>
+      </div>
+
+      <p class="modal-instruction">Informe as formas de pagamento. A soma deve ser igual ao valor a receber.</p>
 
       <div class="formas-pagamento-list">
+        <div class="formas-pagamento-header">
+          <span>Forma</span>
+          <span>Valor (R$)</span>
+          <span class="col-acoes"></span>
+        </div>
         <div *ngFor="let forma of formasPagamento; let i = index" class="forma-pagamento-row">
           <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
             <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
@@ -252,19 +259,33 @@
         </button>
       </div>
 
+      <div class="desconto-row">
+        <label for="desconto-fechar">Desconto</label>
+        <input 
+          type="number" 
+          id="desconto-fechar"
+          [(ngModel)]="descontoFechar" 
+          (ngModelChange)="aplicarDescontoNoTotal()"
+          min="0"
+          [max]="valorTotal"
+          step="0.01"
+          class="form-control desconto-input"
+          placeholder="0,00"
+        />
+        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorComDesconto.toFixed(2) }}</strong></span>
+      </div>
+
       <div class="resumo-formas" [class.erro]="!totalBateComFormas && somaFormasPagamento > 0">
-        <span>Soma das formas:</span>
-        <span>R$ {{ somaFormasPagamento.toFixed(2) }}</span>
+        <span>Soma</span>
+        <span class="resumo-valor">R$ {{ somaFormasPagamento.toFixed(2) }}</span>
         <span *ngIf="totalBateComFormas" class="ok-badge">✓ Confere</span>
-        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Soma deve ser R$ {{ valorTotal.toFixed(2) }}</span>
+        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Deve ser R$ {{ valorComDesconto.toFixed(2) }}</span>
       </div>
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="fecharModalFechar()">
-        Cancelar
-      </button>
-      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="!totalBateComFormas || somaFormasPagamento <= 0">
+      <button class="btn btn-secondary" (click)="fecharModalFechar()">Cancelar</button>
+      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="!totalBateComFormas || somaFormasPagamento <= 0 || valorComDesconto < 0">
         Fechar Comanda
       </button>
     </div>

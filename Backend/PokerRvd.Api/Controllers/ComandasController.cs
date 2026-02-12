@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Services;
@@ -129,12 +130,22 @@ public class ComandasController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(new { message = ex.Message }),
+                ContentType = "application/json",
+                StatusCode = 400
+            };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao fechar comanda {ComandaId}", id);
-            return StatusCode(500, "Erro interno do servidor");
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(new { message = "Erro interno do servidor" }),
+                ContentType = "application/json",
+                StatusCode = 500
+            };
         }
     }
 

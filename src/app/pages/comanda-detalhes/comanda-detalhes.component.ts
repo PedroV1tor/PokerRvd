@@ -39,6 +39,7 @@ export class ComandaDetalhesComponent implements OnInit {
   mostrarModalFechar = false;
   formasPagamento: FormaPagamentoValor[] = [];
   formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
+  descontoFechar = 0; // Desconto em R$ ao fechar a comanda
 
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
@@ -243,7 +244,16 @@ export class ComandaDetalhesComponent implements OnInit {
     return this.comanda.valorFichas + this.comanda.valorBebidas;
   }
 
+  get valorComDesconto(): number {
+    const d = this.descontoFechar || 0;
+    const total = this.valorTotal;
+    if (d <= 0) return total;
+    if (d >= total) return 0;
+    return total - d;
+  }
+
   abrirModalFechar() {
+    this.descontoFechar = 0;
     // Pré-preenche com o total da comanda para o usuário confirmar ou alterar (ex.: dividir em várias formas)
     this.formasPagamento = [{ formaPagamento: 'Dinheiro', valor: this.valorTotal }];
     this.mostrarModalFechar = true;
@@ -252,6 +262,15 @@ export class ComandaDetalhesComponent implements OnInit {
   fecharModalFechar() {
     this.mostrarModalFechar = false;
     this.formasPagamento = [];
+    this.descontoFechar = 0;
+  }
+
+  aplicarDescontoNoTotal() {
+    // Atualiza o valor único das formas para refletir o total com desconto
+    const v = this.valorComDesconto;
+    if (this.formasPagamento.length === 1) {
+      this.formasPagamento[0].valor = v;
+    }
   }
 
   adicionarFormaPagamento() {
@@ -269,7 +288,7 @@ export class ComandaDetalhesComponent implements OnInit {
   }
 
   get totalBateComFormas(): boolean {
-    return Math.abs(this.somaFormasPagamento - this.valorTotal) < 0.01;
+    return Math.abs(this.somaFormasPagamento - this.valorComDesconto) < 0.01;
   }
 
   fecharComanda() {
@@ -281,11 +300,12 @@ export class ComandaDetalhesComponent implements OnInit {
       return;
     }
     if (!this.totalBateComFormas) {
-      alert(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao total da comanda (R$ ${this.valorTotal.toFixed(2)}).`);
+      alert(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorComDesconto.toFixed(2)}).`);
       return;
     }
 
-    this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas }).subscribe({
+    const desconto = Number(this.descontoFechar) || 0;
+    this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto }).subscribe({
       next: () => {
         alert('Comanda fechada com sucesso!');
         this.fecharModalFechar();
@@ -293,7 +313,18 @@ export class ComandaDetalhesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erro ao fechar comanda:', error);
-        alert(error.error?.message || error.error || 'Erro ao fechar comanda. Tente novamente.');
+        let msg = 'Erro ao fechar comanda. Tente novamente.';
+        if (typeof error.error === 'string') {
+          try {
+            const body = JSON.parse(error.error);
+            msg = body.message || error.error;
+          } catch {
+            msg = error.error;
+          }
+        } else {
+          msg = error.error?.message || error.message || msg;
+        }
+        alert(msg);
       }
     });
   }

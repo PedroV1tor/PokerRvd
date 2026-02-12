@@ -254,16 +254,21 @@ public class ComandaService : IComandaService
         comanda.DataFechamento = DateTime.UtcNow;
 
         var valorTotal = comanda.ValorTotal;
-        if (valorTotal > 0)
+        var desconto = fecharComandaDto?.Desconto ?? 0m;
+        if (desconto < 0) desconto = 0;
+        if (desconto > valorTotal) desconto = valorTotal;
+        var valorComDesconto = valorTotal - desconto;
+
+        if (valorComDesconto > 0)
         {
             // Se foram informadas formas de pagamento, validar soma e criar uma movimentação por forma
             if (fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
             {
                 var somaFormas = fecharComandaDto.FormasPagamento.Sum(f => f.Valor);
-                if (Math.Abs(somaFormas - valorTotal) > 0.01m)
+                if (Math.Abs(somaFormas - valorComDesconto) > 0.01m)
                 {
                     throw new InvalidOperationException(
-                        $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao total da comanda (R$ {valorTotal:N2}).");
+                        $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorComDesconto:N2}).");
                 }
 
                 foreach (var forma in fecharComandaDto.FormasPagamento.Where(f => f.Valor > 0))
@@ -287,7 +292,7 @@ public class ComandaService : IComandaService
             }
             else
             {
-                // Comportamento anterior: uma única movimentação sem forma de pagamento
+                // Comportamento anterior: uma única movimentação sem forma de pagamento (valor já com desconto)
                 var movimentacao = new MovimentacaoCaixa
                 {
                     CaixaId = caixaAberto.Id,
@@ -295,14 +300,14 @@ public class ComandaService : IComandaService
                     Tipo = "ENTRADA",
                     Categoria = "Comanda",
                     Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
-                    Valor = valorTotal,
+                    Valor = valorComDesconto,
                     ComandaId = comanda.Id,
                     ComandaNome = comanda.JogadorNome,
                     FormaPagamento = null,
                     UsuarioNome = "Sistema"
                 };
                 _context.MovimentacoesCaixa.Add(movimentacao);
-                caixaAberto.TotalEntradas += valorTotal;
+                caixaAberto.TotalEntradas += valorComDesconto;
             }
         }
 

@@ -58,9 +58,11 @@ export interface FormaPagamentoValor {
   valor: number;
 }
 
-/** DTO para fechar comanda informando as formas de pagamento */
+/** DTO para fechar comanda informando as formas de pagamento e opcionalmente desconto */
 export interface FecharComandaDto {
   formasPagamento: FormaPagamentoValor[];
+  /** Desconto em reais (R$). O valor a receber será Total - Desconto. */
+  desconto?: number;
 }
 
 export interface DashboardStats {

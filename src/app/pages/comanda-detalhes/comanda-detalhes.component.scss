@@ -2,6 +2,8 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   color: #fff;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Header */
@@ -102,6 +104,9 @@
 .container {
   max-width: 1400px;
   margin: 0 auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .grid-layout {
@@ -311,6 +316,8 @@
   border: 2px solid #333;
   border-radius: 16px;
   padding: 2rem;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .items-table {
@@ -514,52 +521,127 @@
   font-size: 1.1rem;
 }
 
-.modal-instruction {
-  color: #999;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+/* ========== Modal Fechar Comanda - layout melhorado ========== */
+.modal-fechar-content {
+  max-width: 480px;
+}
+
+.modal-fechar-body {
+  padding: 1.5rem 2rem;
+}
+
+.fechar-total-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1rem 1.25rem;
+  background: rgba(0, 255, 0, 0.06);
+  border: 1px solid rgba(0, 255, 0, 0.25);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+
+  .fechar-total-label {
+    color: #999;
+    font-size: 0.9rem;
+  }
+
+  .fechar-total-value {
+    color: #00FF00;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+}
+
+.modal-fechar-body .modal-instruction {
+  color: #aaa;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .formas-pagamento-list {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+}
+
+.formas-pagamento-header {
+  display: grid;
+  grid-template-columns: 1fr 110px 44px;
+  gap: 0.75rem;
+  padding: 0 0 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+
+  .col-acoes {
+    width: 44px;
+  }
 }
 
 .forma-pagamento-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 110px 44px;
   gap: 0.75rem;
   align-items: center;
   margin-bottom: 0.75rem;
 
+  .forma-select,
+  .forma-valor {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #00FF00;
+      box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.15);
+    }
+  }
+
   .forma-select {
-    flex: 1;
-    min-width: 140px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300FF00' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
   }
 
   .forma-valor {
-    flex: 0 0 120px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
   .btn-remover-forma {
     background: transparent;
-    border: 2px solid #666;
-    color: #fff;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    border: 1px solid #444;
+    color: #888;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      border-color: #ff3333;
-      color: #ff3333;
+      border-color: #ff4444;
+      color: #ff4444;
+      background: rgba(255, 68, 68, 0.08);
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
   }
@@ -567,16 +649,62 @@
 
 .btn-add-forma {
   background: transparent;
-  border: 2px dashed #00FF00;
+  border: 1px dashed #444;
   color: #00FF00;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin-top: 0.5rem;
+  width: 100%;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(0, 255, 0, 0.1);
+    background: rgba(0, 255, 0, 0.06);
+    border-color: rgba(0, 255, 0, 0.4);
+  }
+}
+
+/* Desconto sutil - abaixo das formas */
+.desconto-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #222;
+
+  label {
+    color: #666;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .desconto-input {
+    width: 90px;
+    padding: 0.5rem 0.75rem;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: right;
+
+    &:focus {
+      outline: none;
+      border-color: #333;
+    }
+  }
+
+  .desconto-valor-receber {
+    margin-left: auto;
+    color: #666;
+    font-size: 0.85rem;
+
+    strong {
+      color: #00ff88;
+      font-weight: 600;
+    }
   }
 }
 
@@ -584,11 +712,16 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   background: #111;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-top: 1rem;
   flex-wrap: wrap;
+
+  .resumo-valor {
+    font-weight: 600;
+    color: #fff;
+  }
 
   &.erro {
     border: 1px solid #ff3333;
@@ -602,6 +735,54 @@
   .erro-badge {
     color: #ff6666;
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-fechar-body {
+    padding: 1.25rem 1rem;
+  }
+
+  .fechar-total-box {
+    padding: 0.875rem 1rem;
+
+    .fechar-total-value {
+      font-size: 1.35rem;
+    }
+  }
+
+  .formas-pagamento-header,
+  .forma-pagamento-row {
+    grid-template-columns: 1fr 95px 40px;
+    gap: 0.5rem;
+  }
+
+  .forma-pagamento-row {
+    .forma-select,
+    .forma-valor {
+      padding: 0.65rem 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-remover-forma {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .desconto-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .desconto-input {
+      width: 80px;
+    }
+
+    .desconto-valor-receber {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 0.25rem;
+    }
   }
 }
 

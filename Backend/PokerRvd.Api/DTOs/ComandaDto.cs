@@ -1,5 +1,6 @@
-using PokerRvd.Api.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using PokerRvd.Api.Models;
 
 namespace PokerRvd.Api.DTOs;
 
@@ -94,14 +95,20 @@ public class DashboardStatsDto
 /// </summary>
 public class FormaPagamentoValorDto
 {
+    [JsonPropertyName("formaPagamento")]
     public string FormaPagamento { get; set; } = string.Empty; // Dinheiro, PIX, Cartão Débito, Cartão Crédito, etc.
+    [JsonPropertyName("valor")]
     public decimal Valor { get; set; }
 }
 
 /// <summary>
-/// DTO para fechar comanda informando as formas de pagamento
+/// DTO para fechar comanda informando as formas de pagamento e opcionalmente desconto
 /// </summary>
 public class FecharComandaDto
 {
+    [JsonPropertyName("formasPagamento")]
     public List<FormaPagamentoValorDto> FormasPagamento { get; set; } = new();
+    /// <summary>Desconto em reais (R$). O valor a receber será Total - Desconto.</summary>
+    [JsonPropertyName("desconto")]
+    public decimal Desconto { get; set; }
 }
