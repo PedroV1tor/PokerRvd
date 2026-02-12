@@ -37,6 +37,12 @@ import { User } from '../../models/auth.model';
           </button>
           <button 
             class="nav-item"
+            [class.active]="activeMenu === 'funcionarios'"
+            (click)="setActiveMenu('funcionarios')">
+            Funcionários
+          </button>
+          <button 
+            class="nav-item"
             [class.active]="activeMenu === 'caixas'"
             (click)="setActiveMenu('caixas')">
             Caixas
@@ -307,6 +313,9 @@ export class NavbarComponent implements OnInit {
         break;
       case 'produtos':
         this.router.navigate(['/produtos']);
+        break;
+      case 'funcionarios':
+        this.router.navigate(['/funcionarios']);
         break;
       case 'caixas':
         this.router.navigate(['/caixas']);

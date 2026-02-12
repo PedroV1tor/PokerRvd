@@ -1,0 +1,330 @@
+<div class="app-container">
+  <app-navbar></app-navbar>
+
+  <main class="main-content">
+    <div class="container">
+      <!-- Header da Página -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <span class="title-icon">👥</span>
+            Gestão de Funcionários
+          </h1>
+          <p class="page-subtitle">Cadastre e gerencie todos os funcionários do sistema</p>
+        </div>
+        <button class="btn-novo-header" (click)="abrirModal()">
+          <span class="btn-icon">+</span>
+          Novo Funcionário
+        </button>
+      </div>
+
+      <!-- Cards de Resumo -->
+      <div class="stats-cards">
+        <div class="stat-card card-total">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <span class="stat-label">Total de Funcionários</span>
+            <span class="stat-value">{{ funcionarios.length }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card card-ativos">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-label">Funcionários Ativos</span>
+            <span class="stat-value">{{ getFuncionariosAtivos() }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card card-inativos">
+          <div class="stat-icon">⭕</div>
+          <div class="stat-info">
+            <span class="stat-label">Funcionários Inativos</span>
+            <span class="stat-value">{{ getFuncionariosInativos() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Busca e Filtros -->
+      <div class="search-filter-section">
+        <div class="search-container">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange()"
+              placeholder="Buscar por nome, CPF ou email..."
+              class="search-input"
+            />
+          </div>
+        </div>
+
+        <div class="filter-container">
+          <span class="filter-label">Filtrar por status:</span>
+          <div class="filter-buttons">
+            <button
+              class="filter-btn"
+              [class.active]="filtroStatus === 'TODOS'"
+              (click)="setFiltroStatus('TODOS')">
+              <span class="filter-icon">📋</span>
+              Todos
+            </button>
+            <button
+              class="filter-btn"
+              [class.active]="filtroStatus === 'ATIVO'"
+              (click)="setFiltroStatus('ATIVO')">
+              <span class="filter-icon">✅</span>
+              Ativos
+            </button>
+            <button
+              class="filter-btn"
+              [class.active]="filtroStatus === 'INATIVO'"
+              (click)="setFiltroStatus('INATIVO')">
+              <span class="filter-icon">⭕</span>
+              Inativos
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de Funcionários -->
+      <div class="table-container" *ngIf="!isLoading && filteredFuncionarios.length > 0">
+        <div class="table-header">
+          <h2 class="section-title">
+            Funcionários ({{ filteredFuncionarios.length }})
+          </h2>
+        </div>
+
+        <table class="funcionarios-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Email</th>
+              <th>Cargo</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let funcionario of filteredFuncionarios" [class.inactive-row]="!funcionario.ativo">
+              <td class="nome-cell">
+                <div class="avatar">{{ funcionario.nome.charAt(0).toUpperCase() }}</div>
+                <span>{{ funcionario.nome }}</span>
+              </td>
+              <td>{{ formatarCpf(funcionario.cpf) }}</td>
+              <td>{{ funcionario.email }}</td>
+              <td>
+                <span class="role-badge" [class]="'role-' + funcionario.role.toLowerCase()">
+                  {{ getRoleLabel(funcionario.role) }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [class.ativo]="funcionario.ativo" [class.inativo]="!funcionario.ativo">
+                  {{ funcionario.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+              </td>
+              <td class="acoes">
+                <button class="btn-editar" (click)="abrirModalEdicao(funcionario)" title="Editar">
+                  ✏️
+                </button>
+                <button class="btn-deletar" (click)="deletarFuncionario(funcionario.id)" title="Desativar">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Carregando funcionários...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && filteredFuncionarios.length === 0">
+        <div class="empty-icon">👥</div>
+        <h3>Nenhum funcionário encontrado</h3>
+        <p>Clique em "Novo Funcionário" para começar</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Novo Funcionário -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Novo Funcionário</h2>
+        <button class="btn-close" (click)="fecharModal()">✕</button>
+      </div>
+
+      <form class="modal-form" (ngSubmit)="criarFuncionario()">
+        <div class="form-group">
+          <label for="nome">Nome Completo *</label>
+          <input
+            type="text"
+            id="nome"
+            [(ngModel)]="novoFuncionario.nome"
+            name="nome"
+            placeholder="Ex: João da Silva"
+            required
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cpf">CPF *</label>
+            <input
+              type="text"
+              id="cpf"
+              [(ngModel)]="novoFuncionario.cpf"
+              name="cpf"
+              placeholder="000.000.000-00"
+              maxlength="14"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="novoFuncionario.email"
+              name="email"
+              placeholder="exemplo@email.com"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senha">Senha *</label>
+            <input
+              type="password"
+              id="senha"
+              [(ngModel)]="novoFuncionario.senha"
+              name="senha"
+              placeholder="Mínimo 6 caracteres"
+              minlength="6"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="role">Cargo *</label>
+            <select
+              id="role"
+              [(ngModel)]="novoFuncionario.role"
+              name="role"
+              required
+            >
+              <option *ngFor="let role of roles" [value]="role.value">
+                {{ role.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="fecharModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="!isFormValid()">
+            Cadastrar Funcionário
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar Funcionário -->
+  <div class="modal-overlay" *ngIf="showModalEdicao" (click)="fecharModalEdicao()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar Funcionário</h2>
+        <button class="btn-close" (click)="fecharModalEdicao()">✕</button>
+      </div>
+
+      <form class="modal-form" (ngSubmit)="salvarEdicao()">
+        <div class="form-group">
+          <label for="editar-nome">Nome Completo *</label>
+          <input
+            type="text"
+            id="editar-nome"
+            [(ngModel)]="funcionarioEditando.nome"
+            name="editar-nome"
+            placeholder="Ex: João da Silva"
+            required
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editar-cpf">CPF *</label>
+            <input
+              type="text"
+              id="editar-cpf"
+              [(ngModel)]="funcionarioEditando.cpf"
+              name="editar-cpf"
+              placeholder="000.000.000-00"
+              maxlength="14"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="editar-email">Email *</label>
+            <input
+              type="email"
+              id="editar-email"
+              [(ngModel)]="funcionarioEditando.email"
+              name="editar-email"
+              placeholder="exemplo@email.com"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editar-role">Cargo *</label>
+          <select
+            id="editar-role"
+            [(ngModel)]="funcionarioEditando.role"
+            name="editar-role"
+            required
+          >
+            <option *ngFor="let role of roles" [value]="role.value">
+              {{ role.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status Checkbox -->
+        <div class="form-group-checkbox">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="funcionarioEditando.ativo"
+              name="editar-ativo"
+            />
+            <span>Funcionário Ativo</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="fecharModalEdicao()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="!isFormEdicaoValid()">
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -109,6 +109,7 @@ public class AuthService : IAuthService
         var usuario = new Usuario
         {
             Nome = request.Nome.Trim(),
+            Cpf = request.Cpf.Trim(),
             Email = request.Email.ToLower().Trim(),
             SenhaHash = HashPassword(request.Senha),
             Role = UserRole.ATENDENTE, // Padrão
@@ -183,6 +184,7 @@ public class AuthService : IAuthService
         {
             Id = usuario.Id,
             Nome = usuario.Nome,
+            Cpf = usuario.Cpf,
             Email = usuario.Email,
             Role = usuario.Role.ToString(),
             Ativo = usuario.Ativo,

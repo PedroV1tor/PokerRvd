@@ -36,6 +36,7 @@ builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICaixaService, CaixaService>();
+builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 
 var app = builder.Build();
 
