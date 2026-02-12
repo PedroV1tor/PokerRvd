@@ -12,6 +12,13 @@ public class FuncionarioDto
     public bool Ativo { get; set; }
     public DateTime DataCadastro { get; set; }
     public DateTime? UltimoAcesso { get; set; }
+    
+    // Permissões
+    public bool PermissaoComandas { get; set; }
+    public bool PermissaoTorneios { get; set; }
+    public bool PermissaoProdutos { get; set; }
+    public bool PermissaoFuncionarios { get; set; }
+    public bool PermissaoCaixas { get; set; }
 }
 
 public class CreateFuncionarioDto
@@ -21,6 +28,13 @@ public class CreateFuncionarioDto
     public string Email { get; set; } = string.Empty;
     public string Senha { get; set; } = string.Empty;
     public string Role { get; set; } = "ATENDENTE";
+    
+    // Permissões
+    public bool PermissaoComandas { get; set; } = false;
+    public bool PermissaoTorneios { get; set; } = false;
+    public bool PermissaoProdutos { get; set; } = false;
+    public bool PermissaoFuncionarios { get; set; } = false;
+    public bool PermissaoCaixas { get; set; } = false;
 }
 
 public class UpdateFuncionarioDto
@@ -30,4 +44,11 @@ public class UpdateFuncionarioDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public bool Ativo { get; set; }
+    
+    // Permissões
+    public bool PermissaoComandas { get; set; }
+    public bool PermissaoTorneios { get; set; }
+    public bool PermissaoProdutos { get; set; }
+    public bool PermissaoFuncionarios { get; set; }
+    public bool PermissaoCaixas { get; set; }
 }

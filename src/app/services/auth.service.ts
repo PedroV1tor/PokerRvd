@@ -115,6 +115,39 @@ export class AuthService {
     return user?.role === 'GERENTE' || user?.role === 'ADMIN';
   }
 
+  // ==================== PERMISSÕES ====================
+  
+  hasPermissionComandas(): boolean {
+    const user = this.getCurrentUser();
+    // ADMIN tem acesso a tudo
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoComandas || false;
+  }
+
+  hasPermissionTorneios(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoTorneios || false;
+  }
+
+  hasPermissionProdutos(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoProdutos || false;
+  }
+
+  hasPermissionFuncionarios(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoFuncionarios || false;
+  }
+
+  hasPermissionCaixas(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoCaixas || false;
+  }
+
   private getUserFromStorage(): User | null {
     const userStr = localStorage.getItem(this.USER_KEY);
     if (userStr) {

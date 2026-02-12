@@ -7,6 +7,11 @@ export interface Funcionario {
   ativo: boolean;
   dataCadastro: string;
   ultimoAcesso?: string;
+  permissaoComandas: boolean;
+  permissaoTorneios: boolean;
+  permissaoProdutos: boolean;
+  permissaoFuncionarios: boolean;
+  permissaoCaixas: boolean;
 }
 
 export interface CreateFuncionarioDto {
@@ -15,6 +20,11 @@ export interface CreateFuncionarioDto {
   email: string;
   senha: string;
   role: string;
+  permissaoComandas: boolean;
+  permissaoTorneios: boolean;
+  permissaoProdutos: boolean;
+  permissaoFuncionarios: boolean;
+  permissaoCaixas: boolean;
 }
 
 export interface UpdateFuncionarioDto {
@@ -23,6 +33,11 @@ export interface UpdateFuncionarioDto {
   email: string;
   role: string;
   ativo: boolean;
+  permissaoComandas: boolean;
+  permissaoTorneios: boolean;
+  permissaoProdutos: boolean;
+  permissaoFuncionarios: boolean;
+  permissaoCaixas: boolean;
 }
 
 export enum UserRole {

@@ -230,6 +230,74 @@
           </div>
         </div>
 
+        <!-- Permissões -->
+        <div class="permissoes-section">
+          <h3 class="permissoes-title">Permissões de Acesso</h3>
+          <p class="permissoes-subtitle">Selecione os módulos que este funcionário terá acesso</p>
+          
+          <div class="permissoes-grid">
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="novoFuncionario.permissaoComandas"
+                name="permissaoComandas"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">🎮</span>
+                <span class="permissao-label">Comandas</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="novoFuncionario.permissaoTorneios"
+                name="permissaoTorneios"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">🏆</span>
+                <span class="permissao-label">Torneios</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="novoFuncionario.permissaoProdutos"
+                name="permissaoProdutos"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">📦</span>
+                <span class="permissao-label">Produtos</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="novoFuncionario.permissaoFuncionarios"
+                name="permissaoFuncionarios"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">👥</span>
+                <span class="permissao-label">Funcionários</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="novoFuncionario.permissaoCaixas"
+                name="permissaoCaixas"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">💰</span>
+                <span class="permissao-label">Caixas</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-cancel" (click)="fecharModal()">
             Cancelar
@@ -302,6 +370,74 @@
               {{ role.label }}
             </option>
           </select>
+        </div>
+
+        <!-- Permissões -->
+        <div class="permissoes-section">
+          <h3 class="permissoes-title">Permissões de Acesso</h3>
+          <p class="permissoes-subtitle">Selecione os módulos que este funcionário terá acesso</p>
+          
+          <div class="permissoes-grid">
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="funcionarioEditando.permissaoComandas"
+                name="editar-permissaoComandas"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">🎮</span>
+                <span class="permissao-label">Comandas</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="funcionarioEditando.permissaoTorneios"
+                name="editar-permissaoTorneios"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">🏆</span>
+                <span class="permissao-label">Torneios</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="funcionarioEditando.permissaoProdutos"
+                name="editar-permissaoProdutos"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">📦</span>
+                <span class="permissao-label">Produtos</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="funcionarioEditando.permissaoFuncionarios"
+                name="editar-permissaoFuncionarios"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">👥</span>
+                <span class="permissao-label">Funcionários</span>
+              </div>
+            </label>
+
+            <label class="permissao-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="funcionarioEditando.permissaoCaixas"
+                name="editar-permissaoCaixas"
+              />
+              <div class="permissao-content">
+                <span class="permissao-icon">💰</span>
+                <span class="permissao-label">Caixas</span>
+              </div>
+            </label>
+          </div>
         </div>
 
         <!-- Status Checkbox -->

@@ -188,7 +188,12 @@ public class AuthService : IAuthService
             Email = usuario.Email,
             Role = usuario.Role.ToString(),
             Ativo = usuario.Ativo,
-            DataCadastro = usuario.DataCadastro
+            DataCadastro = usuario.DataCadastro,
+            PermissaoComandas = usuario.PermissaoComandas,
+            PermissaoTorneios = usuario.PermissaoTorneios,
+            PermissaoProdutos = usuario.PermissaoProdutos,
+            PermissaoFuncionarios = usuario.PermissaoFuncionarios,
+            PermissaoCaixas = usuario.PermissaoCaixas
         };
     }
 }

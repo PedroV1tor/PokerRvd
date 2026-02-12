@@ -18,30 +18,35 @@ import { User } from '../../models/auth.model';
         
         <div class="nav-menu">
           <button 
+            *ngIf="hasPermissionComandas()"
             class="nav-item" 
             [class.active]="activeMenu === 'comandas'"
             (click)="setActiveMenu('comandas')">
             Comandas
           </button>
           <button 
+            *ngIf="hasPermissionTorneios()"
             class="nav-item"
             [class.active]="activeMenu === 'torneios'"
             (click)="setActiveMenu('torneios')">
             Torneios
           </button>
           <button 
+            *ngIf="hasPermissionProdutos()"
             class="nav-item"
             [class.active]="activeMenu === 'produtos'"
             (click)="setActiveMenu('produtos')">
             Produtos
           </button>
           <button 
+            *ngIf="hasPermissionFuncionarios()"
             class="nav-item"
             [class.active]="activeMenu === 'funcionarios'"
             (click)="setActiveMenu('funcionarios')">
             Funcionários
           </button>
           <button 
+            *ngIf="hasPermissionCaixas()"
             class="nav-item"
             [class.active]="activeMenu === 'caixas'"
             (click)="setActiveMenu('caixas')">
@@ -342,5 +347,27 @@ export class NavbarComponent implements OnInit {
     if (confirm('Deseja realmente sair?')) {
       this.authService.logout(); // Já redireciona para /login
     }
+  }
+
+  // ==================== PERMISSÕES ====================
+  
+  hasPermissionComandas(): boolean {
+    return this.authService.hasPermissionComandas();
+  }
+
+  hasPermissionTorneios(): boolean {
+    return this.authService.hasPermissionTorneios();
+  }
+
+  hasPermissionProdutos(): boolean {
+    return this.authService.hasPermissionProdutos();
+  }
+
+  hasPermissionFuncionarios(): boolean {
+    return this.authService.hasPermissionFuncionarios();
+  }
+
+  hasPermissionCaixas(): boolean {
+    return this.authService.hasPermissionCaixas();
   }
 }

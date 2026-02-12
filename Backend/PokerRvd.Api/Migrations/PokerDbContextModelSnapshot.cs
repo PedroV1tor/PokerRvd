@@ -133,7 +133,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 1,
-                            DataAbertura = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7622),
+                            DataAbertura = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1161),
                             JogadorNome = "João Silva",
                             Mesa = "Mesa 5",
                             Status = 0,
@@ -144,7 +144,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 2,
-                            DataAbertura = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7625),
+                            DataAbertura = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1164),
                             JogadorNome = "Maria Santos",
                             Mesa = "Mesa 2",
                             Status = 0,
@@ -155,7 +155,7 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 3,
-                            DataAbertura = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7627),
+                            DataAbertura = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1166),
                             JogadorNome = "Pedro Costa",
                             Mesa = "Bar",
                             Status = 0,
@@ -166,8 +166,8 @@ namespace PokerRvd.Api.Migrations
                         new
                         {
                             Id = 4,
-                            DataAbertura = new DateTime(2026, 2, 12, 14, 25, 12, 475, DateTimeKind.Utc).AddTicks(7629),
-                            DataFechamento = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7642),
+                            DataAbertura = new DateTime(2026, 2, 12, 15, 22, 3, 936, DateTimeKind.Utc).AddTicks(1168),
+                            DataFechamento = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1181),
                             JogadorNome = "Ana Oliveira",
                             Mesa = "Mesa 3",
                             Status = 1,
@@ -212,7 +212,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             BuyIn = 100m,
-                            CreatedAt = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(4588),
+                            CreatedAt = new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(8033),
                             MaxPlayers = 9,
                             Name = "Mesa Principal",
                             Status = 0
@@ -348,7 +348,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             Balance = 1000m,
-                            CreatedAt = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(4482),
+                            CreatedAt = new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(7934),
                             Email = "jogador1@poker.com",
                             IsActive = true,
                             Name = "Jogador 1"
@@ -357,7 +357,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 2,
                             Balance = 1500m,
-                            CreatedAt = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(4485),
+                            CreatedAt = new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(7936),
                             Email = "jogador2@poker.com",
                             IsActive = true,
                             Name = "Jogador 2"
@@ -408,7 +408,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 1,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7589),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1127),
                             Nome = "Cerveja",
                             QuantidadeEstoque = 100,
                             UnidadeVenda = "Unidade",
@@ -419,7 +419,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 2,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7591),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1130),
                             Nome = "Refrigerante",
                             QuantidadeEstoque = 80,
                             UnidadeVenda = "Unidade",
@@ -430,7 +430,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 3,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7594),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1132),
                             Nome = "Água",
                             QuantidadeEstoque = 150,
                             UnidadeVenda = "Unidade",
@@ -441,7 +441,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 4,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7596),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1134),
                             Nome = "Porção de Batata",
                             QuantidadeEstoque = 30,
                             UnidadeVenda = "Porção",
@@ -452,7 +452,7 @@ namespace PokerRvd.Api.Migrations
                         {
                             Id = 5,
                             Ativo = true,
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7598),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1136),
                             Nome = "Sanduíche",
                             QuantidadeEstoque = 40,
                             UnidadeVenda = "Unidade",
@@ -489,6 +489,21 @@ namespace PokerRvd.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("PermissaoCaixas")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoComandas")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoFuncionarios")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoProdutos")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoTorneios")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
@@ -512,9 +527,14 @@ namespace PokerRvd.Api.Migrations
                             Id = 1,
                             Ativo = true,
                             Cpf = "",
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7665),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1231),
                             Email = "admin@pokerrvd.com",
                             Nome = "Administrador",
+                            PermissaoCaixas = false,
+                            PermissaoComandas = false,
+                            PermissaoFuncionarios = false,
+                            PermissaoProdutos = false,
+                            PermissaoTorneios = false,
                             Role = 0,
                             SenhaHash = "nxVhJ8mHRVPQOqKFAc/IH8WzFDxBLy4aTgHNZrg3lRo="
                         },
@@ -523,9 +543,14 @@ namespace PokerRvd.Api.Migrations
                             Id = 2,
                             Ativo = true,
                             Cpf = "",
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7667),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1234),
                             Email = "gerente@pokerrvd.com",
                             Nome = "Gerente Teste",
+                            PermissaoCaixas = false,
+                            PermissaoComandas = false,
+                            PermissaoFuncionarios = false,
+                            PermissaoProdutos = false,
+                            PermissaoTorneios = false,
                             Role = 1,
                             SenhaHash = "g76l+wqJm3oqBPLjjyLqHGVX4SN1aMB5w+QV7gJ8FwM="
                         },
@@ -534,9 +559,14 @@ namespace PokerRvd.Api.Migrations
                             Id = 3,
                             Ativo = true,
                             Cpf = "",
-                            DataCadastro = new DateTime(2026, 2, 12, 16, 25, 12, 475, DateTimeKind.Utc).AddTicks(7669),
+                            DataCadastro = new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1236),
                             Email = "atendente@pokerrvd.com",
                             Nome = "Atendente Teste",
+                            PermissaoCaixas = false,
+                            PermissaoComandas = false,
+                            PermissaoFuncionarios = false,
+                            PermissaoProdutos = false,
+                            PermissaoTorneios = false,
                             Role = 2,
                             SenhaHash = "g76l+wqJm3oqBPLjjyLqHGVX4SN1aMB5w+QV7gJ8FwM="
                         });

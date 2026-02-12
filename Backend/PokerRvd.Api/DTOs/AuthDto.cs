@@ -26,6 +26,13 @@ public class UserDto
     public string Role { get; set; } = string.Empty;
     public bool Ativo { get; set; }
     public DateTime DataCadastro { get; set; }
+    
+    // Permissões
+    public bool PermissaoComandas { get; set; }
+    public bool PermissaoTorneios { get; set; }
+    public bool PermissaoProdutos { get; set; }
+    public bool PermissaoFuncionarios { get; set; }
+    public bool PermissaoCaixas { get; set; }
 }
 
 public class AuthResponse

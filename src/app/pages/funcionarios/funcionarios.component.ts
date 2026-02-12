@@ -26,7 +26,12 @@ export class FuncionariosComponent implements OnInit {
     cpf: '',
     email: '',
     senha: '',
-    role: 'ATENDENTE'
+    role: 'ATENDENTE',
+    permissaoComandas: false,
+    permissaoTorneios: false,
+    permissaoProdutos: false,
+    permissaoFuncionarios: false,
+    permissaoCaixas: false
   };
 
   // Modal Editar Funcionário
@@ -37,7 +42,12 @@ export class FuncionariosComponent implements OnInit {
     cpf: '',
     email: '',
     role: 'ATENDENTE',
-    ativo: true
+    ativo: true,
+    permissaoComandas: false,
+    permissaoTorneios: false,
+    permissaoProdutos: false,
+    permissaoFuncionarios: false,
+    permissaoCaixas: false
   };
 
   roles = [
@@ -115,7 +125,12 @@ export class FuncionariosComponent implements OnInit {
       cpf: '',
       email: '',
       senha: '',
-      role: 'ATENDENTE'
+      role: 'ATENDENTE',
+      permissaoComandas: false,
+      permissaoTorneios: false,
+      permissaoProdutos: false,
+      permissaoFuncionarios: false,
+      permissaoCaixas: false
     };
   }
 
@@ -142,7 +157,12 @@ export class FuncionariosComponent implements OnInit {
       cpf: funcionario.cpf,
       email: funcionario.email,
       role: funcionario.role,
-      ativo: funcionario.ativo
+      ativo: funcionario.ativo,
+      permissaoComandas: funcionario.permissaoComandas,
+      permissaoTorneios: funcionario.permissaoTorneios,
+      permissaoProdutos: funcionario.permissaoProdutos,
+      permissaoFuncionarios: funcionario.permissaoFuncionarios,
+      permissaoCaixas: funcionario.permissaoCaixas
     };
     this.showModalEdicao = true;
   }
@@ -162,7 +182,12 @@ export class FuncionariosComponent implements OnInit {
       cpf: this.funcionarioEditando.cpf,
       email: this.funcionarioEditando.email,
       role: this.funcionarioEditando.role,
-      ativo: this.funcionarioEditando.ativo
+      ativo: this.funcionarioEditando.ativo,
+      permissaoComandas: this.funcionarioEditando.permissaoComandas,
+      permissaoTorneios: this.funcionarioEditando.permissaoTorneios,
+      permissaoProdutos: this.funcionarioEditando.permissaoProdutos,
+      permissaoFuncionarios: this.funcionarioEditando.permissaoFuncionarios,
+      permissaoCaixas: this.funcionarioEditando.permissaoCaixas
     }).subscribe({
       next: () => {
         if (mudouStatus) {

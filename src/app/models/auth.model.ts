@@ -5,6 +5,11 @@ export interface User {
   role: UserRole;
   ativo: boolean;
   dataCadastro: Date;
+  permissaoComandas?: boolean;
+  permissaoTorneios?: boolean;
+  permissaoProdutos?: boolean;
+  permissaoFuncionarios?: boolean;
+  permissaoCaixas?: boolean;
 }
 
 export enum UserRole {

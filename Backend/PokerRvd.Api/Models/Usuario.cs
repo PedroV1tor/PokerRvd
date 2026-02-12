@@ -11,6 +11,13 @@ public class Usuario
     public bool Ativo { get; set; } = true;
     public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     public DateTime? UltimoAcesso { get; set; }
+    
+    // Permissões por módulo
+    public bool PermissaoComandas { get; set; } = false;
+    public bool PermissaoTorneios { get; set; } = false;
+    public bool PermissaoProdutos { get; set; } = false;
+    public bool PermissaoFuncionarios { get; set; } = false;
+    public bool PermissaoCaixas { get; set; } = false;
 }
 
 public enum UserRole

@@ -55,7 +55,12 @@ public class FuncionarioService : IFuncionarioService
             SenhaHash = senhaHash,
             Role = role,
             Ativo = true,
-            DataCadastro = DateTime.UtcNow
+            DataCadastro = DateTime.UtcNow,
+            PermissaoComandas = dto.PermissaoComandas,
+            PermissaoTorneios = dto.PermissaoTorneios,
+            PermissaoProdutos = dto.PermissaoProdutos,
+            PermissaoFuncionarios = dto.PermissaoFuncionarios,
+            PermissaoCaixas = dto.PermissaoCaixas
         };
 
         _context.Usuarios.Add(funcionario);
@@ -91,6 +96,11 @@ public class FuncionarioService : IFuncionarioService
         funcionario.Email = dto.Email.ToLower();
         funcionario.Role = role;
         funcionario.Ativo = dto.Ativo;
+        funcionario.PermissaoComandas = dto.PermissaoComandas;
+        funcionario.PermissaoTorneios = dto.PermissaoTorneios;
+        funcionario.PermissaoProdutos = dto.PermissaoProdutos;
+        funcionario.PermissaoFuncionarios = dto.PermissaoFuncionarios;
+        funcionario.PermissaoCaixas = dto.PermissaoCaixas;
 
         await _context.SaveChangesAsync();
 
@@ -130,7 +140,12 @@ public class FuncionarioService : IFuncionarioService
             Role = usuario.Role.ToString(),
             Ativo = usuario.Ativo,
             DataCadastro = usuario.DataCadastro,
-            UltimoAcesso = usuario.UltimoAcesso
+            UltimoAcesso = usuario.UltimoAcesso,
+            PermissaoComandas = usuario.PermissaoComandas,
+            PermissaoTorneios = usuario.PermissaoTorneios,
+            PermissaoProdutos = usuario.PermissaoProdutos,
+            PermissaoFuncionarios = usuario.PermissaoFuncionarios,
+            PermissaoCaixas = usuario.PermissaoCaixas
         };
     }
 
