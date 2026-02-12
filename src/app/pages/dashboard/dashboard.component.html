@@ -1,50 +1,99 @@
 <div class="app-container">
   <!-- Navbar -->
-  <app-navbar (novaComanda)="abrirModalNovaComanda()"></app-navbar>
+  <app-navbar></app-navbar>
 
   <!-- Conteúdo Principal -->
   <main class="main-content">
     <div class="container">
-      <!-- Barra de Busca e Filtros -->
-      <div class="search-filter-section">
-        <div class="search-box">
-          <input
-            type="text"
-            [(ngModel)]="buscaTexto"
-            (ngModelChange)="onBuscaChange()"
-            placeholder="Buscar jogador ou comanda..."
-            class="search-input"
-          />
-          <button class="btn-search">
-            🔍
-          </button>
+      <!-- Header da Página -->
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <span class="title-icon">🎮</span>
+            Comandas Ativas
+          </h1>
+          <p class="page-subtitle">Gerencie todas as comandas em tempo real</p>
+        </div>
+        <button class="btn-nova-comanda-header" (click)="abrirModalNovaComanda()">
+          <span class="btn-icon">+</span>
+          Nova Comanda
+        </button>
+      </div>
+
+      <!-- Cards de Resumo Rápido -->
+      <div class="stats-cards">
+        <div class="stat-card card-total">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <span class="stat-label">Total de Comandas</span>
+            <span class="stat-value">{{ comandas.length }}</span>
+          </div>
         </div>
 
-        <div class="filter-buttons">
-          <button
-            class="filter-btn"
-            [class.active]="filtroAtivo === TipoComanda.TODOS"
-            (click)="setFiltro(TipoComanda.TODOS)">
-            Todas
-          </button>
-          <button
-            class="filter-btn"
-            [class.active]="filtroAtivo === TipoComanda.TORNEIO"
-            (click)="setFiltro(TipoComanda.TORNEIO)">
-            Torneio
-          </button>
-          <button
-            class="filter-btn"
-            [class.active]="filtroAtivo === TipoComanda.CASH"
-            (click)="setFiltro(TipoComanda.CASH)">
-            Cash
-          </button>
-          <button
-            class="filter-btn"
-            [class.active]="filtroAtivo === TipoComanda.BAR"
-            (click)="setFiltro(TipoComanda.BAR)">
-            Bar
-          </button>
+        <div class="stat-card card-ativas">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-label">Comandas Ativas</span>
+            <span class="stat-value">{{ comandasFiltradas.length }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card card-valor">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <span class="stat-label">Valor Total</span>
+            <span class="stat-value">R$ {{ calcularValorTotal() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Busca e Filtros -->
+      <div class="search-filter-section">
+        <div class="search-container">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              [(ngModel)]="buscaTexto"
+              (ngModelChange)="onBuscaChange()"
+              placeholder="Buscar por jogador, mesa ou tipo..."
+              class="search-input"
+            />
+          </div>
+        </div>
+
+        <div class="filter-container">
+          <span class="filter-label">Filtrar por:</span>
+          <div class="filter-buttons">
+            <button
+              class="filter-btn"
+              [class.active]="filtroAtivo === TipoComanda.TODOS"
+              (click)="setFiltro(TipoComanda.TODOS)">
+              <span class="filter-icon">📋</span>
+              Todas
+            </button>
+            <button
+              class="filter-btn"
+              [class.active]="filtroAtivo === TipoComanda.TORNEIO"
+              (click)="setFiltro(TipoComanda.TORNEIO)">
+              <span class="filter-icon">🏆</span>
+              Torneio
+            </button>
+            <button
+              class="filter-btn"
+              [class.active]="filtroAtivo === TipoComanda.CASH"
+              (click)="setFiltro(TipoComanda.CASH)">
+              <span class="filter-icon">💵</span>
+              Cash
+            </button>
+            <button
+              class="filter-btn"
+              [class.active]="filtroAtivo === TipoComanda.BAR"
+              (click)="setFiltro(TipoComanda.BAR)">
+              <span class="filter-icon">🍺</span>
+              Bar
+            </button>
+          </div>
         </div>
       </div>
 

@@ -18,6 +18,7 @@ public class ComandaDto
     public string Status { get; set; } = string.Empty;
     public DateTime DataAbertura { get; set; }
     public DateTime? DataFechamento { get; set; }
+    public int? CaixaId { get; set; }
 }
 
 public class CreateComandaDto

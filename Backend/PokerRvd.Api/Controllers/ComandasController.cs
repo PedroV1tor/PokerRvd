@@ -18,20 +18,21 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
-    /// Obtém todas as comandas
+    /// Obtém todas as comandas, opcionalmente filtradas por caixa (para dashboard: caixaId do caixa aberto; para pendentes: caixaId do caixa)
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<ComandaDto>>> GetAllComandas()
+    public async Task<ActionResult<List<ComandaDto>>> GetAllComandas([FromQuery] int? caixaId = null)
     {
         try
         {
-            var comandas = await _comandaService.GetAllComandasAsync();
+            var comandas = await _comandaService.GetAllComandasAsync(caixaId);
             return Ok(comandas);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar comandas");
-            return StatusCode(500, "Erro interno do servidor");
+            var message = ex.InnerException?.Message ?? ex.Message;
+            return StatusCode(500, new { message = message });
         }
     }
 
@@ -75,10 +76,16 @@ public class ComandasController : ControllerBase
             var comanda = await _comandaService.CreateComandaAsync(createComandaDto);
             return CreatedAtAction(nameof(GetComanda), new { id = comanda.Id }, comanda);
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Operação inválida ao criar comanda");
+            return BadRequest(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao criar comanda: {@CreateComandaDto}", createComandaDto);
-            return StatusCode(500, "Erro interno do servidor");
+            var message = ex.InnerException?.Message ?? ex.Message;
+            return StatusCode(500, new { message = message });
         }
     }
 
@@ -163,6 +170,12 @@ public class ComandasController : ControllerBase
             _logger.LogInformation("Recebendo requisição para adicionar fichas à comanda {ComandaId}. Nome: {Nome}, Valor: {Valor}", 
                 id, addItemDto?.Nome, addItemDto?.Valor);
 
+            if (addItemDto == null)
+            {
+                _logger.LogWarning("Dados inválidos: addItemDto é nulo");
+                return BadRequest("Dados inválidos");
+            }
+
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("Modelo inválido: {Errors}", 
@@ -209,20 +222,21 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
-    /// Obtém estatísticas do dashboard
+    /// Obtém estatísticas do dashboard (opcional: caixaId do caixa aberto para contar só comandas desse caixa)
     /// </summary>
     [HttpGet("stats")]
-    public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats()
+    public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats([FromQuery] int? caixaId = null)
     {
         try
         {
-            var stats = await _comandaService.GetDashboardStatsAsync();
+            var stats = await _comandaService.GetDashboardStatsAsync(caixaId);
             return Ok(stats);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar estatísticas");
-            return StatusCode(500, "Erro interno do servidor");
+            var message = ex.InnerException?.Message ?? ex.Message;
+            return StatusCode(500, new { message = message });
         }
     }
 }

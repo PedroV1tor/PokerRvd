@@ -244,7 +244,8 @@ export class ComandaDetalhesComponent implements OnInit {
   }
 
   abrirModalFechar() {
-    this.formasPagamento = [{ formaPagamento: 'Dinheiro', valor: 0 }];
+    // Pré-preenche com o total da comanda para o usuário confirmar ou alterar (ex.: dividir em várias formas)
+    this.formasPagamento = [{ formaPagamento: 'Dinheiro', valor: this.valorTotal }];
     this.mostrarModalFechar = true;
   }
 

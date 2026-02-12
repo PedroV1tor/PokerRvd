@@ -17,9 +17,13 @@ public class ComandaService : IComandaService
         _logger = logger;
     }
 
-    public async Task<List<ComandaDto>> GetAllComandasAsync()
+    public async Task<List<ComandaDto>> GetAllComandasAsync(int? caixaId = null)
     {
-        return await _context.Comandas
+        var query = _context.Comandas.AsQueryable();
+        if (caixaId.HasValue)
+            query = query.Where(c => c.CaixaId == caixaId.Value);
+
+        return await query
             .OrderByDescending(c => c.DataAbertura)
             .Select(c => new ComandaDto
             {
@@ -35,7 +39,8 @@ public class ComandaService : IComandaService
                 ValorTotal = c.ValorTotal,
                 Status = c.Status.ToString(),
                 DataAbertura = c.DataAbertura,
-                DataFechamento = c.DataFechamento
+                DataFechamento = c.DataFechamento,
+                CaixaId = c.CaixaId
             })
             .ToListAsync();
     }
@@ -69,6 +74,7 @@ public class ComandaService : IComandaService
             Status = comanda.Status.ToString(),
             DataAbertura = comanda.DataAbertura,
             DataFechamento = comanda.DataFechamento,
+            CaixaId = comanda.CaixaId,
             Itens = comanda.Itens.Select(i => new ItemComandaDto
             {
                 Id = i.Id,
@@ -111,7 +117,8 @@ public class ComandaService : IComandaService
             ValorFichas = isTorneioComBuyIn ? 0 : valorFichasInicial,
             ValorBebidas = 0,
             Status = StatusComanda.ATIVO,
-            DataAbertura = DateTime.UtcNow
+            DataAbertura = DateTime.UtcNow,
+            CaixaId = caixaAberto.Id
         };
 
         _context.Comandas.Add(comanda);
@@ -428,11 +435,13 @@ public class ComandaService : IComandaService
         return true;
     }
 
-    public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+    public async Task<DashboardStatsDto> GetDashboardStatsAsync(int? caixaId = null)
     {
-        var comandasAbertas = await _context.Comandas
-            .Where(c => c.Status == StatusComanda.ATIVO)
-            .ToListAsync();
+        var query = _context.Comandas.Where(c => c.Status == StatusComanda.ATIVO);
+        if (caixaId.HasValue)
+            query = query.Where(c => c.CaixaId == caixaId.Value);
+
+        var comandasAbertas = await query.ToListAsync();
 
         return new DashboardStatsDto
         {

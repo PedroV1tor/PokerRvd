@@ -24,6 +24,7 @@ export interface Comanda {
   status: StatusComanda;
   dataAbertura: Date;
   dataFechamento?: Date;
+  caixaId?: number;
   itens?: ItemComanda[];
 }
 

@@ -16,8 +16,9 @@ public class ProdutoService : IProdutoService
 
     public async Task<List<ProdutoDto>> GetAllProdutosAsync()
     {
+        // Retorna TODOS os produtos (ativos e inativos)
+        // O filtro será aplicado no frontend
         var produtos = await _context.Produtos
-            .Where(p => p.Ativo)
             .OrderBy(p => p.Nome)
             .ToListAsync();
 

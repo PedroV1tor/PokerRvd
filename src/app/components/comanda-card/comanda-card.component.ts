@@ -8,21 +8,27 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="comanda-card" [class.fechado]="comanda.status === 'FECHADO'">
+    <div class="comanda-card" [class.fechado]="comanda.status === 'FECHADO'" (click)="onMenuClick()">
       <div class="card-header">
         <div class="jogador-info">
-          <div class="avatar">
+          <div class="avatar" [class.tipo-torneio]="comanda.tipo === 'TORNEIO'" 
+               [class.tipo-cash]="comanda.tipo === 'CASH'"
+               [class.tipo-bar]="comanda.tipo === 'BAR'">
             <span>{{ getInitials(comanda.jogadorNome) }}</span>
           </div>
           <div class="nome-mesa">
             <h3 class="jogador-nome">{{ comanda.jogadorNome }}</h3>
-            <p class="mesa-tipo">
-              {{ comanda.mesa }} - {{ comanda.torneioNome || comanda.tipo }}
+            <p class="mesa-info">
+              <span class="mesa-badge">{{ comanda.mesa }}</span>
+              <span class="tipo-badge">{{ getTipoBadge(comanda.tipo) }}</span>
+            </p>
+            <p class="torneio-nome" *ngIf="comanda.torneioNome">
+              🏆 {{ comanda.torneioNome }}
             </p>
           </div>
         </div>
 
-        <div class="card-actions">
+        <div class="card-right">
           <div class="valor-container">
             <span class="moeda">R$</span>
             <span class="valor">{{ comanda.valorTotal.toFixed(2) }}</span>
@@ -32,30 +38,40 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
             class="btn-status"
             [class.ativo]="comanda.status === 'ATIVO'"
             [class.fechado]="comanda.status === 'FECHADO'"
-            (click)="onToggleStatus()">
-            {{ comanda.status }}
-          </button>
-
-          <button class="btn-menu" (click)="onMenuClick()">
-            ▼
+            (click)="onToggleStatus(); $event.stopPropagation()">
+            {{ comanda.status === 'ATIVO' ? '✅ Ativo' : '⭕ Fechado' }}
           </button>
         </div>
       </div>
 
-      <div class="card-detalhes" *ngIf="showDetalhes">
-        <div class="detalhe-item" *ngIf="comanda.tipo !== 'TORNEIO'">
-          <span class="detalhe-label">Fichas:</span>
-          <span class="detalhe-valor">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
+      <div class="card-detalhes" *ngIf="showDetalhes" (click)="$event.stopPropagation()">
+        <div class="detalhes-grid">
+          <div class="detalhe-card" *ngIf="comanda.tipo !== 'TORNEIO'">
+            <div class="detalhe-icon">💰</div>
+            <div class="detalhe-info">
+              <span class="detalhe-label">Fichas</span>
+              <span class="detalhe-valor">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
+            </div>
+          </div>
+          
+          <div class="detalhe-card">
+            <div class="detalhe-icon">🍺</div>
+            <div class="detalhe-info">
+              <span class="detalhe-label">Bebidas</span>
+              <span class="detalhe-valor bebidas">R$ {{ comanda.valorBebidas.toFixed(2) }}</span>
+            </div>
+          </div>
         </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Bebidas:</span>
-          <span class="detalhe-valor bebidas">R$ {{ comanda.valorBebidas.toFixed(2) }}</span>
-        </div>
-        <div class="card-actions-bottom">
-          <button class="btn-ver-detalhes" (click)="onVerDetalhes()">
-            Ver Detalhes
-          </button>
-        </div>
+
+        <button class="btn-ver-detalhes" (click)="onVerDetalhes(); $event.stopPropagation()">
+          <span>📋</span>
+          Ver Detalhes Completos
+        </button>
+      </div>
+
+      <div class="card-expand-hint" *ngIf="!showDetalhes">
+        <span>Clique para ver detalhes</span>
+        <span class="expand-icon">▼</span>
       </div>
     </div>
   `,
@@ -63,114 +79,199 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
     .comanda-card {
       background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
       border: 2px solid #333;
-      border-radius: 12px;
-      padding: 1.25rem;
+      border-radius: 16px;
+      padding: 1.5rem;
       transition: all 0.3s ease;
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .comanda-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .comanda-card:hover::before {
+      opacity: 1;
     }
 
     .comanda-card:hover {
-      border-color: #00FF00;
-      box-shadow: 0 8px 24px rgba(0, 255, 0, 0.2);
+      border-color: #00ff88;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
       transform: translateY(-4px);
     }
 
     .comanda-card.fechado {
-      opacity: 0.7;
-      border-color: #666;
+      opacity: 0.6;
+      border-color: #555;
+    }
+
+    .comanda-card.fechado::before {
+      background: #666;
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 1rem;
+      margin-bottom: 0.5rem;
     }
 
     .jogador-info {
       display: flex;
-      align-items: center;
-      gap: 0.85rem;
+      align-items: flex-start;
+      gap: 1rem;
       flex: 1;
     }
 
     .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #00FF00 0%, #00AA00 100%);
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1.3rem;
       color: #000;
-      border: 2px solid #00FF00;
+      border: 3px solid rgba(0, 255, 136, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .avatar.tipo-torneio {
+      background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+      border-color: rgba(255, 215, 0, 0.3);
+    }
+
+    .avatar.tipo-cash {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+
+    .avatar.tipo-bar {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      border-color: rgba(255, 107, 107, 0.3);
+    }
+
+    .comanda-card:hover .avatar {
+      transform: scale(1.05);
     }
 
     .nome-mesa {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.5rem;
+      flex: 1;
     }
 
     .jogador-nome {
       margin: 0;
       color: #fff;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: bold;
+      line-height: 1.2;
     }
 
-    .mesa-tipo {
+    .mesa-info {
       margin: 0;
-      color: #00FF00;
-      font-size: 0.85rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
-    .card-actions {
-      display: flex;
+    .mesa-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 20px;
+      color: #00ff88;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .tipo-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .torneio-nome {
+      margin: 0;
+      color: #ffd700;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.75rem;
     }
 
     .valor-container {
-      background-color: #00FF00;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
       color: #000;
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 90px;
+      min-width: 100px;
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
     }
 
     .moeda {
       font-size: 0.75rem;
       font-weight: bold;
+      opacity: 0.8;
     }
 
     .valor {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: bold;
     }
 
     .btn-status {
-      padding: 0.45rem 1.1rem;
+      padding: 0.5rem 1.25rem;
       border: none;
-      border-radius: 18px;
-      font-weight: bold;
+      border-radius: 20px;
+      font-weight: 600;
       font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     .btn-status.ativo {
-      background-color: #00FF00;
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
       color: #000;
+      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
     }
 
     .btn-status.fechado {
-      background-color: #666;
+      background: #555;
       color: #fff;
     }
 
@@ -178,88 +279,139 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       transform: scale(1.05);
     }
 
-    .btn-menu {
-      background: none;
-      border: 2px solid #00FF00;
-      color: #00FF00;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      cursor: pointer;
+    .card-expand-hint {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: #666;
+      font-size: 0.85rem;
       transition: all 0.3s ease;
-      font-size: 1.1rem;
     }
 
-    .btn-menu:hover {
-      background-color: #00FF00;
-      color: #000;
+    .comanda-card:hover .card-expand-hint {
+      color: #00ff88;
+    }
+
+    .expand-icon {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .comanda-card:hover .expand-icon {
+      transform: translateY(2px);
     }
 
     .card-detalhes {
-      margin-top: 0.85rem;
-      padding-top: 0.85rem;
-      border-top: 1px solid #333;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 2px solid rgba(0, 255, 136, 0.2);
+      animation: slideDown 0.3s ease;
     }
 
-    .detalhe-item {
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .detalhes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .detalhe-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
       display: flex;
-      justify-content: space-between;
-      color: #fff;
-      font-size: 0.95rem;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .detalhe-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+
+    .detalhe-icon {
+      font-size: 1.8rem;
+    }
+
+    .detalhe-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
 
     .detalhe-label {
       color: #999;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .detalhe-valor {
       font-weight: bold;
-      color: #00FF00;
-      font-size: 0.95rem;
+      color: #00ff88;
+      font-size: 1.1rem;
     }
 
     .detalhe-valor.bebidas {
-      color: #FFD700;
-    }
-
-    .card-actions-bottom {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
+      color: #ffd700;
     }
 
     .btn-ver-detalhes {
       width: 100%;
-      padding: 0.55rem;
-      border: none;
-      border-radius: 6px;
+      padding: 0.875rem;
+      border: 2px solid #00ff88;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 0.85rem;
-      background-color: transparent;
-      color: #00FF00;
-      border: 2px solid #00FF00;
+      font-size: 0.9rem;
+      background: transparent;
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
     .btn-ver-detalhes:hover {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #000;
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
     }
 
     @media (max-width: 768px) {
       .card-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
       }
 
-      .card-actions {
-        width: 100%;
+      .card-right {
+        flex-direction: row;
         justify-content: space-between;
+        align-items: center;
+      }
+
+      .detalhes-grid {
+        grid-template-columns: 1fr;
       }
     }
   `]
@@ -280,6 +432,15 @@ export class ComandaCardComponent {
       .slice(0, 2)
       .join('')
       .toUpperCase();
+  }
+
+  getTipoBadge(tipo: string): string {
+    const badges: { [key: string]: string } = {
+      'TORNEIO': '🏆 Torneio',
+      'CASH': '💵 Cash',
+      'BAR': '🍺 Bar'
+    };
+    return badges[tipo] || tipo;
   }
 
   onToggleStatus() {

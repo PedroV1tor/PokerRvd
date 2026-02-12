@@ -7,6 +7,7 @@ import { ComandaCardComponent } from '../../components/comanda-card/comanda-card
 import { NovaComandaModalComponent } from '../../components/nova-comanda-modal/nova-comanda-modal.component';
 import { DashboardStatsComponent } from '../../components/dashboard-stats/dashboard-stats.component';
 import { ComandaService } from '../../services/comanda.service';
+import { CaixaService } from '../../services/caixa.service';
 import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda } from '../../models/comanda.model';
 
 @Component({
@@ -42,6 +43,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private comandaService: ComandaService,
+    private caixaService: CaixaService,
     private router: Router
   ) {}
 
@@ -52,27 +54,41 @@ export class DashboardComponent implements OnInit {
   carregarDados() {
     this.loading = true;
 
-    // Carregar apenas comandas ativas
-    this.comandaService.getComandas().subscribe({
-      next: (comandas) => {
-        // Filtrar apenas comandas ativas
-        this.comandas = comandas.filter(c => c.status === StatusComanda.ATIVO);
+    // Primeiro busca o caixa aberto; só exibe comandas e stats desse caixa
+    this.caixaService.getCaixaAberto().subscribe({
+      next: (caixaAberto) => {
+        const caixaId = caixaAberto.id;
+        this.comandaService.getComandas(caixaId).subscribe({
+          next: (comandas) => {
+            // Só comandas ativas deste caixa; não mostrar pendências de outro caixa (outro caixaId)
+            this.comandas = comandas.filter(c =>
+              c.status === StatusComanda.ATIVO &&
+              (c.caixaId == null || c.caixaId === caixaId)
+            );
+            this.aplicarFiltros();
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('Erro ao carregar comandas:', error);
+            this.comandas = [];
+            this.aplicarFiltros();
+            this.loading = false;
+          }
+        });
+        this.comandaService.getDashboardStats(caixaId).subscribe({
+          next: (stats) => { this.stats = stats; },
+          error: (error) => {
+            console.error('Erro ao carregar estatísticas:', error);
+            this.stats = null;
+          }
+        });
+      },
+      error: () => {
+        // Sem caixa aberto: dashboard vazio
+        this.comandas = [];
         this.aplicarFiltros();
+        this.stats = null;
         this.loading = false;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar comandas:', error);
-        this.loading = false;
-      }
-    });
-
-    // Carregar estatísticas
-    this.comandaService.getDashboardStats().subscribe({
-      next: (stats) => {
-        this.stats = stats;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar estatísticas:', error);
       }
     });
   }
@@ -109,9 +125,14 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erro ao criar comanda:', error);
-        const msg = typeof error.error === 'object' && error.error?.message
-          ? error.error.message
-          : error.error?.title || error.message;
+        let msg: string;
+        if (typeof error.error === 'object' && error.error?.message) {
+          msg = error.error.message;
+        } else if (typeof error.error === 'string' && error.error) {
+          msg = error.error;
+        } else {
+          msg = error.error?.title || error.message || 'Verifique se o backend está rodando e se a coluna CaixaId existe na tabela Comandas (rode AddCaixaId_Manual.sql).';
+        }
         alert('Erro ao criar comanda: ' + msg);
       }
     });
@@ -137,5 +158,10 @@ export class DashboardComponent implements OnInit {
 
   verDetalhesComanda(id: number) {
     this.router.navigate(['/comanda', id]);
+  }
+
+  calcularValorTotal(): string {
+    const total = this.comandasFiltradas.reduce((sum, comanda) => sum + comanda.valorTotal, 0);
+    return total.toFixed(2);
   }
 }

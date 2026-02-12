@@ -58,6 +58,7 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.ValorFichas).HasPrecision(18, 2);
             entity.Property(e => e.ValorBebidas).HasPrecision(18, 2);
             entity.Ignore(e => e.ValorTotal);
+            entity.Property(e => e.CaixaId);
             entity.HasMany(e => e.Itens).WithOne(i => i.Comanda).HasForeignKey(i => i.ComandaId);
         });
 

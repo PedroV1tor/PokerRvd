@@ -139,6 +139,13 @@
                 Saídas
               </button>
               <button 
+                class="tab tab-pendentes" 
+                [class.active]="abaAtiva === 'pendentes'"
+                (click)="selecionarAba('pendentes')">
+                Pendentes
+                <span class="tab-badge" *ngIf="comandasAbertas.length > 0">{{ comandasAbertas.length }}</span>
+              </button>
+              <button 
                 class="tab" 
                 [class.active]="abaAtiva === 'resumo'"
                 (click)="selecionarAba('resumo')">
@@ -148,8 +155,55 @@
 
             <!-- Conteúdo das Abas -->
             
+            <!-- Aba: Pendentes – registro de comandas com valores pendentes (deste caixa) -->
+            <div class="movimentacoes-list aba-pendentes" *ngIf="abaAtiva === 'pendentes'">
+              <h4 class="pendentes-titulo">Comandas com valores pendentes</h4>
+              <p class="pendentes-descricao">
+                <ng-container *ngIf="caixa">
+                  {{ caixa.status === StatusCaixa.ABERTO 
+                    ? 'Comandas em aberto deste caixa. Ao fechar, entram nas entradas.' 
+                    : 'Pendências deste caixa (fechado). Quitar para registrar o pagamento no caixa atual.' }}
+                </ng-container>
+              </p>
+              <div class="pendentes-tabela" *ngIf="comandasAbertas.length > 0">
+                <div class="pendentes-thead">
+                  <span class="col-comanda">Comanda</span>
+                  <span class="col-mesa">Mesa</span>
+                  <span class="col-valor">Valor pendente</span>
+                  <span class="col-acao">Ação</span>
+                </div>
+                <div 
+                  *ngFor="let comanda of comandasAbertas" 
+                  class="pendentes-tbody-row">
+                  <span class="col-comanda">{{ comanda.jogadorNome }}</span>
+                  <span class="col-mesa">{{ comanda.mesa || '–' }}</span>
+                  <span class="col-valor">R$ {{ comanda.valorTotal.toFixed(2) }}</span>
+                  <span class="col-acao">
+                    <button type="button" class="btn-quitar" (click)="abrirModalQuitarPendencia(comanda)">
+                      Quitar pendência
+                    </button>
+                  </span>
+                </div>
+                <div class="pendentes-tfoot">
+                  <span class="col-comanda"><strong>Total pendente</strong></span>
+                  <span class="col-mesa">–</span>
+                  <span class="col-valor"><strong>R$ {{ valorPendente.toFixed(2) }}</strong></span>
+                  <span class="col-acao">–</span>
+                </div>
+              </div>
+              <div class="pendentes-total" *ngIf="comandasAbertas.length > 0">
+                <span class="label">Total pendente:</span>
+                <span class="valor">R$ {{ valorPendente.toFixed(2) }}</span>
+              </div>
+              <div *ngIf="comandasAbertas.length === 0" class="empty-state">
+                <div class="empty-icon">✓</div>
+                <p>Nenhuma comanda em aberto</p>
+                <p class="empty-sub">Não há valores pendentes no momento.</p>
+              </div>
+            </div>
+
             <!-- Aba: Todas / Entradas / Saídas -->
-            <div class="movimentacoes-list" *ngIf="abaAtiva !== 'resumo'">
+            <div class="movimentacoes-list" *ngIf="abaAtiva !== 'resumo' && abaAtiva !== 'pendentes'">
               <div 
                 *ngFor="let mov of getMovimentacoesFiltradas()" 
                 class="movimentacao-item"
@@ -270,6 +324,55 @@
   </main>
 </div>
 
+<!-- Modal Quitar Pendência -->
+<div class="modal-overlay" *ngIf="mostrarModalQuitarPendencia" (click)="fecharModalQuitarPendencia()">
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="comandaSelecionadaQuitar">
+    <div class="modal-header">
+      <h3>Quitar pendência</h3>
+      <button class="btn-close" (click)="fecharModalQuitarPendencia()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-total-info">
+        Comanda: <strong>{{ comandaSelecionadaQuitar.jogadorNome }}</strong> — Total: <strong>R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</strong>
+      </p>
+      <p class="modal-instruction">Informe como foi realizado o pagamento. A soma deve ser igual ao total. O valor entrará no caixa atualmente aberto.</p>
+      <div class="formas-pagamento-list">
+        <div *ngFor="let forma of formasPagamentoQuitar; let i = index" class="forma-pagamento-row">
+          <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
+            <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
+          </select>
+          <input 
+            type="number" 
+            [(ngModel)]="forma.valor" 
+            min="0"
+            step="0.01"
+            class="form-control forma-valor"
+            placeholder="0,00"
+          />
+          <button type="button" class="btn-remover-forma" (click)="removerFormaQuitar(i)" 
+                  [disabled]="formasPagamentoQuitar.length === 1" title="Remover">✕</button>
+        </div>
+        <button type="button" class="btn-add-forma" (click)="adicionarFormaQuitar()">
+          + Adicionar forma de pagamento
+        </button>
+      </div>
+      <div class="resumo-formas" [class.erro]="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0">
+        <span>Soma das formas:</span>
+        <span>R$ {{ somaFormasPagamentoQuitar.toFixed(2) }}</span>
+        <span *ngIf="totalBateComFormasQuitar" class="ok-badge">✓ Confere</span>
+        <span *ngIf="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0" class="erro-badge">Soma deve ser R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalQuitarPendencia()">Cancelar</button>
+      <button class="btn btn-primary" (click)="quitarPendencia()" 
+              [disabled]="!totalBateComFormasQuitar || somaFormasPagamentoQuitar <= 0 || salvandoQuitar">
+        {{ salvandoQuitar ? 'Salvando...' : 'Quitar pendência' }}
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Fechar Caixa -->
 <div class="modal-overlay" *ngIf="mostrarModalFechar" (click)="fecharModalFechar()">
   <div class="modal-content" (click)="$event.stopPropagation()">
@@ -287,12 +390,23 @@
         </div>
         <div class="aviso-content">
           <p>Existem <strong>{{ comandasAbertas.length }}</strong> comanda(s) ainda aberta(s).</p>
-          <p class="valor-pendente">
-            <strong>Valor Pendente:</strong> R$ {{ valorPendente.toFixed(2) }}
-          </p>
           <p class="aviso-texto">
-            Se você fechar o caixa agora, este valor ficará pendente e deverá ser registrado quando as comandas forem fechadas.
+            Se você fechar o caixa agora, o valor abaixo ficará pendente e deverá ser registrado quando as comandas forem fechadas.
           </p>
+          <div class="lista-comandas-abertas">
+            <div class="lista-comandas-header">
+              <span class="col-comanda">Comanda</span>
+              <span class="col-valor">Valor</span>
+            </div>
+            <div *ngFor="let comanda of comandasAbertas" class="lista-comandas-row">
+              <span class="col-comanda">{{ comanda.jogadorNome }} <span class="comanda-mesa" *ngIf="comanda.mesa">({{ comanda.mesa }})</span></span>
+              <span class="col-valor">R$ {{ comanda.valorTotal.toFixed(2) }}</span>
+            </div>
+            <div class="lista-comandas-total">
+              <span class="col-comanda"><strong>Valor total pendente:</strong></span>
+              <span class="col-valor"><strong>R$ {{ valorPendente.toFixed(2) }}</strong></span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -14,6 +14,142 @@
   padding: 0 2rem;
 }
 
+/* Header da Página */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(0, 255, 0, 0.2);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.title-icon {
+  font-size: 2.5rem;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: #00ff88;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.btn-nova-comanda-header {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  color: #000;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-nova-comanda-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(0, 255, 136, 0.6);
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Cards de Estatísticas Rápidas */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  border: 2px solid #333;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.card-total:hover {
+  border-color: #00a8ff;
+  box-shadow: 0 8px 24px rgba(0, 168, 255, 0.3);
+}
+
+.card-ativas:hover {
+  border-color: #00ff88;
+  box-shadow: 0 8px 24px rgba(0, 255, 136, 0.3);
+}
+
+.card-valor:hover {
+  border-color: #ffd700;
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3);
+}
+
+.stat-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #999;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.card-total .stat-value {
+  color: #00a8ff;
+}
+
+.card-ativas .stat-value {
+  color: #00ff88;
+}
+
+.card-valor .stat-value {
+  color: #ffd700;
+}
+
 /* Barra de Busca e Filtros */
 .search-filter-section {
   background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
@@ -21,51 +157,65 @@
   border-radius: 16px;
   border: 2px solid #333;
   margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.search-container {
+  width: 100%;
 }
 
 .search-box {
   display: flex;
+  align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  background-color: #000;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 0 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.search-icon {
+  font-size: 1.2rem;
+  color: #666;
 }
 
 .search-input {
   flex: 1;
-  padding: 1rem 1.5rem;
-  background-color: #000;
-  border: 2px solid #333;
-  border-radius: 12px;
+  padding: 1rem 0;
+  background-color: transparent;
+  border: none;
   color: #fff;
   font-size: 1rem;
-  transition: all 0.3s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #00FF00;
-  box-shadow: 0 0 0 3px rgba(0, 255, 0, 0.1);
 }
 
 .search-input::placeholder {
   color: #666;
 }
 
-.btn-search {
-  background-color: #000;
-  border: 2px solid #00FF00;
-  color: #00FF00;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-  min-width: 60px;
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.btn-search:hover {
-  background-color: #00FF00;
-  color: #000;
-  transform: scale(1.05);
+.filter-label {
+  font-size: 0.9rem;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .filter-buttons {
@@ -85,18 +235,27 @@
   font-weight: 500;
   transition: all 0.3s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .filter-btn:hover {
-  border-color: #00FF00;
-  color: #00FF00;
+  border-color: #00ff88;
+  color: #00ff88;
+  transform: translateY(-2px);
 }
 
 .filter-btn.active {
-  background-color: #00FF00;
-  border-color: #00FF00;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  border-color: #00ff88;
   color: #000;
   font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.filter-icon {
+  font-size: 1.1rem;
 }
 
 /* Loading */
@@ -176,25 +335,68 @@
 }
 
 /* Responsive */
+@media (max-width: 968px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .btn-nova-comanda-header {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .title-icon {
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
   }
 
   .search-filter-section {
     padding: 1.5rem;
   }
 
-  .search-box {
-    flex-direction: column;
+  .filter-buttons {
+    justify-content: center;
   }
 
-  .filter-buttons {
+  .filter-btn {
+    flex: 1;
+    min-width: 100px;
     justify-content: center;
   }
 
   .comandas-grid {
     grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-icon {
+    font-size: 2.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
   }
 }
 
@@ -203,7 +405,28 @@
     padding: 1rem 0;
   }
 
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .title-icon {
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+
   .section-title {
     font-size: 1.2rem;
+  }
+
+  .btn-nova-comanda-header {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .filter-label {
+    font-size: 0.8rem;
   }
 }

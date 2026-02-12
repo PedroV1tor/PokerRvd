@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CaixaService } from '../../services/caixa.service';
 import { ComandaService } from '../../services/comanda.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
-import { Comanda, StatusComanda } from '../../models/comanda.model';
+import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '../../models/comanda.model';
 
 @Component({
   selector: 'app-caixa-detalhes',
@@ -41,12 +41,19 @@ export class CaixaDetalhesComponent implements OnInit {
   categorias = ['Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
 
   // Controle de abas
-  abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' = 'todas';
+  abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' | 'pendentes' = 'todas';
 
-  // Verificação de comandas abertas
+  // Verificação de comandas abertas (pendentes deste caixa)
   comandasAbertas: Comanda[] = [];
   valorPendente: number = 0;
   mostrarAvisoComandas: boolean = false;
+
+  // Modal Quitar pendência
+  mostrarModalQuitarPendencia = false;
+  comandaSelecionadaQuitar: Comanda | null = null;
+  formasPagamentoQuitar: FormaPagamentoValor[] = [];
+  formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
+  salvandoQuitar = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -73,6 +80,8 @@ export class CaixaDetalhesComponent implements OnInit {
         };
         this.saldoFinal = this.getSaldoEsperado();
         this.loading = false;
+        // Carregar pendentes deste caixa (aberto ou fechado) para a aba Pendentes
+        this.verificarComandasAbertas();
       },
       error: (error) => {
         console.error('Erro ao carregar caixa:', error);
@@ -97,7 +106,13 @@ export class CaixaDetalhesComponent implements OnInit {
   }
 
   verificarComandasAbertas() {
-    this.comandaService.getComandas().subscribe({
+    if (!this.caixaId || this.caixaId <= 0) {
+      this.comandasAbertas = [];
+      this.valorPendente = 0;
+      this.mostrarAvisoComandas = false;
+      return;
+    }
+    this.comandaService.getComandas(this.caixaId).subscribe({
       next: (comandas) => {
         this.comandasAbertas = comandas.filter(c => c.status === StatusComanda.ATIVO);
         this.valorPendente = this.comandasAbertas.reduce((total, c) => total + c.valorTotal, 0);
@@ -236,8 +251,62 @@ export class CaixaDetalhesComponent implements OnInit {
     });
   }
 
-  selecionarAba(aba: 'todas' | 'entradas' | 'saidas' | 'resumo') {
+  selecionarAba(aba: 'todas' | 'entradas' | 'saidas' | 'resumo' | 'pendentes') {
     this.abaAtiva = aba;
+    if (aba === 'pendentes') {
+      this.verificarComandasAbertas();
+    }
+  }
+
+  abrirModalQuitarPendencia(comanda: Comanda) {
+    this.comandaSelecionadaQuitar = comanda;
+    this.formasPagamentoQuitar = [{ formaPagamento: 'Dinheiro', valor: comanda.valorTotal }];
+    this.mostrarModalQuitarPendencia = true;
+  }
+
+  fecharModalQuitarPendencia() {
+    this.mostrarModalQuitarPendencia = false;
+    this.comandaSelecionadaQuitar = null;
+    this.formasPagamentoQuitar = [];
+  }
+
+  adicionarFormaQuitar() {
+    this.formasPagamentoQuitar.push({ formaPagamento: 'Dinheiro', valor: 0 });
+  }
+
+  removerFormaQuitar(index: number) {
+    if (this.formasPagamentoQuitar.length > 1) {
+      this.formasPagamentoQuitar.splice(index, 1);
+    }
+  }
+
+  get somaFormasPagamentoQuitar(): number {
+    return this.formasPagamentoQuitar.reduce((s, f) => s + (f.valor || 0), 0);
+  }
+
+  get totalBateComFormasQuitar(): boolean {
+    if (!this.comandaSelecionadaQuitar) return false;
+    return Math.abs(this.somaFormasPagamentoQuitar - this.comandaSelecionadaQuitar.valorTotal) < 0.01;
+  }
+
+  quitarPendencia() {
+    if (!this.comandaSelecionadaQuitar || !this.totalBateComFormasQuitar) return;
+    const comFormas = this.formasPagamentoQuitar.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
+    if (comFormas.length === 0) return;
+    const dto: FecharComandaDto = { formasPagamento: comFormas };
+    this.salvandoQuitar = true;
+    this.comandaService.fecharComanda(this.comandaSelecionadaQuitar.id, dto).subscribe({
+      next: () => {
+        this.salvandoQuitar = false;
+        this.fecharModalQuitarPendencia();
+        this.verificarComandasAbertas();
+      },
+      error: (err) => {
+        this.salvandoQuitar = false;
+        const msg = typeof err.error === 'object' && err.error?.message ? err.error.message : err.message || 'Erro ao quitar.';
+        alert(msg);
+      }
+    });
   }
 
   getMovimentacoesFiltradas() {

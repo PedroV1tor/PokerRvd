@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -42,10 +42,6 @@ import { User } from '../../models/auth.model';
             Caixas
           </button>
         </div>
-
-        <button class="btn-nova-comanda" (click)="onNovaComanda()">
-          + Nova Comanda
-        </button>
 
         <div class="user-menu">
           <div class="user-info" (click)="toggleUserMenu()">
@@ -134,29 +130,6 @@ import { User } from '../../models/auth.model';
     .nav-item.active {
       background-color: #00FF00;
       color: #000;
-    }
-
-    .btn-nova-comanda {
-      background-color: #00FF00;
-      color: #000;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-
-    .btn-nova-comanda:hover {
-      background-color: #00DD00;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 255, 0, 0.4);
-    }
-
-    .btn-nova-comanda:active {
-      transform: translateY(0);
     }
 
     .user-menu {
@@ -309,8 +282,6 @@ export class NavbarComponent implements OnInit {
   activeMenu = 'comandas';
   currentUser: User | null = null;
   showUserMenu = false;
-  
-  @Output() novaComanda = new EventEmitter<void>();
 
   constructor(
     private authService: AuthService,
@@ -341,10 +312,6 @@ export class NavbarComponent implements OnInit {
         this.router.navigate(['/caixas']);
         break;
     }
-  }
-
-  onNovaComanda() {
-    this.novaComanda.emit();
   }
 
   toggleUserMenu() {

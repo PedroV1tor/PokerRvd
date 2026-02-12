@@ -21,8 +21,9 @@ export class ComandaService {
 
   // ==================== COMANDAS ====================
   
-  getComandas(): Observable<Comanda[]> {
-    return this.http.get<Comanda[]>(`${this.apiUrl}/comandas`);
+  getComandas(caixaId?: number): Observable<Comanda[]> {
+    const params = caixaId != null ? `?caixaId=${caixaId}` : '';
+    return this.http.get<Comanda[]>(`${this.apiUrl}/comandas${params}`);
   }
 
   getComanda(id: number): Observable<Comanda | undefined> {
@@ -55,8 +56,9 @@ export class ComandaService {
 
   // ==================== DASHBOARD ====================
   
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/comandas/stats`);
+  getDashboardStats(caixaId?: number): Observable<DashboardStats> {
+    const params = caixaId != null ? `?caixaId=${caixaId}` : '';
+    return this.http.get<DashboardStats>(`${this.apiUrl}/comandas/stats${params}`);
   }
 
   // ==================== PRODUTOS E FICHAS ====================

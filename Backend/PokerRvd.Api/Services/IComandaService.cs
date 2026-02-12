@@ -4,7 +4,7 @@ namespace PokerRvd.Api.Services;
 
 public interface IComandaService
 {
-    Task<List<ComandaDto>> GetAllComandasAsync();
+    Task<List<ComandaDto>> GetAllComandasAsync(int? caixaId = null);
     Task<ComandaDetailsDto?> GetComandaByIdAsync(int id);
     Task<ComandaDto> CreateComandaAsync(CreateComandaDto createComandaDto);
     Task<ComandaDto?> UpdateComandaAsync(int id, UpdateComandaDto updateComandaDto);
@@ -12,5 +12,5 @@ public interface IComandaService
     Task<bool> DeleteComandaAsync(int id);
     Task<bool> AddItemToComandaAsync(int comandaId, AddItemComandaDto addItemDto);
     Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto);
-    Task<DashboardStatsDto> GetDashboardStatsAsync();
+    Task<DashboardStatsDto> GetDashboardStatsAsync(int? caixaId = null);
 }

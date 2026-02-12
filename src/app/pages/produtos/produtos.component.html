@@ -3,18 +3,50 @@
 <div class="produtos-container">
   <div class="header">
     <h1>Gerenciamento de Produtos</h1>
-    <button class="btn-novo-produto" (click)="abrirModal()">
-      + Novo Produto
-    </button>
+    <div class="header-buttons">
+      <button class="btn-adicionar-estoque" (click)="abrirModalEstoque()">
+        📦 Adicionar Estoque
+      </button>
+      <button class="btn-novo-produto" (click)="abrirModal()">
+        + Novo Produto
+      </button>
+    </div>
   </div>
 
-  <div class="search-bar">
-    <input
-      type="text"
-      placeholder="🔍 Buscar produtos..."
-      [(ngModel)]="searchTerm"
-      (input)="filtrarProdutos()"
-    />
+  <div class="search-filter-section">
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="🔍 Buscar produtos..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarProdutos()"
+      />
+    </div>
+
+    <div class="filter-buttons">
+      <button
+        class="filter-btn"
+        [class.active]="filtroStatus === 'TODOS'"
+        (click)="setFiltroStatus('TODOS')">
+        Todos
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filtroStatus === 'ATIVO'"
+        (click)="setFiltroStatus('ATIVO')">
+        Ativos
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="filtroStatus === 'INATIVO'"
+        (click)="setFiltroStatus('INATIVO')">
+        Inativos
+      </button>
+    </div>
+  </div>
+
+  <div class="produtos-info" *ngIf="!isLoading && filteredProdutos.length > 0">
+    <span class="produtos-count">{{ filteredProdutos.length }} produto(s) encontrado(s)</span>
   </div>
 
   <div class="produtos-table-container" *ngIf="!isLoading">
@@ -27,11 +59,14 @@
           <th>Margem</th>
           <th>Estoque</th>
           <th>Unidade</th>
+          <th>Status</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let produto of filteredProdutos" [class.low-stock-row]="produto.quantidadeEstoque <= 10">
+        <tr *ngFor="let produto of filteredProdutos" 
+            [class.low-stock-row]="produto.quantidadeEstoque <= 10"
+            [class.inactive-row]="!produto.ativo">
           <td class="produto-nome">{{ produto.nome }}</td>
           <td>R$ {{ produto.valorCusto.toFixed(2) }}</td>
           <td class="valor-comercial">R$ {{ produto.valorComercial.toFixed(2) }}</td>
@@ -40,6 +75,11 @@
             {{ produto.quantidadeEstoque }}
           </td>
           <td>{{ produto.unidadeVenda }}</td>
+          <td>
+            <span class="status-badge" [class.ativo]="produto.ativo" [class.inativo]="!produto.ativo">
+              {{ produto.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
           <td class="acoes">
             <button class="btn-editar" (click)="abrirModalEdicao(produto)" title="Editar">
               ✏️
@@ -230,14 +270,15 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>
+      <!-- Status Simples na parte de baixo -->
+      <div class="form-group-checkbox">
+        <label class="checkbox-label">
           <input
             type="checkbox"
             [(ngModel)]="produtoEditando.ativo"
             name="editar-ativo"
           />
-          Produto Ativo
+          <span>Produto Ativo</span>
         </label>
       </div>
 
@@ -247,6 +288,69 @@
         </button>
         <button type="submit" class="btn-submit" [disabled]="!isFormEdicaoValid()">
           Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Adicionar Estoque -->
+<div class="modal-overlay" *ngIf="showModalEstoque" (click)="fecharModalEstoque()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Adicionar Estoque</h2>
+      <button class="btn-close" (click)="fecharModalEstoque()">✕</button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="adicionarEstoque()">
+      <div class="form-group">
+        <label for="produto-estoque">Selecione o Produto *</label>
+        <select
+          id="produto-estoque"
+          [(ngModel)]="estoqueAdd.produtoId"
+          name="produto-estoque"
+          required
+          (ngModelChange)="onProdutoEstoqueChange()"
+        >
+          <option [ngValue]="null">Escolha um produto...</option>
+          <option *ngFor="let produto of produtos" [ngValue]="produto.id">
+            {{ produto.nome }} (Estoque atual: {{ produto.quantidadeEstoque }})
+          </option>
+        </select>
+      </div>
+
+      <div class="estoque-info" *ngIf="estoqueAdd.produtoId">
+        <div class="info-card">
+          <span class="info-label">Estoque Atual:</span>
+          <span class="info-value">{{ getEstoqueAtual() }}</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Novo Estoque:</span>
+          <span class="info-value highlight">{{ getNovoEstoque() }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="quantidade-add">Quantidade a Adicionar *</label>
+        <input
+          type="number"
+          id="quantidade-add"
+          [(ngModel)]="estoqueAdd.quantidade"
+          name="quantidade-add"
+          placeholder="Digite a quantidade"
+          min="1"
+          step="1"
+          required
+          (ngModelChange)="onProdutoEstoqueChange()"
+        />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="fecharModalEstoque()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="!isFormEstoqueValid()">
+          Adicionar ao Estoque
         </button>
       </div>
     </form>

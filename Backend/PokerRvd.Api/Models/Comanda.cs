@@ -15,6 +15,8 @@ public class Comanda
     public StatusComanda Status { get; set; } = StatusComanda.ATIVO;
     public DateTime DataAbertura { get; set; } = DateTime.UtcNow;
     public DateTime? DataFechamento { get; set; }
+    /// <summary>Caixa em que a comanda foi criada (pendente fica vinculada a esse caixa ao fechá-lo)</summary>
+    public int? CaixaId { get; set; }
     public List<ItemComanda> Itens { get; set; } = new();
 }
 
