@@ -223,31 +223,8 @@ public class ComandaService : IComandaService
             .FirstOrDefaultAsync(c => c.Id == id);
         
         if (comanda == null) return null;
-        
-        // Carregar produtos separadamente para itens que têm ProdutoId
-        foreach (var item in comanda.Itens.Where(i => i.ProdutoId.HasValue))
-        {
-            await _context.Entry(item).Reference(i => i.Produto).LoadAsync();
-        }
 
-        // Descontar produtos do estoque ao fechar a comanda
-        foreach (var item in comanda.Itens)
-        {
-            if (item.Produto != null)
-            {
-                // Verificar se há estoque suficiente
-                if (item.Produto.QuantidadeEstoque < item.Quantidade)
-                {
-                    throw new InvalidOperationException(
-                        $"Estoque insuficiente para o produto '{item.Produto.Nome}'. " +
-                        $"Disponível: {item.Produto.QuantidadeEstoque}, Necessário: {item.Quantidade}"
-                    );
-                }
-
-                // Descontar do estoque
-                item.Produto.QuantidadeEstoque -= item.Quantidade;
-            }
-        }
+        // Estoque já foi descontado ao adicionar cada item à comanda (saída na hora da venda)
 
         // Atualizar status para fechado
         comanda.Status = StatusComanda.FECHADO;
@@ -341,8 +318,9 @@ public class ComandaService : IComandaService
         var produto = await _context.Produtos.FindAsync(addItemDto.ProdutoId);
         if (produto == null || !produto.Ativo) return false;
 
-        // Verificar se há estoque suficiente (sem descontar ainda)
+        // Verificar se há estoque suficiente e descontar na hora (saída ao inserir no caixa)
         if (produto.QuantidadeEstoque < addItemDto.Quantidade) return false;
+        produto.QuantidadeEstoque -= addItemDto.Quantidade;
 
         var item = new ItemComanda
         {
