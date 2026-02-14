@@ -42,22 +42,14 @@
 
 .logo {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
 
-  h1 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #00FF00;
-    margin: 0;
-    letter-spacing: 4px;
-  }
-
-  span {
-    font-size: 0.8rem;
-    color: #fff;
-    letter-spacing: 2px;
-    margin-top: -5px;
+  .logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    display: block;
   }
 }
 

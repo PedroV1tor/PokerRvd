@@ -11,10 +11,9 @@ import { User } from '../../models/auth.model';
   template: `
     <nav class="navbar">
       <div class="navbar-container">
-        <div class="logo">
-          <span class="logo-text">R♦D</span>
-          <span class="logo-subtitle">POKER CLUB</span>
-        </div>
+        <button type="button" class="logo" (click)="irParaComandas()" aria-label="Voltar para Comandas">
+          <img src="/logo_poker-Photoroom.png" alt="RVD Poker Club" class="logo-img" />
+        </button>
 
         <button 
           class="mobile-menu-toggle" 
@@ -77,7 +76,7 @@ import { User } from '../../models/auth.model';
               <span class="user-role">{{ currentUser?.role }}</span>
             </div>
             <div class="user-dropdown-divider"></div>
-            <button class="dropdown-item" (click)="onLogout()">
+            <button class="dropdown-item" (click)="abrirModalSair()">
               <span class="icon">🚪</span>
               Sair
             </button>
@@ -85,6 +84,17 @@ import { User } from '../../models/auth.model';
         </div>
       </div>
     </nav>
+
+    <!-- Modal confirmar saída -->
+    <div class="logout-modal-overlay" *ngIf="showLogoutModal" (click)="fecharModalSair()">
+      <div class="logout-modal" (click)="$event.stopPropagation()">
+        <p class="logout-modal-texto">Deseja realmente sair?</p>
+        <div class="logout-modal-botoes">
+          <button type="button" class="logout-btn-cancelar" (click)="fecharModalSair()">Cancelar</button>
+          <button type="button" class="logout-btn-sair" (click)="confirmarLogout()">Sair</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .navbar {
@@ -110,20 +120,20 @@ import { User } from '../../models/auth.model';
       padding: 0.5rem 1rem;
       border: 2px solid #00FF00;
       border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
     }
 
-    .logo-text {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #00FF00;
-      letter-spacing: 2px;
+    .logo:hover {
+      opacity: 0.9;
     }
 
-    .logo-subtitle {
-      font-size: 0.9rem;
-      color: #00FF00;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .logo-img {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+      display: block;
     }
 
     .mobile-menu-toggle {
@@ -392,12 +402,8 @@ import { User } from '../../models/auth.model';
         padding: 0.3rem 0.65rem;
       }
 
-      .logo-text {
-        font-size: 1.3rem;
-      }
-
-      .logo-subtitle {
-        font-size: 0.7rem;
+      .logo-img {
+        height: 40px;
       }
 
       .mobile-menu-toggle {
@@ -473,13 +479,8 @@ import { User } from '../../models/auth.model';
         top: 0.3rem;
       }
 
-      .logo-text {
-        font-size: 1.15rem;
-        letter-spacing: 1px;
-      }
-
-      .logo-subtitle {
-        font-size: 0.65rem;
+      .logo-img {
+        height: 36px;
       }
 
       .mobile-menu-toggle {
@@ -517,6 +518,70 @@ import { User } from '../../models/auth.model';
         max-width: calc(100vw - 1rem);
       }
     }
+
+    .logout-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .logout-modal {
+      background: #1a1a1a;
+      border: 1px solid #00FF00;
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      min-width: 280px;
+      text-align: center;
+    }
+
+    .logout-modal-texto {
+      margin: 0 0 1.5rem 0;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .logout-modal-botoes {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .logout-btn-cancelar,
+    .logout-btn-sair {
+      padding: 0.6rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .logout-btn-cancelar {
+      background: transparent;
+      color: #999;
+      border: 1px solid #333;
+    }
+
+    .logout-btn-cancelar:hover {
+      color: #fff;
+      border-color: #555;
+    }
+
+    .logout-btn-sair {
+      background: #00FF00;
+      color: #0a0a0a;
+      border: 1px solid #00FF00;
+    }
+
+    .logout-btn-sair:hover {
+      opacity: 0.9;
+    }
   `]
 })
 export class NavbarComponent implements OnInit {
@@ -524,6 +589,7 @@ export class NavbarComponent implements OnInit {
   currentUser: User | null = null;
   showUserMenu = false;
   showMobileMenu = false;
+  showLogoutModal = false;
 
   constructor(
     private authService: AuthService,
@@ -551,6 +617,10 @@ export class NavbarComponent implements OnInit {
     if (toggleButton) {
       return;
     }
+  }
+
+  irParaComandas(): void {
+    this.setActiveMenu('comandas');
   }
 
   setActiveMenu(menu: string) {
@@ -599,11 +669,18 @@ export class NavbarComponent implements OnInit {
       .toUpperCase();
   }
 
-  onLogout() {
-    this.showUserMenu = false; // Fecha o menu
-    if (confirm('Deseja realmente sair?')) {
-      this.authService.logout(); // Já redireciona para /login
-    }
+  abrirModalSair(): void {
+    this.showUserMenu = false;
+    this.showLogoutModal = true;
+  }
+
+  fecharModalSair(): void {
+    this.showLogoutModal = false;
+  }
+
+  confirmarLogout(): void {
+    this.showLogoutModal = false;
+    this.authService.logout();
   }
 
   // ==================== PERMISSÕES ====================

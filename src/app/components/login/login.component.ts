@@ -1,21 +1,20 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../models/auth.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
           <div class="logo">
-            <span class="logo-text">R♦D</span>
-            <span class="logo-subtitle">POKER CLUB</span>
+            <img src="/logo_poker-Photoroom.png" alt="RVD Poker Club" class="logo-img" />
           </div>
           <h2>Bem-vindo de volta!</h2>
           <p>Entre com suas credenciais para acessar o sistema</p>
@@ -78,13 +77,6 @@ import { LoginRequest } from '../../models/auth.model';
             <span *ngIf="loading">Entrando...</span>
           </button>
         </form>
-
-        <div class="login-footer">
-          <p>
-            Não tem uma conta?
-            <a routerLink="/cadastro" class="link-register">Cadastre-se aqui</a>
-          </p>
-        </div>
       </div>
 
       <div class="login-background">
@@ -166,25 +158,16 @@ import { LoginRequest } from '../../models/auth.model';
     .logo {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
       padding: 0.75rem 1.5rem;
-      border: 2px solid #00FF00;
-      border-radius: 10px;
       margin-bottom: 1.5rem;
     }
 
-    .logo-text {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #00FF00;
-      letter-spacing: 2px;
-    }
-
-    .logo-subtitle {
-      font-size: 0.9rem;
-      color: #00FF00;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .logo-img {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      display: block;
     }
 
     .login-header h2 {
@@ -331,31 +314,6 @@ import { LoginRequest } from '../../models/auth.model';
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
-    }
-
-    .login-footer {
-      text-align: center;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid #333;
-    }
-
-    .login-footer p {
-      margin: 0;
-      color: #999;
-      font-size: 0.95rem;
-    }
-
-    .link-register {
-      color: #00FF00;
-      text-decoration: none;
-      font-weight: bold;
-      transition: color 0.3s ease;
-    }
-
-    .link-register:hover {
-      color: #00DD00;
-      text-decoration: underline;
     }
 
     @media (max-width: 768px) {

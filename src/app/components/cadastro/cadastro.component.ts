@@ -14,8 +14,7 @@ import { RegisterRequest } from '../../models/auth.model';
       <div class="cadastro-card">
         <div class="cadastro-header">
           <div class="logo">
-            <span class="logo-text">R♦D</span>
-            <span class="logo-subtitle">POKER CLUB</span>
+            <img src="/logo_poker-Photoroom.png" alt="RVD Poker Club" class="logo-img" />
           </div>
           <h2>Criar Nova Conta</h2>
           <p>Preencha os dados abaixo para se cadastrar</p>
@@ -229,25 +228,16 @@ import { RegisterRequest } from '../../models/auth.model';
     .logo {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
       padding: 0.75rem 1.5rem;
-      border: 2px solid #00FF00;
-      border-radius: 10px;
       margin-bottom: 1.5rem;
     }
 
-    .logo-text {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #00FF00;
-      letter-spacing: 2px;
-    }
-
-    .logo-subtitle {
-      font-size: 0.9rem;
-      color: #00FF00;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .logo-img {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      display: block;
     }
 
     .cadastro-header h2 {

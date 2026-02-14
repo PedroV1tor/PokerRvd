@@ -8,7 +8,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="comanda-card" [class.fechado]="comanda.status === 'FECHADO'" (click)="onMenuClick()">
+    <div class="comanda-card" [class.fechado]="comanda.status === 'FECHADO'" (dblclick)="onVerDetalhes()">
       <div class="card-header">
         <div class="jogador-info">
           <div class="avatar" [class.tipo-torneio]="comanda.tipo === 'TORNEIO'" 
@@ -44,35 +44,10 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
         </div>
       </div>
 
-      <div class="card-detalhes" *ngIf="showDetalhes" (click)="$event.stopPropagation()">
-        <div class="detalhes-grid">
-          <div class="detalhe-card" *ngIf="comanda.tipo !== 'TORNEIO'">
-            <div class="detalhe-icon">💰</div>
-            <div class="detalhe-info">
-              <span class="detalhe-label">Fichas</span>
-              <span class="detalhe-valor">R$ {{ comanda.valorFichas.toFixed(2) }}</span>
-            </div>
-          </div>
-          
-          <div class="detalhe-card">
-            <div class="detalhe-icon">🍺</div>
-            <div class="detalhe-info">
-              <span class="detalhe-label">Bebidas</span>
-              <span class="detalhe-valor bebidas">R$ {{ comanda.valorBebidas.toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-ver-detalhes" (click)="onVerDetalhes(); $event.stopPropagation()">
-          <span>📋</span>
-          Ver Detalhes Completos
-        </button>
-      </div>
-
-      <div class="card-expand-hint" *ngIf="!showDetalhes">
-        <span>Clique para ver detalhes</span>
-        <span class="expand-icon">▼</span>
-      </div>
+      <button class="btn-ver-comanda" (click)="onVerDetalhes(); $event.stopPropagation()">
+        <span>📋</span>
+        Ver comanda completa
+      </button>
     </div>
   `,
   styles: [`
@@ -279,103 +254,9 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       transform: scale(1.05);
     }
 
-    .card-expand-hint {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      color: #666;
-      font-size: 0.85rem;
-      transition: all 0.3s ease;
-    }
-
-    .comanda-card:hover .card-expand-hint {
-      color: #00ff88;
-    }
-
-    .expand-icon {
-      font-size: 0.8rem;
-      transition: transform 0.3s ease;
-    }
-
-    .comanda-card:hover .expand-icon {
-      transform: translateY(2px);
-    }
-
-    .card-detalhes {
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
-      border-top: 2px solid rgba(0, 255, 136, 0.2);
-      animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .detalhes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .detalhe-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      transition: all 0.3s ease;
-    }
-
-    .detalhe-card:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(0, 255, 136, 0.3);
-    }
-
-    .detalhe-icon {
-      font-size: 1.8rem;
-    }
-
-    .detalhe-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .detalhe-label {
-      color: #999;
-      font-size: 0.8rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .detalhe-valor {
-      font-weight: bold;
-      color: #00ff88;
-      font-size: 1.1rem;
-    }
-
-    .detalhe-valor.bebidas {
-      color: #ffd700;
-    }
-
-    .btn-ver-detalhes {
+    .btn-ver-comanda {
       width: 100%;
+      margin-top: 1rem;
       padding: 0.875rem;
       border: 2px solid #00ff88;
       border-radius: 10px;
@@ -391,7 +272,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       gap: 0.5rem;
     }
 
-    .btn-ver-detalhes:hover {
+    .btn-ver-comanda:hover {
       background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
       color: #000;
       transform: translateY(-2px);
@@ -409,10 +290,6 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
         justify-content: space-between;
         align-items: center;
       }
-
-      .detalhes-grid {
-        grid-template-columns: 1fr;
-      }
     }
   `]
 })
@@ -420,8 +297,6 @@ export class ComandaCardComponent {
   @Input() comanda!: Comanda;
   @Output() toggleStatus = new EventEmitter<number>();
   @Output() verDetalhes = new EventEmitter<number>();
-
-  showDetalhes = false;
 
   constructor(private router: Router) {}
 
@@ -445,10 +320,6 @@ export class ComandaCardComponent {
 
   onToggleStatus() {
     this.toggleStatus.emit(this.comanda.id);
-  }
-
-  onMenuClick() {
-    this.showDetalhes = !this.showDetalhes;
   }
 
   onVerDetalhes() {
