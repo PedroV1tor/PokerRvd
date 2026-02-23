@@ -309,6 +309,31 @@
   letter-spacing: 1px;
 }
 
+.comandas-fechadas-section .section-title-fechadas {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.35rem;
+}
+
+.comandas-fechadas-section .fechadas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.comandas-fechadas-section .fechadas-toggle-icon {
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.comandas-fechadas-section .fechadas-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+  margin: 0.75rem 0 1.5rem;
+}
+
 .comandas-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));

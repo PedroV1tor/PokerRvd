@@ -10,6 +10,10 @@ export interface User {
   permissaoProdutos?: boolean;
   permissaoFuncionarios?: boolean;
   permissaoCaixas?: boolean;
+  permissaoFecharComanda?: boolean;
+  permissaoRemoverItemComanda?: boolean;
+  permissaoAdicionarEstoque?: boolean;
+  permissaoCadastrarProduto?: boolean;
 }
 
 export enum UserRole {

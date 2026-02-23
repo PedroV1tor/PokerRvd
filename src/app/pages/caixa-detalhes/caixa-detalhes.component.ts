@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CaixaService } from '../../services/caixa.service';
 import { ComandaService } from '../../services/comanda.service';
+import { ToastService } from '../../services/toast.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
 import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '../../models/comanda.model';
 
@@ -59,7 +60,8 @@ export class CaixaDetalhesComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private caixaService: CaixaService,
-    private comandaService: ComandaService
+    private comandaService: ComandaService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -84,13 +86,12 @@ export class CaixaDetalhesComponent implements OnInit {
         this.verificarComandasAbertas();
       },
       error: (error) => {
-        console.error('Erro ao carregar caixa:', error);
         const msg = typeof error.error === 'object' && error.error?.message
           ? error.error.message
           : typeof error.error === 'string'
             ? error.error
             : (error.status === 0 ? 'Verifique se o backend está rodando.' : 'Erro ao carregar caixa.');
-        alert(msg);
+        this.toast.error(msg);
         this.router.navigate(['/caixas']);
         this.loading = false;
       }
@@ -118,8 +119,7 @@ export class CaixaDetalhesComponent implements OnInit {
         this.valorPendente = this.comandasAbertas.reduce((total, c) => total + c.valorTotal, 0);
         this.mostrarAvisoComandas = this.comandasAbertas.length > 0;
       },
-      error: (error) => {
-        console.error('Erro ao verificar comandas abertas:', error);
+      error: () => {
         this.comandasAbertas = [];
         this.valorPendente = 0;
         this.mostrarAvisoComandas = false;
@@ -141,13 +141,12 @@ export class CaixaDetalhesComponent implements OnInit {
 
     this.caixaService.fecharCaixa(this.caixaId, dto).subscribe({
       next: () => {
-        alert('Caixa fechado com sucesso!');
+        this.toast.success('Caixa fechado com sucesso!');
         this.fecharModalFechar();
         this.carregarCaixa();
       },
       error: (error) => {
-        console.error('Erro ao fechar caixa:', error);
-        alert(error.error || 'Erro ao fechar caixa. Tente novamente.');
+        this.toast.error(error.error || 'Erro ao fechar caixa. Tente novamente.');
       }
     });
   }
@@ -176,15 +175,13 @@ export class CaixaDetalhesComponent implements OnInit {
 
   criarCategoria() {
     if (!this.novaCategoria || this.novaCategoria.trim() === '') {
-      alert('Digite um nome para a categoria');
+      this.toast.warning('Digite um nome para a categoria');
       return;
     }
 
     const categoriaTrimmed = this.novaCategoria.trim();
-    
-    // Verificar se a categoria já existe
     if (this.categorias.includes(categoriaTrimmed)) {
-      alert('Esta categoria já existe');
+      this.toast.warning('Esta categoria já existe');
       return;
     }
 
@@ -202,7 +199,7 @@ export class CaixaDetalhesComponent implements OnInit {
     if (!this.caixa) return;
 
     if (!this.categoriaMovimentacao || !this.descricaoMovimentacao || this.valorMovimentacao <= 0) {
-      alert('Preencha todos os campos corretamente');
+      this.toast.warning('Preencha todos os campos corretamente');
       return;
     }
 
@@ -215,13 +212,12 @@ export class CaixaDetalhesComponent implements OnInit {
 
     this.caixaService.addMovimentacao(this.caixaId, dto).subscribe({
       next: () => {
-        alert('Movimentação adicionada com sucesso!');
+        this.toast.success('Movimentação adicionada com sucesso!');
         this.fecharModalMovimentacao();
         this.carregarCaixa();
       },
-      error: (error) => {
-        console.error('Erro ao adicionar movimentação:', error);
-        alert('Erro ao adicionar movimentação. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao adicionar movimentação. Tente novamente.');
       }
     });
   }
@@ -304,7 +300,7 @@ export class CaixaDetalhesComponent implements OnInit {
       error: (err) => {
         this.salvandoQuitar = false;
         const msg = typeof err.error === 'object' && err.error?.message ? err.error.message : err.message || 'Erro ao quitar.';
-        alert(msg);
+        this.toast.error(msg);
       }
     });
   }

@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Produto, CreateProdutoDto } from '../../models/produto.model';
 import { ProdutoService } from '../../services/produto.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
+import { AuthService } from '../../services/auth.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 
 @Component({
@@ -50,7 +53,12 @@ export class ProdutosComponent implements OnInit {
 
   unidadesVenda: string[] = ['Unidade', 'Caixa', 'Litro', 'Kg', 'Porção', 'Pack'];
 
-  constructor(private produtoService: ProdutoService) {}
+  constructor(
+    private produtoService: ProdutoService,
+    private toast: ToastService,
+    private confirm: ConfirmService,
+    public auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.carregarProdutos();
@@ -64,8 +72,7 @@ export class ProdutosComponent implements OnInit {
         this.filtrarProdutos(); // Aplicar filtros após carregar
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Erro ao carregar produtos:', error);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -125,38 +132,34 @@ export class ProdutosComponent implements OnInit {
 
   criarProduto(): void {
     if (!this.isFormValid()) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+      this.toast.warning('Por favor, preencha todos os campos obrigatórios!');
       return;
     }
 
     this.produtoService.createProduto(this.novoProduto).subscribe({
-      next: (produto) => {
-        console.log('Produto criado:', produto);
+      next: () => {
         this.carregarProdutos();
         this.fecharModal();
-        alert('Produto criado com sucesso!');
+        this.toast.success('Produto criado com sucesso!');
       },
-      error: (error) => {
-        console.error('Erro ao criar produto:', error);
-        alert('Erro ao criar produto. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao criar produto. Tente novamente.');
       }
     });
   }
 
   deletarProduto(id: number): void {
-    if (!confirm('Tem certeza que deseja deletar este produto?')) {
-      return;
-    }
-
-    this.produtoService.deleteProduto(id).subscribe({
-      next: () => {
-        this.carregarProdutos();
-        alert('Produto deletado com sucesso!');
-      },
-      error: (error) => {
-        console.error('Erro ao deletar produto:', error);
-        alert('Erro ao deletar produto. Tente novamente.');
-      }
+    this.confirm.confirm({ message: 'Tem certeza que deseja deletar este produto?', confirmText: 'Deletar' }).then(ok => {
+      if (!ok) return;
+      this.produtoService.deleteProduto(id).subscribe({
+        next: () => {
+          this.carregarProdutos();
+          this.toast.success('Produto deletado com sucesso!');
+        },
+        error: () => {
+          this.toast.error('Erro ao deletar produto. Tente novamente.');
+        }
+      });
     });
   }
 
@@ -185,7 +188,7 @@ export class ProdutosComponent implements OnInit {
 
   salvarEdicao(): void {
     if (!this.isFormEdicaoValid()) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+      this.toast.warning('Por favor, preencha todos os campos obrigatórios!');
       return;
     }
 
@@ -215,11 +218,10 @@ export class ProdutosComponent implements OnInit {
         this.fecharModalEdicao();
         
         const statusMsg = this.produtoEditando.ativo ? 'ativado' : 'desativado';
-        alert(`Produto ${statusAlterado ? statusMsg : 'atualizado'} com sucesso!`);
+        this.toast.success(`Produto ${statusAlterado ? statusMsg : 'atualizado'} com sucesso!`);
       },
-      error: (error) => {
-        console.error('Erro ao atualizar produto:', error);
-        alert('Erro ao atualizar produto. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao atualizar produto. Tente novamente.');
       }
     });
   }
@@ -253,12 +255,6 @@ export class ProdutosComponent implements OnInit {
 
   onProdutoEstoqueChange(): void {
     // Método chamado quando o produto é selecionado ou quantidade é alterada
-    console.log('Produto/Quantidade alterado:', {
-      produtoId: this.estoqueAdd.produtoId,
-      quantidade: this.estoqueAdd.quantidade,
-      estoqueAtual: this.getEstoqueAtual(),
-      novoEstoque: this.getNovoEstoque()
-    });
   }
 
   getEstoqueAtual(): number {
@@ -280,23 +276,15 @@ export class ProdutosComponent implements OnInit {
 
   adicionarEstoque(): void {
     if (!this.isFormEstoqueValid()) {
-      alert('Por favor, selecione um produto e informe a quantidade!');
+      this.toast.warning('Por favor, selecione um produto e informe a quantidade!');
       return;
     }
 
-    // Converter para number para garantir comparação correta
     const produtoId = Number(this.estoqueAdd.produtoId);
     const produto = this.produtos.find(p => p.id === produtoId);
-    
-    console.log('Buscando produto:', {
-      produtoId: produtoId,
-      produtoIdOriginal: this.estoqueAdd.produtoId,
-      produtosDisponiveis: this.produtos.map(p => ({ id: p.id, nome: p.nome })),
-      produtoEncontrado: produto
-    });
 
     if (!produto) {
-      alert('Produto não encontrado!');
+      this.toast.error('Produto não encontrado!');
       return;
     }
 
@@ -316,11 +304,10 @@ export class ProdutosComponent implements OnInit {
       next: () => {
         this.carregarProdutos();
         this.fecharModalEstoque();
-        alert(`Estoque atualizado! ${produto.nome}: ${produto.quantidadeEstoque} → ${novoEstoque}`);
+        this.toast.success(`Estoque atualizado! ${produto.nome}: ${produto.quantidadeEstoque} → ${novoEstoque}`);
       },
-      error: (error) => {
-        console.error('Erro ao adicionar estoque:', error);
-        alert('Erro ao adicionar estoque. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao adicionar estoque. Tente novamente.');
       }
     });
   }

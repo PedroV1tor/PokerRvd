@@ -1,10 +1,12 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../services/toast.service';
 
 export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const toast = inject(ToastService);
 
   // Pega a permissão necessária da rota
   const requiredPermission = route.data['permission'] as string;
@@ -36,7 +38,7 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
   }
 
   if (!hasPermission) {
-    alert('Você não tem permissão para acessar esta página');
+    toast.error('Você não tem permissão para acessar esta página');
     router.navigate(['/dashboard']);
     return false;
   }

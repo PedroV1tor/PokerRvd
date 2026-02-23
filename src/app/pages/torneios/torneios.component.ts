@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { TorneioService } from '../../services/torneio.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 import { Torneio, CreateTorneioDto, StatusTorneio } from '../../models/torneio.model';
 
 @Component({
@@ -34,7 +36,9 @@ export class TorneiosComponent implements OnInit {
 
   constructor(
     private torneioService: TorneioService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -49,8 +53,7 @@ export class TorneiosComponent implements OnInit {
         this.aplicarFiltros();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erro ao carregar torneios:', error);
+      error: () => {
         this.loading = false;
       }
     });
@@ -90,79 +93,65 @@ export class TorneiosComponent implements OnInit {
   }
 
   criarTorneio() {
-    // Validações
     if (!this.novoTorneio.nome.trim()) {
-      alert('Por favor, preencha o nome do torneio');
+      this.toast.warning('Por favor, preencha o nome do torneio');
       return;
     }
 
     if (this.novoTorneio.valorBuyIn <= 0) {
-      alert('O valor do Buy-in deve ser maior que zero');
+      this.toast.warning('O valor do Buy-in deve ser maior que zero');
       return;
     }
 
     this.loading = true;
     this.torneioService.createTorneio(this.novoTorneio).subscribe({
-      next: (torneio) => {
-        console.log('Torneio criado:', torneio);
+      next: () => {
         this.carregarTorneios();
         this.fecharModalCriar();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erro ao criar torneio:', error);
-        alert('Erro ao criar torneio. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao criar torneio. Tente novamente.');
         this.loading = false;
       }
     });
   }
 
-  editarTorneio(id: number) {
+  editarTorneio(_id: number) {
     // TODO: Implementar edição
-    console.log('Editar torneio:', id);
   }
 
   deletarTorneio(id: number) {
     const torneio = this.torneios.find(t => t.id === id);
     if (!torneio) return;
 
-    if (confirm(`Deseja realmente excluir o torneio "${torneio.nome}"?`)) {
+    this.confirm.confirm({ message: `Deseja realmente excluir o torneio "${torneio.nome}"?`, confirmText: 'Excluir' }).then(ok => {
+      if (!ok) return;
       this.torneioService.deleteTorneio(id).subscribe({
-        next: () => {
-          this.carregarTorneios();
-        },
-        error: (error) => {
-          console.error('Erro ao deletar torneio:', error);
-          alert('Erro ao deletar torneio. Tente novamente.');
-        }
+        next: () => this.carregarTorneios(),
+        error: () => this.toast.error('Erro ao deletar torneio. Tente novamente.')
       });
-    }
+    });
   }
 
   iniciarTorneio(id: number) {
-    if (confirm('Deseja iniciar este torneio?')) {
+    this.confirm.confirm({ message: 'Deseja iniciar este torneio?', confirmText: 'Iniciar' }).then(ok => {
+      if (!ok) return;
       this.torneioService.iniciarTorneio(id).subscribe({
-        next: () => {
-          this.carregarTorneios();
-        },
-        error: (error) => {
-          console.error('Erro ao iniciar torneio:', error);
-        }
+        next: () => this.carregarTorneios(),
+        error: () => {}
       });
-    }
+    });
   }
 
   finalizarTorneio(id: number) {
-    if (confirm('Deseja finalizar este torneio?')) {
+    this.confirm.confirm({ message: 'Deseja finalizar este torneio?', confirmText: 'Finalizar' }).then(ok => {
+      if (!ok) return;
       this.torneioService.finalizarTorneio(id).subscribe({
-        next: () => {
-          this.carregarTorneios();
-        },
-        error: (error) => {
-          console.error('Erro ao finalizar torneio:', error);
-        }
+        next: () => this.carregarTorneios(),
+        error: () => {}
       });
-    }
+    });
   }
 
   getStatusLabel(status: StatusTorneio): string {

@@ -901,14 +901,39 @@
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+
   .header {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
+    padding: 1rem;
   }
 
   .logo-section {
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-voltar {
+    order: 2;
+    margin-left: auto;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .logo {
+    order: 1;
   }
 
   .nav-menu {
@@ -920,8 +945,14 @@
     grid-template-columns: 1fr;
   }
 
+  .items-table-container {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
   .items-table {
     font-size: 0.9rem;
+    min-width: 100%;
 
     thead th,
     tbody td {
@@ -935,5 +966,128 @@
     &.total-final .total-value {
       font-size: 1.4rem;
     }
+  }
+
+  .btn-fechar-comanda {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.5rem;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .grid-layout {
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .header {
+    padding: 0.75rem;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .logo-section {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-voltar {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    order: 2;
+    margin-left: auto;
+  }
+
+  .logo {
+    order: 1;
+  }
+
+  .logo .logo-img {
+    height: 36px;
+  }
+
+  .player-card {
+    padding: 1.5rem;
+  }
+
+  .avatar-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+
+  .player-name {
+    font-size: 1.2rem;
+  }
+
+  .actions-box {
+    padding: 1rem;
+  }
+
+  .action-btn {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .items-table-container {
+    padding: 0.75rem;
+  }
+
+  .items-table {
+    font-size: 0.85rem;
+
+    thead th {
+      font-size: 0.85rem;
+      padding: 0.6rem 0.4rem;
+    }
+
+    tbody td {
+      padding: 0.6rem 0.4rem;
+    }
+  }
+
+  .btn-remover {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .total-section {
+    padding-top: 1rem;
+  }
+
+  .total-row {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.9rem;
+
+    &.total-final {
+      font-size: 1.2rem;
+      padding-top: 1rem;
+
+      .total-value {
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  .footer-actions {
+    width: 100%;
+  }
+
+  .btn-fechar-comanda {
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+    width: 100%;
   }
 }

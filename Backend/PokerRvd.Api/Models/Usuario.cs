@@ -18,6 +18,14 @@ public class Usuario
     public bool PermissaoProdutos { get; set; } = false;
     public bool PermissaoFuncionarios { get; set; } = false;
     public bool PermissaoCaixas { get; set; } = false;
+
+    // Permissões específicas de ações em comandas
+    public bool PermissaoFecharComanda { get; set; } = false;
+    public bool PermissaoRemoverItemComanda { get; set; } = false;
+
+    // Permissões específicas de ações em produtos
+    public bool PermissaoAdicionarEstoque { get; set; } = false;
+    public bool PermissaoCadastrarProduto { get; set; } = false;
 }
 
 public enum UserRole

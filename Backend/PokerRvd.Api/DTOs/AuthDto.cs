@@ -27,12 +27,20 @@ public class UserDto
     public bool Ativo { get; set; }
     public DateTime DataCadastro { get; set; }
     
-    // Permissões
+    // Permissões por módulo
     public bool PermissaoComandas { get; set; }
     public bool PermissaoTorneios { get; set; }
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+
+    // Permissões específicas de ações em comandas
+    public bool PermissaoFecharComanda { get; set; }
+    public bool PermissaoRemoverItemComanda { get; set; }
+
+    // Permissões específicas de ações em produtos
+    public bool PermissaoAdicionarEstoque { get; set; }
+    public bool PermissaoCadastrarProduto { get; set; }
 }
 
 public class AuthResponse

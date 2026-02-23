@@ -373,15 +373,22 @@ export class LoginComponent {
     // Login
     this.loading = true;
     this.authService.login(this.credentials).subscribe({
-      next: (response) => {
+      next: () => {
         this.loading = false;
-        console.log('Login realizado com sucesso!', response);
         this.router.navigate(['/']);
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
-        console.error('Erro no login:', error);
+        const body = error.error;
+        if (body && typeof body === 'object' && body.message) {
+          this.errorMessage = body.message;
+        } else if (typeof body === 'string' && body) {
+          this.errorMessage = body;
+        } else {
+          this.errorMessage = error.status === 0
+            ? 'Não foi possível conectar ao servidor. Verifique se a API está rodando.'
+            : 'Erro ao fazer login. Verifique suas credenciais.';
+        }
       }
     });
   }

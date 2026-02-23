@@ -40,6 +40,24 @@ builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 
 var app = builder.Build();
 
+// Em desenvolvimento, capturar exceções não tratadas e retornar mensagem no 500 (ajuda a debugar)
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (Exception ex)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { message = ex.Message, detail = ex.ToString() }));
+        }
+    });
+}
+
 // Verificar conexão com o banco na inicialização (apenas log, não bloqueia)
 using (var scope = app.Services.CreateScope())
 {

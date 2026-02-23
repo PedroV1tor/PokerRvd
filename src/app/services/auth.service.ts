@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { 
   User, 
@@ -124,6 +124,23 @@ export class AuthService {
     return user?.permissaoComandas || false;
   }
 
+  hasPermissionFecharComanda(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    // Para fechar comanda, além da permissão específica, é esperado que tenha acesso ao módulo de comandas
+    const moduloComandas = user?.permissaoComandas || false;
+    const acaoFechar = user?.permissaoFecharComanda || false;
+    return moduloComandas && acaoFechar;
+  }
+
+  hasPermissionRemoverItemComanda(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    const moduloComandas = user?.permissaoComandas || false;
+    const acaoRemover = user?.permissaoRemoverItemComanda || false;
+    return moduloComandas && acaoRemover;
+  }
+
   hasPermissionTorneios(): boolean {
     const user = this.getCurrentUser();
     if (user?.role === 'ADMIN') return true;
@@ -136,6 +153,22 @@ export class AuthService {
     return user?.permissaoProdutos || false;
   }
 
+  hasPermissionAdicionarEstoque(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    const moduloProdutos = user?.permissaoProdutos || false;
+    const acaoEstoque = user?.permissaoAdicionarEstoque || false;
+    return moduloProdutos && acaoEstoque;
+  }
+
+  hasPermissionCadastrarProduto(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    const moduloProdutos = user?.permissaoProdutos || false;
+    const acaoCadastrar = user?.permissaoCadastrarProduto || false;
+    return moduloProdutos && acaoCadastrar;
+  }
+
   hasPermissionFuncionarios(): boolean {
     const user = this.getCurrentUser();
     if (user?.role === 'ADMIN') return true;
@@ -146,6 +179,24 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (user?.role === 'ADMIN') return true;
     return user?.permissaoCaixas || false;
+  }
+
+  /**
+   * Atualiza o usuário atual a partir do backend.
+   * Importante porque as permissões podem mudar enquanto o usuário está logado.
+   */
+  refreshCurrentUser(): Observable<User | null> {
+    const current = this.getCurrentUser();
+    if (!current?.id) return of(null);
+
+    return this.http.get<User>(`${this.apiUrl}/me/${current.id}`).pipe(
+      tap(user => {
+        const token = this.getToken() || undefined;
+        this.setSession(user, token);
+        this.updateAuthState();
+      }),
+      catchError(() => of(null))
+    );
   }
 
   private getUserFromStorage(): User | null {

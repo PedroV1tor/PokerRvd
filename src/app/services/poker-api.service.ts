@@ -175,7 +175,6 @@ export class PokerApiService {
       }
     }
     
-    console.error('Erro na API:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
 }

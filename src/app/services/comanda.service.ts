@@ -76,13 +76,8 @@ export class ComandaService {
 
   adicionarFichas(comandaId: number, nome: string, valor: number): Observable<boolean> {
     const body = { nome, valor };
-    console.log('Enviando requisição para adicionar fichas:', { comandaId, body });
-    
     return this.http.post(`${this.apiUrl}/comandas/${comandaId}/fichas`, body).pipe(
-      map((response) => {
-        console.log('Resposta da API ao adicionar fichas:', response);
-        return true;
-      })
+      map(() => true)
     );
   }
 

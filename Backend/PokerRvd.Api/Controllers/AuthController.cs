@@ -10,11 +10,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger, IWebHostEnvironment env)
     {
         _authService = authService;
         _logger = logger;
+        _env = env;
     }
 
     /// <summary>
@@ -25,8 +27,14 @@ public class AuthController : ControllerBase
     {
         try
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (request == null)
+                return BadRequest(new AuthResponse { Message = "Dados de login não informados." });
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new AuthResponse { Message = "E-mail é obrigatório." });
+
+            if (string.IsNullOrWhiteSpace(request.Senha))
+                return BadRequest(new AuthResponse { Message = "Senha é obrigatória." });
 
             var response = await _authService.LoginAsync(request);
 
@@ -38,9 +46,10 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao fazer login");
-            return StatusCode(500, new AuthResponse 
-            { 
-                Message = "Erro interno do servidor" 
+            var message = _env.IsDevelopment() ? ex.Message : "Erro interno do servidor";
+            return StatusCode(500, new AuthResponse
+            {
+                Message = message
             });
         }
     }

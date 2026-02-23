@@ -36,14 +36,6 @@
             <span class="stat-value">{{ comandasFiltradas.length }}</span>
           </div>
         </div>
-
-        <div class="stat-card card-valor">
-          <div class="stat-icon">💰</div>
-          <div class="stat-info">
-            <span class="stat-label">Valor Total</span>
-            <span class="stat-value">R$ {{ calcularValorTotal() }}</span>
-          </div>
-        </div>
       </div>
 
       <!-- Barra de Busca e Filtros -->
@@ -108,6 +100,29 @@
         <div class="comandas-grid">
           <app-comanda-card
             *ngFor="let comanda of comandasFiltradas"
+            [comanda]="comanda"
+            (toggleStatus)="toggleStatusComanda($event)"
+            (verDetalhes)="verDetalhesComanda($event)">
+          </app-comanda-card>
+        </div>
+      </div>
+
+      <!-- Grid de Comandas Fechadas -->
+      <div *ngIf="!loading && comandasFechadasFiltradas.length > 0" class="comandas-section comandas-fechadas-section">
+        <div class="fechadas-header" (click)="mostrarComandasFechadas = !mostrarComandasFechadas">
+          <h2 class="section-title section-title-fechadas">
+            Comandas Fechadas ({{ comandasFechadasFiltradas.length }})
+          </h2>
+          <span class="fechadas-toggle-icon">
+            {{ mostrarComandasFechadas ? '▼' : '▶' }}
+          </span>
+        </div>
+
+        <div class="fechadas-divider"></div>
+
+        <div class="comandas-grid" *ngIf="mostrarComandasFechadas">
+          <app-comanda-card
+            *ngFor="let comanda of comandasFechadasFiltradas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
             (verDetalhes)="verDetalhesComanda($event)">

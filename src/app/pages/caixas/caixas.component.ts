@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { CaixaService } from '../../services/caixa.service';
+import { ToastService } from '../../services/toast.service';
 import { CaixaDto, StatusCaixa, CreateCaixaDto } from '../../models/caixa.model';
 
 @Component({
@@ -27,7 +28,8 @@ export class CaixasComponent implements OnInit {
 
   constructor(
     private caixaService: CaixaService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -42,8 +44,7 @@ export class CaixasComponent implements OnInit {
         this.caixas = caixas;
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erro ao carregar caixas:', error);
+      error: () => {
         this.loading = false;
       }
     });
@@ -72,7 +73,7 @@ export class CaixasComponent implements OnInit {
 
   abrirCaixa() {
     if (this.saldoInicial < 0) {
-      alert('Saldo inicial não pode ser negativo');
+      this.toast.warning('Saldo inicial não pode ser negativo');
       return;
     }
 
@@ -82,15 +83,14 @@ export class CaixasComponent implements OnInit {
     };
 
     this.caixaService.abrirCaixa(dto).subscribe({
-      next: (caixa) => {
-        alert('Caixa aberto com sucesso!');
+      next: () => {
+        this.toast.success('Caixa aberto com sucesso!');
         this.fecharModalAbrirCaixa();
         this.carregarCaixas();
         this.verificarCaixaAberto();
       },
       error: (error) => {
-        console.error('Erro ao abrir caixa:', error);
-        alert(error.error || 'Erro ao abrir caixa. Tente novamente.');
+        this.toast.error(error.error || 'Erro ao abrir caixa. Tente novamente.');
       }
     });
   }

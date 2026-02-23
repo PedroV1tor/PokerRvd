@@ -13,12 +13,20 @@ public class FuncionarioDto
     public DateTime DataCadastro { get; set; }
     public DateTime? UltimoAcesso { get; set; }
     
-    // Permissões
+    // Permissões por módulo
     public bool PermissaoComandas { get; set; }
     public bool PermissaoTorneios { get; set; }
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+
+    // Permissões específicas de ações em comandas
+    public bool PermissaoFecharComanda { get; set; }
+    public bool PermissaoRemoverItemComanda { get; set; }
+
+    // Permissões específicas de ações em produtos
+    public bool PermissaoAdicionarEstoque { get; set; }
+    public bool PermissaoCadastrarProduto { get; set; }
 }
 
 public class CreateFuncionarioDto
@@ -35,6 +43,14 @@ public class CreateFuncionarioDto
     public bool PermissaoProdutos { get; set; } = false;
     public bool PermissaoFuncionarios { get; set; } = false;
     public bool PermissaoCaixas { get; set; } = false;
+
+    // Permissões específicas de ações em comandas
+    public bool PermissaoFecharComanda { get; set; } = false;
+    public bool PermissaoRemoverItemComanda { get; set; } = false;
+
+    // Permissões específicas de ações em produtos
+    public bool PermissaoAdicionarEstoque { get; set; } = false;
+    public bool PermissaoCadastrarProduto { get; set; } = false;
 }
 
 public class UpdateFuncionarioDto
@@ -51,4 +67,12 @@ public class UpdateFuncionarioDto
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+
+    // Permissões específicas de ações em comandas
+    public bool PermissaoFecharComanda { get; set; }
+    public bool PermissaoRemoverItemComanda { get; set; }
+
+    // Permissões específicas de ações em produtos
+    public bool PermissaoAdicionarEstoque { get; set; }
+    public bool PermissaoCadastrarProduto { get; set; }
 }

@@ -5,9 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ComandaService } from '../../services/comanda.service';
 import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor } from '../../models/comanda.model';
 import { Torneio } from '../../models/torneio.model';
 import { Produto } from '../../models/produto.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-comanda-detalhes',
@@ -49,7 +52,10 @@ export class ComandaDetalhesComponent implements OnInit {
     private router: Router,
     private comandaService: ComandaService,
     private torneioService: TorneioService,
-    private produtoService: ProdutoService
+    private produtoService: ProdutoService,
+    private toast: ToastService,
+    private confirm: ConfirmService,
+    private auth: AuthService
   ) {}
 
   ngOnInit() {
@@ -67,20 +73,15 @@ export class ComandaDetalhesComponent implements OnInit {
         if (comanda) {
           this.comanda = comanda;
           this.itens = comanda.itens || [];
-          console.log('Itens carregados:', this.itens);
-          
-          // Carregar torneio se a comanda estiver vinculada a um
           if (comanda.torneioId) {
             this.carregarTorneio(comanda.torneioId);
           }
         } else {
-          console.error('Comanda não encontrada');
           this.router.navigate(['/dashboard']);
         }
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erro ao carregar comanda:', error);
+      error: () => {
         this.loading = false;
         this.router.navigate(['/dashboard']);
       }
@@ -92,9 +93,7 @@ export class ComandaDetalhesComponent implements OnInit {
       next: (torneio) => {
         this.torneio = torneio || null;
       },
-      error: (error) => {
-        console.error('Erro ao carregar torneio:', error);
-      }
+      error: () => {}
     });
   }
 
@@ -176,12 +175,12 @@ export class ComandaDetalhesComponent implements OnInit {
     if (!this.comanda) return;
 
     if (!this.nomeFichas || this.nomeFichas.trim() === '') {
-      alert('Digite um nome para as fichas');
+      this.toast.warning('Digite um nome para as fichas');
       return;
     }
 
     if (!this.valorFichas || this.valorFichas <= 0) {
-      alert('Digite um valor válido');
+      this.toast.warning('Digite um valor válido');
       return;
     }
 
@@ -194,29 +193,27 @@ export class ComandaDetalhesComponent implements OnInit {
     // Adicionar via API
     this.comandaService.adicionarFichas(this.comanda.id, nome, valor).subscribe({
       next: () => {
-        alert(`${nome} de R$ ${valor.toFixed(2)} adicionado com sucesso!`);
+        this.toast.success(`${nome} de R$ ${valor.toFixed(2)} adicionado com sucesso!`);
         this.fecharModalFichas();
         this.carregarComanda();
       },
-      error: (error) => {
-        console.error(`Erro ao adicionar ${nome}:`, error);
-        alert(`Erro ao adicionar ${nome}. Tente novamente.`);
+      error: () => {
+        this.toast.error(`Erro ao adicionar ${nome}. Tente novamente.`);
       }
     });
   }
 
   removerItem(index: number) {
-    if (confirm('Deseja realmente remover este item?')) {
+    this.confirm.confirm({ message: 'Deseja realmente remover este item?', confirmText: 'Remover' }).then(ok => {
+      if (!ok) return;
       const item = this.itens[index];
       this.itens.splice(index, 1);
-      
-      // Atualizar valores
       if (item.produtoId === 0) {
         this.atualizarValorFichas();
       } else {
         this.atualizarValorBebidas();
       }
-    }
+    });
   }
 
   atualizarValorFichas() {
@@ -291,28 +288,37 @@ export class ComandaDetalhesComponent implements OnInit {
     return Math.abs(this.somaFormasPagamento - this.valorComDesconto) < 0.01;
   }
 
+  // ==================== PERMISSÕES DE AÇÃO ====================
+
+  get podeFecharComanda(): boolean {
+    return this.auth.hasPermissionFecharComanda();
+  }
+
+  get podeRemoverItem(): boolean {
+    return this.auth.hasPermissionRemoverItemComanda();
+  }
+
   fecharComanda() {
     if (!this.comanda) return;
 
     const comFormas = this.formasPagamento.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
     if (comFormas.length === 0) {
-      alert('Informe pelo menos uma forma de pagamento com valor maior que zero.');
+      this.toast.warning('Informe pelo menos uma forma de pagamento com valor maior que zero.');
       return;
     }
     if (!this.totalBateComFormas) {
-      alert(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorComDesconto.toFixed(2)}).`);
+      this.toast.warning(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorComDesconto.toFixed(2)}).`);
       return;
     }
 
     const desconto = Number(this.descontoFechar) || 0;
     this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto }).subscribe({
       next: () => {
-        alert('Comanda fechada com sucesso!');
+        this.toast.success('Comanda fechada com sucesso!');
         this.fecharModalFechar();
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        console.error('Erro ao fechar comanda:', error);
         let msg = 'Erro ao fechar comanda. Tente novamente.';
         if (typeof error.error === 'string') {
           try {
@@ -324,7 +330,7 @@ export class ComandaDetalhesComponent implements OnInit {
         } else {
           msg = error.error?.message || error.message || msg;
         }
-        alert(msg);
+        this.toast.error(msg);
       }
     });
   }
@@ -334,9 +340,7 @@ export class ComandaDetalhesComponent implements OnInit {
       next: (produtos) => {
         this.produtos = produtos.filter(p => p.ativo);
       },
-      error: (error) => {
-        console.error('Erro ao carregar produtos:', error);
-      }
+      error: () => {}
     });
   }
 
@@ -354,19 +358,18 @@ export class ComandaDetalhesComponent implements OnInit {
 
   adicionarBebida() {
     if (!this.produtoSelecionadoId || this.quantidadeProduto < 1) {
-      alert('Selecione um produto e quantidade válidos');
+      this.toast.warning('Selecione um produto e quantidade válidos');
       return;
     }
 
     this.comandaService.adicionarProduto(this.comandaId, this.produtoSelecionadoId, this.quantidadeProduto).subscribe({
       next: () => {
-        alert('Bebida adicionada com sucesso!');
+        this.toast.success('Bebida adicionada com sucesso!');
         this.fecharModalBebida();
         this.carregarComanda();
       },
-      error: (error) => {
-        console.error('Erro ao adicionar bebida:', error);
-        alert('Erro ao adicionar bebida. Tente novamente.');
+      error: () => {
+        this.toast.error('Erro ao adicionar bebida. Tente novamente.');
       }
     });
   }

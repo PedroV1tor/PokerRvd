@@ -155,146 +155,119 @@
 
   <!-- Modal Novo Funcionário -->
   <div class="modal-overlay" *ngIf="showModal" (click)="fecharModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content modal-content-permissoes" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Novo Funcionário</h2>
         <button class="btn-close" (click)="fecharModal()">✕</button>
       </div>
 
-      <form class="modal-form" (ngSubmit)="criarFuncionario()">
-        <div class="form-group">
-          <label for="nome">Nome Completo *</label>
-          <input
-            type="text"
-            id="nome"
-            [(ngModel)]="novoFuncionario.nome"
-            name="nome"
-            placeholder="Ex: João da Silva"
-            required
-          />
-        </div>
+      <div class="modal-user-label">Usuário: <span class="modal-user-name">{{ novoFuncionario.nome || '(novo)' }}</span></div>
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab" [class.active]="modalTab === 'conta'" (click)="setModalTab('conta')">Conta</button>
+        <button type="button" class="modal-tab" [class.active]="modalTab === 'permissoes'" (click)="setModalTab('permissoes')">Permissões</button>
+      </div>
 
-        <div class="form-row">
+      <form class="modal-form" (ngSubmit)="criarFuncionario()">
+        <div *ngIf="modalTab === 'conta'" class="modal-tab-content">
           <div class="form-group">
-            <label for="cpf">CPF *</label>
+            <label for="nome">Nome Completo *</label>
             <input
               type="text"
-              id="cpf"
-              [(ngModel)]="novoFuncionario.cpf"
-              name="cpf"
-              placeholder="000.000.000-00"
-              maxlength="14"
+              id="nome"
+              [(ngModel)]="novoFuncionario.nome"
+              name="nome"
+              placeholder="Ex: João da Silva"
               required
             />
           </div>
 
-          <div class="form-group">
-            <label for="email">Email *</label>
-            <input
-              type="email"
-              id="email"
-              [(ngModel)]="novoFuncionario.email"
-              name="email"
-              placeholder="exemplo@email.com"
-              required
-            />
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cpf">CPF *</label>
+              <input
+                type="text"
+                id="cpf"
+                [(ngModel)]="novoFuncionario.cpf"
+                name="cpf"
+                placeholder="000.000.000-00"
+                maxlength="14"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="novoFuncionario.email"
+                name="email"
+                placeholder="exemplo@email.com"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="senha">Senha *</label>
+              <input
+                type="password"
+                id="senha"
+                [(ngModel)]="novoFuncionario.senha"
+                name="senha"
+                placeholder="Mínimo 6 caracteres"
+                minlength="6"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="role">Cargo *</label>
+              <select
+                id="role"
+                [(ngModel)]="novoFuncionario.role"
+                name="role"
+                required
+              >
+                <option *ngFor="let role of roles" [value]="role.value">
+                  {{ role.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="senha">Senha *</label>
-            <input
-              type="password"
-              id="senha"
-              [(ngModel)]="novoFuncionario.senha"
-              name="senha"
-              placeholder="Mínimo 6 caracteres"
-              minlength="6"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="role">Cargo *</label>
-            <select
-              id="role"
-              [(ngModel)]="novoFuncionario.role"
-              name="role"
-              required
-            >
-              <option *ngFor="let role of roles" [value]="role.value">
-                {{ role.label }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Permissões -->
-        <div class="permissoes-section">
-          <h3 class="permissoes-title">Permissões de Acesso</h3>
-          <p class="permissoes-subtitle">Selecione os módulos que este funcionário terá acesso</p>
-          
-          <div class="permissoes-grid">
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="novoFuncionario.permissaoComandas"
-                name="permissaoComandas"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">🎮</span>
-                <span class="permissao-label">Comandas</span>
+        <div *ngIf="modalTab === 'permissoes'" class="modal-tab-content permissoes-tab">
+          <p class="permissoes-subtitle">Selecione os módulos e ações que este funcionário terá acesso</p>
+          <div class="permissoes-tree">
+            <div *ngFor="let modulo of modulosPermissoes" class="tree-modulo">
+              <div class="tree-modulo-header">
+                <button type="button" class="tree-expand" (click)="toggleModuloExpand(modulo.id)" [attr.aria-expanded]="moduloExpanded[modulo.id]">
+                  {{ moduloExpanded[modulo.id] ? '−' : '+' }}
+                </button>
+                <label class="tree-modulo-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isModuloChecked(novoFuncionario, modulo)"
+                    [indeterminate]="isModuloIndeterminate(novoFuncionario, modulo)"
+                    (change)="setModuloChecked(novoFuncionario, modulo, $any($event.target).checked)"
+                  />
+                  <span class="tree-modulo-name">{{ modulo.icon }} {{ modulo.label }}</span>
+                </label>
               </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="novoFuncionario.permissaoTorneios"
-                name="permissaoTorneios"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">🏆</span>
-                <span class="permissao-label">Torneios</span>
+              <div *ngIf="moduloExpanded[modulo.id]" class="tree-children">
+                <label *ngFor="let item of modulo.children" class="tree-item">
+                  <input
+                    type="checkbox"
+                    [ngModel]="getPermissao(novoFuncionario, item.key)"
+                    (ngModelChange)="setPermissao(novoFuncionario, item.key, $event)"
+                    [name]="'novo-' + item.key"
+                  />
+                  <span class="tree-item-name">{{ item.label }}</span>
+                </label>
               </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="novoFuncionario.permissaoProdutos"
-                name="permissaoProdutos"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">📦</span>
-                <span class="permissao-label">Produtos</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="novoFuncionario.permissaoFuncionarios"
-                name="permissaoFuncionarios"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">👥</span>
-                <span class="permissao-label">Funcionários</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="novoFuncionario.permissaoCaixas"
-                name="permissaoCaixas"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">💰</span>
-                <span class="permissao-label">Caixas</span>
-              </div>
-            </label>
+            </div>
           </div>
         </div>
 
@@ -312,144 +285,116 @@
 
   <!-- Modal Editar Funcionário -->
   <div class="modal-overlay" *ngIf="showModalEdicao" (click)="fecharModalEdicao()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content modal-content-permissoes" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Editar Funcionário</h2>
         <button class="btn-close" (click)="fecharModalEdicao()">✕</button>
       </div>
 
-      <form class="modal-form" (ngSubmit)="salvarEdicao()">
-        <div class="form-group">
-          <label for="editar-nome">Nome Completo *</label>
-          <input
-            type="text"
-            id="editar-nome"
-            [(ngModel)]="funcionarioEditando.nome"
-            name="editar-nome"
-            placeholder="Ex: João da Silva"
-            required
-          />
-        </div>
+      <div class="modal-user-label">Usuário: <span class="modal-user-name">{{ funcionarioEditando.nome }}</span></div>
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab" [class.active]="modalEdicaoTab === 'conta'" (click)="setModalEdicaoTab('conta')">Conta</button>
+        <button type="button" class="modal-tab" [class.active]="modalEdicaoTab === 'permissoes'" (click)="setModalEdicaoTab('permissoes')">Permissões</button>
+      </div>
 
-        <div class="form-row">
+      <form class="modal-form" (ngSubmit)="salvarEdicao()">
+        <div *ngIf="modalEdicaoTab === 'conta'" class="modal-tab-content">
           <div class="form-group">
-            <label for="editar-cpf">CPF *</label>
+            <label for="editar-nome">Nome Completo *</label>
             <input
               type="text"
-              id="editar-cpf"
-              [(ngModel)]="funcionarioEditando.cpf"
-              name="editar-cpf"
-              placeholder="000.000.000-00"
-              maxlength="14"
+              id="editar-nome"
+              [(ngModel)]="funcionarioEditando.nome"
+              name="editar-nome"
+              placeholder="Ex: João da Silva"
               required
             />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editar-cpf">CPF *</label>
+              <input
+                type="text"
+                id="editar-cpf"
+                [(ngModel)]="funcionarioEditando.cpf"
+                name="editar-cpf"
+                placeholder="000.000.000-00"
+                maxlength="14"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="editar-email">Email *</label>
+              <input
+                type="email"
+                id="editar-email"
+                [(ngModel)]="funcionarioEditando.email"
+                name="editar-email"
+                placeholder="exemplo@email.com"
+                required
+              />
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="editar-email">Email *</label>
-            <input
-              type="email"
-              id="editar-email"
-              [(ngModel)]="funcionarioEditando.email"
-              name="editar-email"
-              placeholder="exemplo@email.com"
+            <label for="editar-role">Cargo *</label>
+            <select
+              id="editar-role"
+              [(ngModel)]="funcionarioEditando.role"
+              name="editar-role"
               required
-            />
+            >
+              <option *ngFor="let role of roles" [value]="role.value">
+                {{ role.label }}
+              </option>
+            </select>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="editar-role">Cargo *</label>
-          <select
-            id="editar-role"
-            [(ngModel)]="funcionarioEditando.role"
-            name="editar-role"
-            required
-          >
-            <option *ngFor="let role of roles" [value]="role.value">
-              {{ role.label }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Permissões -->
-        <div class="permissoes-section">
-          <h3 class="permissoes-title">Permissões de Acesso</h3>
-          <p class="permissoes-subtitle">Selecione os módulos que este funcionário terá acesso</p>
-          
-          <div class="permissoes-grid">
-            <label class="permissao-item">
+          <div class="form-group-checkbox">
+            <label class="checkbox-label">
               <input
                 type="checkbox"
-                [(ngModel)]="funcionarioEditando.permissaoComandas"
-                name="editar-permissaoComandas"
+                [(ngModel)]="funcionarioEditando.ativo"
+                name="editar-ativo"
               />
-              <div class="permissao-content">
-                <span class="permissao-icon">🎮</span>
-                <span class="permissao-label">Comandas</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="funcionarioEditando.permissaoTorneios"
-                name="editar-permissaoTorneios"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">🏆</span>
-                <span class="permissao-label">Torneios</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="funcionarioEditando.permissaoProdutos"
-                name="editar-permissaoProdutos"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">📦</span>
-                <span class="permissao-label">Produtos</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="funcionarioEditando.permissaoFuncionarios"
-                name="editar-permissaoFuncionarios"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">👥</span>
-                <span class="permissao-label">Funcionários</span>
-              </div>
-            </label>
-
-            <label class="permissao-item">
-              <input
-                type="checkbox"
-                [(ngModel)]="funcionarioEditando.permissaoCaixas"
-                name="editar-permissaoCaixas"
-              />
-              <div class="permissao-content">
-                <span class="permissao-icon">💰</span>
-                <span class="permissao-label">Caixas</span>
-              </div>
+              <span>Funcionário Ativo</span>
             </label>
           </div>
         </div>
 
-        <!-- Status Checkbox -->
-        <div class="form-group-checkbox">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [(ngModel)]="funcionarioEditando.ativo"
-              name="editar-ativo"
-            />
-            <span>Funcionário Ativo</span>
-          </label>
+        <div *ngIf="modalEdicaoTab === 'permissoes'" class="modal-tab-content permissoes-tab">
+          <p class="permissoes-subtitle">Selecione os módulos e ações que este funcionário terá acesso</p>
+          <div class="permissoes-tree">
+            <div *ngFor="let modulo of modulosPermissoes" class="tree-modulo">
+              <div class="tree-modulo-header">
+                <button type="button" class="tree-expand" (click)="toggleModuloExpand(modulo.id)" [attr.aria-expanded]="moduloExpanded[modulo.id]">
+                  {{ moduloExpanded[modulo.id] ? '−' : '+' }}
+                </button>
+                <label class="tree-modulo-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isModuloChecked(funcionarioEditando, modulo)"
+                    [indeterminate]="isModuloIndeterminate(funcionarioEditando, modulo)"
+                    (change)="setModuloChecked(funcionarioEditando, modulo, $any($event.target).checked)"
+                  />
+                  <span class="tree-modulo-name">{{ modulo.icon }} {{ modulo.label }}</span>
+                </label>
+              </div>
+              <div *ngIf="moduloExpanded[modulo.id]" class="tree-children">
+                <label *ngFor="let item of modulo.children" class="tree-item">
+                  <input
+                    type="checkbox"
+                    [ngModel]="getPermissao(funcionarioEditando, item.key)"
+                    (ngModelChange)="setPermissao(funcionarioEditando, item.key, $event)"
+                    [name]="'editar-' + item.key"
+                  />
+                  <span class="tree-item-name">{{ item.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-actions">

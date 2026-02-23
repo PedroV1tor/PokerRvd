@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { FuncionarioService } from '../../services/funcionario.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 import { Funcionario, CreateFuncionarioDto, UpdateFuncionarioDto, UserRole } from '../../models/funcionario.model';
 
 @Component({
@@ -31,7 +33,11 @@ export class FuncionariosComponent implements OnInit {
     permissaoTorneios: false,
     permissaoProdutos: false,
     permissaoFuncionarios: false,
-    permissaoCaixas: false
+    permissaoCaixas: false,
+    permissaoFecharComanda: false,
+    permissaoRemoverItemComanda: false,
+    permissaoAdicionarEstoque: false,
+    permissaoCadastrarProduto: false
   };
 
   // Modal Editar Funcionário
@@ -47,7 +53,11 @@ export class FuncionariosComponent implements OnInit {
     permissaoTorneios: false,
     permissaoProdutos: false,
     permissaoFuncionarios: false,
-    permissaoCaixas: false
+    permissaoCaixas: false,
+    permissaoFecharComanda: false,
+    permissaoRemoverItemComanda: false,
+    permissaoAdicionarEstoque: false,
+    permissaoCadastrarProduto: false
   };
 
   roles = [
@@ -56,7 +66,11 @@ export class FuncionariosComponent implements OnInit {
     { value: 'ATENDENTE', label: 'Atendente' }
   ];
 
-  constructor(private funcionarioService: FuncionarioService) {}
+  constructor(
+    private funcionarioService: FuncionarioService,
+    private toast: ToastService,
+    private confirm: ConfirmService
+  ) {}
 
   ngOnInit(): void {
     this.carregarFuncionarios();
@@ -70,8 +84,7 @@ export class FuncionariosComponent implements OnInit {
         this.filtrarFuncionarios();
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Erro ao carregar funcionários:', error);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -111,6 +124,7 @@ export class FuncionariosComponent implements OnInit {
 
   abrirModal(): void {
     this.showModal = true;
+    this.modalTab = 'conta';
     this.resetarForm();
   }
 
@@ -130,7 +144,11 @@ export class FuncionariosComponent implements OnInit {
       permissaoTorneios: false,
       permissaoProdutos: false,
       permissaoFuncionarios: false,
-      permissaoCaixas: false
+      permissaoCaixas: false,
+      permissaoFecharComanda: false,
+      permissaoRemoverItemComanda: false,
+      permissaoAdicionarEstoque: false,
+      permissaoCadastrarProduto: false
     };
   }
 
@@ -139,13 +157,12 @@ export class FuncionariosComponent implements OnInit {
 
     this.funcionarioService.createFuncionario(this.novoFuncionario).subscribe({
       next: () => {
-        alert('Funcionário cadastrado com sucesso!');
+        this.toast.success('Funcionário cadastrado com sucesso!');
         this.fecharModal();
         this.carregarFuncionarios();
       },
       error: (error) => {
-        console.error('Erro ao criar funcionário:', error);
-        alert(error.error || 'Erro ao criar funcionário');
+        this.toast.error(error.error || 'Erro ao criar funcionário');
       }
     });
   }
@@ -162,8 +179,13 @@ export class FuncionariosComponent implements OnInit {
       permissaoTorneios: funcionario.permissaoTorneios,
       permissaoProdutos: funcionario.permissaoProdutos,
       permissaoFuncionarios: funcionario.permissaoFuncionarios,
-      permissaoCaixas: funcionario.permissaoCaixas
+      permissaoCaixas: funcionario.permissaoCaixas,
+      permissaoFecharComanda: funcionario.permissaoFecharComanda,
+      permissaoRemoverItemComanda: funcionario.permissaoRemoverItemComanda,
+      permissaoAdicionarEstoque: funcionario.permissaoAdicionarEstoque ?? false,
+      permissaoCadastrarProduto: funcionario.permissaoCadastrarProduto ?? false
     };
+    this.modalEdicaoTab = 'conta';
     this.showModalEdicao = true;
   }
 
@@ -187,37 +209,40 @@ export class FuncionariosComponent implements OnInit {
       permissaoTorneios: this.funcionarioEditando.permissaoTorneios,
       permissaoProdutos: this.funcionarioEditando.permissaoProdutos,
       permissaoFuncionarios: this.funcionarioEditando.permissaoFuncionarios,
-      permissaoCaixas: this.funcionarioEditando.permissaoCaixas
+      permissaoCaixas: this.funcionarioEditando.permissaoCaixas,
+      permissaoFecharComanda: this.funcionarioEditando.permissaoFecharComanda,
+      permissaoRemoverItemComanda: this.funcionarioEditando.permissaoRemoverItemComanda,
+      permissaoAdicionarEstoque: this.funcionarioEditando.permissaoAdicionarEstoque ?? false,
+      permissaoCadastrarProduto: this.funcionarioEditando.permissaoCadastrarProduto ?? false
     }).subscribe({
       next: () => {
         if (mudouStatus) {
           this.filtroStatus = this.funcionarioEditando.ativo ? 'ATIVO' : 'INATIVO';
-          alert(`Funcionário ${this.funcionarioEditando.ativo ? 'ativado' : 'desativado'} com sucesso!`);
+          this.toast.success(`Funcionário ${this.funcionarioEditando.ativo ? 'ativado' : 'desativado'} com sucesso!`);
         } else {
-          alert('Funcionário atualizado com sucesso!');
+          this.toast.success('Funcionário atualizado com sucesso!');
         }
         this.fecharModalEdicao();
         this.carregarFuncionarios();
       },
       error: (error) => {
-        console.error('Erro ao atualizar funcionário:', error);
-        alert(error.error || 'Erro ao atualizar funcionário');
+        this.toast.error(error.error || 'Erro ao atualizar funcionário');
       }
     });
   }
 
   deletarFuncionario(id: number): void {
-    if (!confirm('Deseja realmente desativar este funcionário?')) return;
-
-    this.funcionarioService.deleteFuncionario(id).subscribe({
-      next: () => {
-        alert('Funcionário desativado com sucesso!');
-        this.carregarFuncionarios();
-      },
-      error: (error) => {
-        console.error('Erro ao deletar funcionário:', error);
-        alert('Erro ao deletar funcionário');
-      }
+    this.confirm.confirm({ message: 'Deseja realmente desativar este funcionário?', confirmText: 'Desativar' }).then(ok => {
+      if (!ok) return;
+      this.funcionarioService.deleteFuncionario(id).subscribe({
+        next: () => {
+          this.toast.success('Funcionário desativado com sucesso!');
+          this.carregarFuncionarios();
+        },
+        error: () => {
+          this.toast.error('Erro ao deletar funcionário');
+        }
+      });
     });
   }
 
@@ -254,5 +279,79 @@ export class FuncionariosComponent implements OnInit {
 
   getFuncionariosInativos(): number {
     return this.funcionarios.filter(f => !f.ativo).length;
+  }
+
+  // --- Abas do modal ---
+  modalTab: 'conta' | 'permissoes' = 'conta';
+  modalEdicaoTab: 'conta' | 'permissoes' = 'conta';
+
+  setModalTab(tab: 'conta' | 'permissoes'): void {
+    this.modalTab = tab;
+  }
+
+  setModalEdicaoTab(tab: 'conta' | 'permissoes'): void {
+    this.modalEdicaoTab = tab;
+  }
+
+  // --- Árvore de permissões (módulos e itens) ---
+  moduloExpanded: Record<string, boolean> = {
+    comandas: true,
+    torneios: false,
+    produtos: false,
+    funcionarios: false,
+    caixas: false
+  };
+
+  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
+    {
+      id: 'comandas',
+      label: 'Módulo Comandas',
+      icon: '🎮',
+      children: [
+        { key: 'permissaoComandas', label: 'Comandas' },
+        { key: 'permissaoFecharComanda', label: 'Fechar Comanda' },
+        { key: 'permissaoRemoverItemComanda', label: 'Remover itens da comanda' }
+      ]
+    },
+    { id: 'torneios', label: 'Módulo Torneios', icon: '🏆', children: [{ key: 'permissaoTorneios', label: 'Torneios' }] },
+    {
+      id: 'produtos',
+      label: 'Módulo Produtos',
+      icon: '📦',
+      children: [
+        { key: 'permissaoProdutos', label: 'Produtos' },
+        { key: 'permissaoCadastrarProduto', label: 'Cadastrar produto' },
+        { key: 'permissaoAdicionarEstoque', label: 'Adicionar estoque' }
+      ]
+    },
+    { id: 'funcionarios', label: 'Módulo Funcionários', icon: '👥', children: [{ key: 'permissaoFuncionarios', label: 'Funcionários' }] },
+    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }] }
+  ];
+
+  toggleModuloExpand(id: string): void {
+    this.moduloExpanded[id] = !this.moduloExpanded[id];
+  }
+
+  isModuloChecked(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0]): boolean {
+    return modulo.children.every(c => (target as unknown as Record<string, boolean>)[c.key] === true);
+  }
+
+  isModuloIndeterminate(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0]): boolean {
+    const checked = modulo.children.filter(c => (target as unknown as Record<string, boolean>)[c.key] === true).length;
+    return checked > 0 && checked < modulo.children.length;
+  }
+
+  setModuloChecked(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0], value: boolean): void {
+    modulo.children.forEach(c => ((target as unknown as Record<string, boolean>)[c.key] = value));
+  }
+
+  /** Lê valor de permissão por chave (evita problema de binding com chave dinâmica). */
+  getPermissao(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), key: string): boolean {
+    return !!(target as unknown as Record<string, boolean>)[key];
+  }
+
+  /** Atualiza valor de permissão por chave. */
+  setPermissao(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), key: string, value: boolean): void {
+    (target as unknown as Record<string, boolean>)[key] = value;
   }
 }

@@ -60,7 +60,11 @@ public class FuncionarioService : IFuncionarioService
             PermissaoTorneios = dto.PermissaoTorneios,
             PermissaoProdutos = dto.PermissaoProdutos,
             PermissaoFuncionarios = dto.PermissaoFuncionarios,
-            PermissaoCaixas = dto.PermissaoCaixas
+            PermissaoCaixas = dto.PermissaoCaixas,
+            PermissaoFecharComanda = dto.PermissaoFecharComanda,
+            PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda,
+            PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque,
+            PermissaoCadastrarProduto = dto.PermissaoCadastrarProduto
         };
 
         _context.Usuarios.Add(funcionario);
@@ -101,6 +105,10 @@ public class FuncionarioService : IFuncionarioService
         funcionario.PermissaoProdutos = dto.PermissaoProdutos;
         funcionario.PermissaoFuncionarios = dto.PermissaoFuncionarios;
         funcionario.PermissaoCaixas = dto.PermissaoCaixas;
+        funcionario.PermissaoFecharComanda = dto.PermissaoFecharComanda;
+        funcionario.PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda;
+        funcionario.PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque;
+        funcionario.PermissaoCadastrarProduto = dto.PermissaoCadastrarProduto;
 
         await _context.SaveChangesAsync();
 
@@ -145,7 +153,11 @@ public class FuncionarioService : IFuncionarioService
             PermissaoTorneios = usuario.PermissaoTorneios,
             PermissaoProdutos = usuario.PermissaoProdutos,
             PermissaoFuncionarios = usuario.PermissaoFuncionarios,
-            PermissaoCaixas = usuario.PermissaoCaixas
+            PermissaoCaixas = usuario.PermissaoCaixas,
+            PermissaoFecharComanda = usuario.PermissaoFecharComanda,
+            PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
+            PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,
+            PermissaoCadastrarProduto = usuario.PermissaoCadastrarProduto
         };
     }
 

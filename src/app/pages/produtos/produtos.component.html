@@ -4,10 +4,10 @@
   <div class="header">
     <h1>Gerenciamento de Produtos</h1>
     <div class="header-buttons">
-      <button class="btn-adicionar-estoque" (click)="abrirModalEstoque()">
+      <button *ngIf="auth.hasPermissionAdicionarEstoque()" class="btn-adicionar-estoque" (click)="abrirModalEstoque()">
         📦 Adicionar Estoque
       </button>
-      <button class="btn-novo-produto" (click)="abrirModal()">
+      <button *ngIf="auth.hasPermissionCadastrarProduto()" class="btn-novo-produto" (click)="abrirModal()">
         + Novo Produto
       </button>
     </div>

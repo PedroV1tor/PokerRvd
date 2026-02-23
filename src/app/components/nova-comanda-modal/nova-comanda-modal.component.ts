@@ -365,9 +365,7 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
           t => t.status === StatusTorneio.EM_ANDAMENTO
         );
       },
-      error: (error) => {
-        console.error('Erro ao carregar torneios:', error);
-      }
+      error: () => {}
     });
   }
 
@@ -409,10 +407,6 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
       this.criar.emit(comandaData);
       this.resetForm();
       this.onClose();
-    } else {
-      console.log('Modal - Formulário inválido');
-      console.log('Modal - JogadorNome:', this.formData.jogadorNome);
-      console.log('Modal - Mesa:', this.formData.mesa);
     }
   }
 

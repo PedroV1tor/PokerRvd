@@ -8,6 +8,7 @@ import { NovaComandaModalComponent } from '../../components/nova-comanda-modal/n
 import { DashboardStatsComponent } from '../../components/dashboard-stats/dashboard-stats.component';
 import { ComandaService } from '../../services/comanda.service';
 import { CaixaService } from '../../services/caixa.service';
+import { ToastService } from '../../services/toast.service';
 import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda } from '../../models/comanda.model';
 
 @Component({
@@ -28,6 +29,8 @@ export class DashboardComponent implements OnInit {
   title = 'PokerRvd';
   comandas: Comanda[] = [];
   comandasFiltradas: Comanda[] = [];
+  comandasFechadas: Comanda[] = [];
+  comandasFechadasFiltradas: Comanda[] = [];
   stats: DashboardStats | null = null;
   
   // Filtros
@@ -38,13 +41,17 @@ export class DashboardComponent implements OnInit {
   // Modal
   mostrarModalNovaComanda = false;
   
+  // UI
+  mostrarComandasFechadas = false;
+
   // Loading
   loading = false;
 
   constructor(
     private comandaService: ComandaService,
     private caixaService: CaixaService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -60,25 +67,26 @@ export class DashboardComponent implements OnInit {
         const caixaId = caixaAberto.id;
         this.comandaService.getComandas(caixaId).subscribe({
           next: (comandas) => {
-            // Só comandas ativas deste caixa; não mostrar pendências de outro caixa (outro caixaId)
+            const doCaixa = (c: Comanda) => c.caixaId == null || c.caixaId === caixaId;
             this.comandas = comandas.filter(c =>
-              c.status === StatusComanda.ATIVO &&
-              (c.caixaId == null || c.caixaId === caixaId)
+              c.status === StatusComanda.ATIVO && doCaixa(c)
+            );
+            this.comandasFechadas = comandas.filter(c =>
+              c.status === StatusComanda.FECHADO && doCaixa(c)
             );
             this.aplicarFiltros();
             this.loading = false;
           },
-          error: (error) => {
-            console.error('Erro ao carregar comandas:', error);
+          error: () => {
             this.comandas = [];
+            this.comandasFechadas = [];
             this.aplicarFiltros();
             this.loading = false;
           }
         });
         this.comandaService.getDashboardStats(caixaId).subscribe({
           next: (stats) => { this.stats = stats; },
-          error: (error) => {
-            console.error('Erro ao carregar estatísticas:', error);
+          error: () => {
             this.stats = null;
           }
         });
@@ -86,6 +94,7 @@ export class DashboardComponent implements OnInit {
       error: () => {
         // Sem caixa aberto: dashboard vazio
         this.comandas = [];
+        this.comandasFechadas = [];
         this.aplicarFiltros();
         this.stats = null;
         this.loading = false;
@@ -96,6 +105,11 @@ export class DashboardComponent implements OnInit {
   aplicarFiltros() {
     this.comandasFiltradas = this.comandaService.filtrarComandas(
       this.comandas,
+      this.filtroAtivo,
+      this.buscaTexto
+    );
+    this.comandasFechadasFiltradas = this.comandaService.filtrarComandas(
+      this.comandasFechadas,
       this.filtroAtivo,
       this.buscaTexto
     );
@@ -124,7 +138,6 @@ export class DashboardComponent implements OnInit {
         this.carregarDados();
       },
       error: (error) => {
-        console.error('Erro ao criar comanda:', error);
         let msg: string;
         if (typeof error.error === 'object' && error.error?.message) {
           msg = error.error.message;
@@ -133,26 +146,24 @@ export class DashboardComponent implements OnInit {
         } else {
           msg = error.error?.title || error.message || 'Verifique se o backend está rodando e se a coluna CaixaId existe na tabela Comandas (rode AddCaixaId_Manual.sql).';
         }
-        alert('Erro ao criar comanda: ' + msg);
+        this.toast.error('Erro ao criar comanda: ' + msg);
       }
     });
   }
 
   toggleStatusComanda(id: number) {
-    const comanda = this.comandas.find(c => c.id === id);
+    const comanda = this.comandas.find(c => c.id === id) ?? this.comandasFechadas.find(c => c.id === id);
     if (!comanda) return;
 
-    const novoStatus = comanda.status === StatusComanda.ATIVO 
-      ? StatusComanda.FECHADO 
+    const novoStatus = comanda.status === StatusComanda.ATIVO
+      ? StatusComanda.FECHADO
       : StatusComanda.ATIVO;
 
     this.comandaService.updateComanda(id, { status: novoStatus }).subscribe({
       next: () => {
         this.carregarDados();
       },
-      error: (error) => {
-        console.error('Erro ao atualizar status:', error);
-      }
+      error: () => {}
     });
   }
 

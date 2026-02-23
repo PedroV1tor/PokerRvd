@@ -561,7 +561,6 @@ export class CadastroComponent {
       error: (error) => {
         this.loading = false;
         this.errorMessage = error.error?.message || 'Erro ao criar conta. Tente novamente.';
-        console.error('Erro no cadastro:', error);
       }
     });
   }
