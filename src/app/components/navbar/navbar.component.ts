@@ -68,6 +68,14 @@ import { User } from '../../models/auth.model';
             <div class="user-avatar">{{ getUserInitials() }}</div>
             <span class="user-name">{{ currentUser?.nome || 'Usuário' }}</span>
             <span class="dropdown-arrow">▼</span>
+            <!-- Versão simples de logout para mobile: só a palavra "Sair" ao lado do avatar -->
+            <button 
+              *ngIf="showUserMenu"
+              type="button"
+              class="user-logout-inline"
+              (click)="abrirModalSair(); $event.stopPropagation()">
+              Sair
+            </button>
           </div>
 
           <div class="user-dropdown" *ngIf="showUserMenu">
@@ -335,6 +343,25 @@ import { User } from '../../models/auth.model';
       font-size: 1.2rem;
     }
 
+    /* Botão de logout inline (usado em mobile) */
+    .user-logout-inline {
+      display: none;
+      background: none;
+      border: none;
+      color: #ff4444;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .user-logout-inline:hover {
+      background-color: rgba(255, 68, 68, 0.1);
+      color: #ff6666;
+    }
+
     @media (max-width: 992px) {
       .navbar {
         padding: 0.875rem;
@@ -511,6 +538,16 @@ import { User } from '../../models/auth.model';
 
       .user-info {
         padding: 0.35rem 0.7rem;
+      }
+
+      /* Em telas pequenas, esconder dropdown flutuante e usar só o botão "Sair" inline */
+      .user-dropdown {
+        display: none;
+      }
+
+      .user-logout-inline {
+        display: inline-flex;
+        align-items: center;
       }
 
       .user-dropdown {

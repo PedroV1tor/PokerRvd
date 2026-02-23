@@ -124,8 +124,7 @@ public class ComandaService : IComandaService
         _context.Comandas.Add(comanda);
         await _context.SaveChangesAsync();
 
-        // Para torneio: adicionar o Buy-in como ITEM na comanda (não como "valor em fichas"),
-        // para aparecer na lista de itens da comanda.
+        // Para torneio: adicionar o Buy-in como ITEM na comanda e registrar saída no caixa.
         if (isTorneioComBuyIn)
         {
             var itemBuyIn = new ItemComanda
@@ -154,6 +153,38 @@ public class ComandaService : IComandaService
                 UsuarioNome = "Sistema"
             };
             _context.MovimentacoesCaixa.Add(movimentacao);
+            caixaAberto.TotalSaidas += valorFichasInicial;
+            await _context.SaveChangesAsync();
+        }
+
+        // Para cash game: quando há valor de fichas na abertura, registrar item e saída no caixa.
+        if (tipoEnum == TipoComanda.CASH && valorFichasInicial > 0)
+        {
+            var itemFichasIniciais = new ItemComanda
+            {
+                ComandaId = comanda.Id,
+                Comanda = comanda,
+                ProdutoId = null,
+                NomeCustomizado = "Fichas iniciais",
+                Quantidade = 1,
+                ValorUnitario = valorFichasInicial
+            };
+            comanda.Itens.Add(itemFichasIniciais);
+            _context.ItensComanda.Add(itemFichasIniciais);
+
+            var movimentacaoCash = new MovimentacaoCaixa
+            {
+                CaixaId = caixaAberto.Id,
+                DataHora = DateTime.UtcNow,
+                Tipo = "SAIDA",
+                Categoria = "Fichas",
+                Descricao = $"Fichas iniciais (Cash) - {comanda.JogadorNome}",
+                Valor = valorFichasInicial,
+                ComandaId = comanda.Id,
+                ComandaNome = comanda.JogadorNome,
+                UsuarioNome = "Sistema"
+            };
+            _context.MovimentacoesCaixa.Add(movimentacaoCash);
             caixaAberto.TotalSaidas += valorFichasInicial;
             await _context.SaveChangesAsync();
         }

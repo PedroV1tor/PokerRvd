@@ -19,24 +19,35 @@
         </button>
       </div>
 
-      <!-- Cards de Resumo Rápido -->
-      <div class="stats-cards">
-        <div class="stat-card card-total">
-          <div class="stat-icon">📊</div>
-          <div class="stat-info">
-            <span class="stat-label">Total de Comandas</span>
-            <span class="stat-value">{{ comandas.length }}</span>
-          </div>
-        </div>
-
-        <div class="stat-card card-ativas">
-          <div class="stat-icon">✅</div>
-          <div class="stat-info">
-            <span class="stat-label">Comandas Ativas</span>
-            <span class="stat-value">{{ comandasFiltradas.length }}</span>
-          </div>
+     <!-- Cards de Resumo Rápido (desktop/tablet) -->
+     <div class="stats-cards stats-desktop">
+      <div class="stat-card card-total">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <span class="stat-label">Total de Comandas</span>
+          <span class="stat-value">{{ comandas.length }}</span>
         </div>
       </div>
+
+      <div class="stat-card card-ativas">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <span class="stat-label">Comandas Ativas</span>
+          <span class="stat-value">{{ comandasFiltradas.length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Versão simplificada para celular -->
+    <div class="stats-cards-mobile">
+      <div class="stats-mobile-row">
+        <span class="stats-mobile-label">Total:</span>
+        <span class="stats-mobile-value">{{ comandas.length }}</span>
+        <span class="stats-mobile-separator">|</span>
+        <span class="stats-mobile-label">Ativas:</span>
+        <span class="stats-mobile-value">{{ comandasFiltradas.length }}</span>
+      </div>
+    </div>
 
       <!-- Barra de Busca e Filtros -->
       <div class="search-filter-section">
