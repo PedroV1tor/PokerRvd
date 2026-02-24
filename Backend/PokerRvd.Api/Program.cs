@@ -31,12 +31,12 @@ builder.Services.AddDbContext<PokerDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Adicionar serviços personalizados
-builder.Services.AddScoped<IPokerService, PokerService>();
 builder.Services.AddScoped<IComandaService, ComandaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICaixaService, CaixaService>();
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
+builder.Services.AddScoped<ITorneioService, TorneioService>();
 
 var app = builder.Build();
 

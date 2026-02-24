@@ -323,19 +323,27 @@
   </main>
 </div>
 
-<!-- Modal Quitar Pendência -->
-<div class="modal-overlay" *ngIf="mostrarModalQuitarPendencia" (click)="fecharModalQuitarPendencia()">
-  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="comandaSelecionadaQuitar">
+<!-- Modal Quitar Pendência (mesmo layout do Fechar Comanda) -->
+<div class="modal-overlay modal-fechar-overlay" *ngIf="mostrarModalQuitarPendencia" (click)="fecharModalQuitarPendencia()">
+  <div class="modal-content modal-fechar-content" (click)="$event.stopPropagation()" *ngIf="comandaSelecionadaQuitar">
     <div class="modal-header">
       <h3>Quitar pendência</h3>
-      <button class="btn-close" (click)="fecharModalQuitarPendencia()">✕</button>
+      <button class="btn-close" (click)="fecharModalQuitarPendencia()" aria-label="Fechar">✕</button>
     </div>
-    <div class="modal-body">
-      <p class="modal-total-info">
-        Comanda: <strong>{{ comandaSelecionadaQuitar.jogadorNome }}</strong> — Total: <strong>R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</strong>
-      </p>
-      <p class="modal-instruction">Informe como foi realizado o pagamento. A soma deve ser igual ao total. O valor entrará no caixa atualmente aberto.</p>
+    <div class="modal-body modal-fechar-body">
+      <div class="fechar-total-box">
+        <span class="fechar-total-label">Total da comanda ({{ comandaSelecionadaQuitar.jogadorNome }})</span>
+        <span class="fechar-total-value">R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</span>
+      </div>
+
+      <p class="modal-instruction">Informe as formas de pagamento. A soma deve ser igual ao valor a receber. O valor entrará no caixa atualmente aberto.</p>
+
       <div class="formas-pagamento-list">
+        <div class="formas-pagamento-header">
+          <span>Forma</span>
+          <span>Valor (R$)</span>
+          <span class="col-acoes"></span>
+        </div>
         <div *ngFor="let forma of formasPagamentoQuitar; let i = index" class="forma-pagamento-row">
           <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
             <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
@@ -355,17 +363,34 @@
           + Adicionar forma de pagamento
         </button>
       </div>
+
+      <div class="desconto-row">
+        <label for="desconto-quitar">Desconto</label>
+        <input 
+          type="number" 
+          id="desconto-quitar"
+          [(ngModel)]="descontoFecharQuitar" 
+          (ngModelChange)="aplicarDescontoNoTotalQuitar()"
+          min="0"
+          [max]="comandaSelecionadaQuitar.valorTotal"
+          step="0.01"
+          class="form-control desconto-input"
+          placeholder="0,00"
+        />
+        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorComDescontoQuitar.toFixed(2) }}</strong></span>
+      </div>
+
       <div class="resumo-formas" [class.erro]="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0">
-        <span>Soma das formas:</span>
-        <span>R$ {{ somaFormasPagamentoQuitar.toFixed(2) }}</span>
+        <span>Soma</span>
+        <span class="resumo-valor">R$ {{ somaFormasPagamentoQuitar.toFixed(2) }}</span>
         <span *ngIf="totalBateComFormasQuitar" class="ok-badge">✓ Confere</span>
-        <span *ngIf="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0" class="erro-badge">Soma deve ser R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</span>
+        <span *ngIf="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0" class="erro-badge">Deve ser R$ {{ valorComDescontoQuitar.toFixed(2) }}</span>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="fecharModalQuitarPendencia()">Cancelar</button>
       <button class="btn btn-primary" (click)="quitarPendencia()" 
-              [disabled]="!totalBateComFormasQuitar || somaFormasPagamentoQuitar <= 0 || salvandoQuitar">
+              [disabled]="!totalBateComFormasQuitar || somaFormasPagamentoQuitar <= 0 || valorComDescontoQuitar < 0 || salvandoQuitar">
         {{ salvandoQuitar ? 'Salvando...' : 'Quitar pendência' }}
       </button>
     </div>

@@ -53,8 +53,17 @@ export class CaixaDetalhesComponent implements OnInit {
   mostrarModalQuitarPendencia = false;
   comandaSelecionadaQuitar: Comanda | null = null;
   formasPagamentoQuitar: FormaPagamentoValor[] = [];
+  descontoFecharQuitar = 0;
   formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
   salvandoQuitar = false;
+
+  get valorComDescontoQuitar(): number {
+    if (!this.comandaSelecionadaQuitar) return 0;
+    const total = this.comandaSelecionadaQuitar.valorTotal;
+    const d = this.descontoFecharQuitar || 0;
+    if (d >= total) return 0;
+    return total - d;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -256,6 +265,7 @@ export class CaixaDetalhesComponent implements OnInit {
 
   abrirModalQuitarPendencia(comanda: Comanda) {
     this.comandaSelecionadaQuitar = comanda;
+    this.descontoFecharQuitar = 0;
     this.formasPagamentoQuitar = [{ formaPagamento: 'Dinheiro', valor: comanda.valorTotal }];
     this.mostrarModalQuitarPendencia = true;
   }
@@ -264,6 +274,14 @@ export class CaixaDetalhesComponent implements OnInit {
     this.mostrarModalQuitarPendencia = false;
     this.comandaSelecionadaQuitar = null;
     this.formasPagamentoQuitar = [];
+    this.descontoFecharQuitar = 0;
+  }
+
+  aplicarDescontoNoTotalQuitar() {
+    const v = this.valorComDescontoQuitar;
+    if (this.formasPagamentoQuitar.length === 1) {
+      this.formasPagamentoQuitar[0].valor = v;
+    }
   }
 
   adicionarFormaQuitar() {
@@ -282,14 +300,15 @@ export class CaixaDetalhesComponent implements OnInit {
 
   get totalBateComFormasQuitar(): boolean {
     if (!this.comandaSelecionadaQuitar) return false;
-    return Math.abs(this.somaFormasPagamentoQuitar - this.comandaSelecionadaQuitar.valorTotal) < 0.01;
+    return Math.abs(this.somaFormasPagamentoQuitar - this.valorComDescontoQuitar) < 0.01;
   }
 
   quitarPendencia() {
     if (!this.comandaSelecionadaQuitar || !this.totalBateComFormasQuitar) return;
     const comFormas = this.formasPagamentoQuitar.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
     if (comFormas.length === 0) return;
-    const dto: FecharComandaDto = { formasPagamento: comFormas };
+    const desconto = Number(this.descontoFecharQuitar) || 0;
+    const dto: FecharComandaDto = { formasPagamento: comFormas, desconto };
     this.salvandoQuitar = true;
     this.comandaService.fecharComanda(this.comandaSelecionadaQuitar.id, dto).subscribe({
       next: () => {

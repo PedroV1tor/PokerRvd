@@ -9,44 +9,17 @@ public class PokerDbContext : DbContext
     {
     }
 
-    public DbSet<Player> Players { get; set; }
-    public DbSet<Game> Games { get; set; }
     public DbSet<Comanda> Comandas { get; set; }
     public DbSet<ItemComanda> ItensComanda { get; set; }
     public DbSet<Produto> Produtos { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Caixa> Caixas { get; set; }
     public DbSet<MovimentacaoCaixa> MovimentacoesCaixa { get; set; }
+    public DbSet<Torneio> Torneios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Configurações adicionais do modelo
-        modelBuilder.Entity<Player>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Balance).HasPrecision(18, 2);
-        });
-
-        modelBuilder.Entity<Game>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.BuyIn).HasPrecision(18, 2);
-        });
-
-        // Seed data para desenvolvimento
-        modelBuilder.Entity<Player>().HasData(
-            new Player { Id = 1, Name = "Jogador 1", Email = "jogador1@poker.com", Balance = 1000, CreatedAt = DateTime.UtcNow },
-            new Player { Id = 2, Name = "Jogador 2", Email = "jogador2@poker.com", Balance = 1500, CreatedAt = DateTime.UtcNow }
-        );
-
-        modelBuilder.Entity<Game>().HasData(
-            new Game { Id = 1, Name = "Mesa Principal", BuyIn = 100, MaxPlayers = 9, Status = GameStatus.Waiting, CreatedAt = DateTime.UtcNow }
-        );
 
         // Configurações para Comandas
         modelBuilder.Entity<Comanda>(entity =>
@@ -107,6 +80,18 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.Categoria).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(500);
             entity.Property(e => e.FormaPagamento).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Torneio>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ValorBuyIn).HasPrecision(18, 2);
+            entity.Property(e => e.ValorRebuySimples).HasPrecision(18, 2);
+            entity.Property(e => e.ValorRebuyDuplo).HasPrecision(18, 2);
+            entity.Property(e => e.ValorAddOn).HasPrecision(18, 2);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PremioTotal).HasPrecision(18, 2);
         });
 
         // Seed data para Produtos

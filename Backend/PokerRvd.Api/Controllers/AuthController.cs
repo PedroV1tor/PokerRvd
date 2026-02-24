@@ -117,7 +117,8 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar usuário");
-            return StatusCode(500, "Erro interno do servidor");
+            var message = _env.IsDevelopment() ? ex.Message : "Erro interno do servidor";
+            return StatusCode(500, new { message });
         }
     }
 }
