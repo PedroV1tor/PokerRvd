@@ -18,17 +18,11 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configurar CORS (origens de env em produção, localhost em dev)
-var corsOrigins = builder.Configuration["CORS__Origins"] ?? "http://localhost:4200,http://localhost:4000";
-var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-if (origins.Length == 0)
-    origins = ["http://localhost:4200", "http://localhost:4000"];
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins(origins)
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
