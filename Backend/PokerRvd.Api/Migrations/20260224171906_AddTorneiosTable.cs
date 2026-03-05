@@ -212,20 +212,6 @@ CREATE TABLE IF NOT EXISTS ""Torneios"" (
                 columns: new[] { "DataAbertura", "DataFechamento" },
                 values: new object[] { new DateTime(2026, 2, 12, 15, 22, 3, 936, DateTimeKind.Utc).AddTicks(1168), new DateTime(2026, 2, 12, 17, 22, 3, 936, DateTimeKind.Utc).AddTicks(1181) });
 
-            migrationBuilder.InsertData(
-                table: "Games",
-                columns: new[] { "Id", "BuyIn", "CreatedAt", "MaxPlayers", "Name", "Status" },
-                values: new object[] { 1, 100m, new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(8033), 9, "Mesa Principal", 0 });
-
-            migrationBuilder.InsertData(
-                table: "Players",
-                columns: new[] { "Id", "Balance", "CreatedAt", "Email", "GameId", "IsActive", "Name" },
-                values: new object[,]
-                {
-                    { 1, 1000m, new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(7934), "jogador1@poker.com", null, true, "Jogador 1" },
-                    { 2, 1500m, new DateTime(2026, 2, 12, 17, 22, 3, 935, DateTimeKind.Utc).AddTicks(7936), "jogador2@poker.com", null, true, "Jogador 2" }
-                });
-
             migrationBuilder.UpdateData(
                 table: "Produtos",
                 keyColumn: "Id",
