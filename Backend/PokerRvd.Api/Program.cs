@@ -92,9 +92,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Aplicar migrations e verificar conexão na inicialização
-using (var scope = app.Services.CreateScope())
+// Aplicar migrations em background (evita 502 por timeout no Railway)
+// A API responde imediatamente em / e /api/health; demais rotas podem falhar até migração concluir
+_ = Task.Run(async () =>
 {
+    await Task.Delay(500);
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<PokerDbContext>();
     try
     {
@@ -105,7 +108,7 @@ using (var scope = app.Services.CreateScope())
     {
         app.Logger.LogError(ex, "Erro ao conectar/migrar o banco. Verifique ConnectionStrings ou DATABASE_URL.");
     }
-}
+});
 
 // Swagger em todos os ambientes (útil para debug em produção)
 app.UseSwagger();

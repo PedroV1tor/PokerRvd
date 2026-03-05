@@ -1,5 +1,29 @@
 # Debug – Railway – Nada aparece nos links
 
+## Erro 502 "Failed to load resource" no Console
+
+Esse erro significa que o **proxy do Railway** não conseguiu obter resposta do container (backend ou frontend). As causas mais comuns:
+
+### Se o 502 aparece ao carregar a página do frontend
+- O **frontend** (Nginx) não está subindo ou caiu.
+- Verifique os **logs do serviço Frontend** no Railway.
+- Confirme se `API_URL` e `HUB_URL` estão definidas (o entrypoint usa isso para gerar `config.json`).
+
+### Se o 502 aparece quando o app faz chamadas à API (ex.: login, dados)
+- O **backend** não responde ou demora demais para iniciar.
+- Verifique os **logs do serviço Backend** no Railway (Deployments → View Logs).
+- A API agora inicia as **migrations em background**, respondendo logo em `/` e `/api/health`. Se o banco estiver lento, as demais rotas podem falhar nos primeiros segundos.
+
+### Passos de diagnóstico
+1. Abra a URL do **backend** direto: `https://sua-api.up.railway.app`
+2. Deve aparecer "PokerRvd API" e "Status: Online".
+3. Abra `https://sua-api.up.railway.app/api/health` – deve retornar JSON com `"status":"healthy"`.
+4. Se o backend responder, o problema pode ser:
+   - `API_URL` ou `HUB_URL` errados no frontend (deve ser a URL completa do backend).
+   - CORS (`CORS__Origins` no backend deve incluir a URL do frontend).
+
+---
+
 ## 1. Verificar o que cada URL deve mostrar
 
 | URL | O que deve aparecer |
