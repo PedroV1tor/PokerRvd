@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { ConfigService } from './config.service';
 import { 
   Comanda, 
   CreateComandaDto, 
@@ -15,9 +16,14 @@ import {
   providedIn: 'root'
 })
 export class ComandaService {
-  private readonly apiUrl = 'http://localhost:5000/api';
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return this.config.apiUrl;
+  }
 
   // ==================== COMANDAS ====================
   

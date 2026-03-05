@@ -5,6 +5,10 @@ using PokerRvd.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Porta para Railway/container (env PORT)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -14,22 +18,50 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configurar CORS para permitir chamadas do Angular
+// Configurar CORS (origens de env em produção, localhost em dev)
+var corsOrigins = builder.Configuration["CORS__Origins"] ?? "http://localhost:4200,http://localhost:4000";
+var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+if (origins.Length == 0)
+    origins = ["http://localhost:4200", "http://localhost:4000"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost:4000")
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-// Adicionar DbContext (usando PostgreSQL)
+// Connection string: usa DATABASE_URL (formato Railway) ou ConnectionStrings__DefaultConnection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrEmpty(databaseUrl))
+        connectionString = ConvertDatabaseUrlToNpgsql(databaseUrl);
+}
+if (string.IsNullOrEmpty(connectionString))
+    throw new InvalidOperationException("Configure ConnectionStrings__DefaultConnection ou DATABASE_URL.");
+
 builder.Services.AddDbContext<PokerDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+static string ConvertDatabaseUrlToNpgsql(string databaseUrl)
+{
+    if (databaseUrl.StartsWith("postgres://"))
+        databaseUrl = "postgresql" + databaseUrl[10..];
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':', 2);
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var database = uri.AbsolutePath.TrimStart('/');
+    var username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres";
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+    return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Prefer;";
+}
 
 // Adicionar serviços personalizados
 builder.Services.AddScoped<IComandaService, ComandaService>();

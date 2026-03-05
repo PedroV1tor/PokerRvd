@@ -1,0 +1,27 @@
+# Dependências e build (serão gerados no container)
+node_modules
+dist
+.angular
+
+# Backend (não necessário para build do frontend)
+Backend
+
+# Versionamento e IDE
+.git
+.gitignore
+.vscode
+.idea
+*.md
+
+# Testes e cobertura
+coverage
+.nyc_output
+*.spec.ts
+karma.conf.js
+
+# Outros
+.env
+.env.*
+Dockerfile*
+docker-compose*
+*.log

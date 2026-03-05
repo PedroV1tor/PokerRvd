@@ -1,15 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ConfigService } from './config.service';
 import { Funcionario, CreateFuncionarioDto, UpdateFuncionarioDto } from '../models/funcionario.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FuncionarioService {
-  private apiUrl = 'http://localhost:5000/api/funcionarios';
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return `${this.config.apiUrl}/funcionarios`;
+  }
 
   getFuncionarios(): Observable<Funcionario[]> {
     return this.http.get<Funcionario[]>(this.apiUrl);

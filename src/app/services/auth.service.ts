@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { ConfigService } from './config.service';
 import { 
   User, 
   LoginRequest, 
@@ -14,7 +15,9 @@ import {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:5000/api/auth';
+  private get apiUrl(): string {
+    return `${this.config.apiUrl}/auth`;
+  }
   private readonly TOKEN_KEY = 'poker_token';
   private readonly USER_KEY = 'poker_user';
 
@@ -28,7 +31,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private config: ConfigService
   ) {}
 
   // ==================== LOGIN ====================

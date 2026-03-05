@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { ConfigService } from './config.service';
 
 /** Eventos emitidos pelo backend via SignalR */
 export type PokerEvent =
@@ -19,7 +20,6 @@ export type PokerEvent =
   providedIn: 'root'
 })
 export class SignalrService implements OnDestroy {
-  private hubUrl = 'http://localhost:5000/hubs/poker';
   private connection: signalR.HubConnection | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -31,13 +31,16 @@ export class SignalrService implements OnDestroy {
   private readonly statusSubject = new Subject<boolean>();
   readonly onStatus = this.statusSubject.asObservable();
 
+  constructor(private config: ConfigService) {}
+
   async connect(): Promise<void> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       return;
     }
 
+    const hubUrl = this.config.hubUrl;
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(this.hubUrl, {
+      .withUrl(hubUrl, {
         withCredentials: true,
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets

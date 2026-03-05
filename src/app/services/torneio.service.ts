@@ -1,15 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ConfigService } from './config.service';
 import { Torneio, CreateTorneioDto, UpdateTorneioDto, StatusTorneio } from '../models/torneio.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TorneioService {
-  private readonly apiUrl = 'http://localhost:5000/api/torneios';
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return `${this.config.apiUrl}/torneios`;
+  }
 
   getTorneios(): Observable<Torneio[]> {
     return this.http.get<Torneio[]>(this.apiUrl);
