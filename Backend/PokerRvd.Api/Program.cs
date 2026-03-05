@@ -5,9 +5,9 @@ using PokerRvd.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Porta para Railway/container (env PORT)
+// Porta para Railway/container (env PORT) - 0.0.0.0 para aceitar conexões externas
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://*:{port}");
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -126,5 +126,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<PokerHub>("/hubs/poker");
+
+// Rota raiz para verificar se a API está online
+app.MapGet("/", () => Results.Json(new { service = "PokerRvd API", status = "online", docs = "/swagger" }));
 
 app.Run();
