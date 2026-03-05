@@ -1,9 +1,8 @@
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace PokerRvd.Api.Services;
 
@@ -142,19 +141,9 @@ public class AuthService : IAuthService
 
     // ==================== HELPERS ====================
 
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password + "PokerRvd_Salt_Key"); // Salt simples
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
-    }
+    private static string HashPassword(string password) => PasswordHasher.Hash(password);
 
-    private bool VerifyPassword(string password, string hash)
-    {
-        var passwordHash = HashPassword(password);
-        return passwordHash == hash;
-    }
+    private static bool VerifyPassword(string password, string hash) => PasswordHasher.Verify(password, hash);
 
     private string GenerateToken(Usuario usuario)
     {

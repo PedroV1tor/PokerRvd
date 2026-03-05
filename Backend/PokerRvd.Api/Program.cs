@@ -5,8 +5,8 @@ using PokerRvd.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Porta para Railway/container (env PORT) - 0.0.0.0 para aceitar conexões externas
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// Porta: Railway usa PORT; local usa 5000 (igual launchSettings e config.json do frontend)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services to the container.
@@ -97,6 +97,7 @@ _ = Task.Run(async () =>
     {
         await db.Database.MigrateAsync();
         app.Logger.LogInformation("Banco de dados migrado e conectado.");
+        await DataSeeder.EnsureDefaultUsuariosAsync(db, app.Logger);
     }
     catch (Exception ex)
     {

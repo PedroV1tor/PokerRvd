@@ -2,8 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace PokerRvd.Api.Services;
 
@@ -41,7 +39,7 @@ public class FuncionarioService : IFuncionarioService
             throw new InvalidOperationException("Email já cadastrado");
 
         // Hash da senha
-        var senhaHash = HashPassword(dto.Senha);
+        var senhaHash = PasswordHasher.Hash(dto.Senha);
 
         // Parse do Role
         if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
@@ -167,11 +165,4 @@ public class FuncionarioService : IFuncionarioService
         return new string(cpf.Where(char.IsDigit).ToArray());
     }
 
-    private static string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password + "PokerRvd_Salt_Key"); // Salt simples
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
-    }
 }
