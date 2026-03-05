@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { CaixaService } from '../../services/caixa.service';
 import { ComandaService } from '../../services/comanda.service';
+import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
 import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '../../models/comanda.model';
@@ -15,7 +18,7 @@ import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '.
   templateUrl: './caixa-detalhes.component.html',
   styleUrl: './caixa-detalhes.component.scss'
 })
-export class CaixaDetalhesComponent implements OnInit {
+export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   caixa: CaixaDetailsDto | null = null;
   loading = false;
   caixaId: number = 0;
@@ -65,11 +68,14 @@ export class CaixaDetalhesComponent implements OnInit {
     return total - d;
   }
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private caixaService: CaixaService,
     private comandaService: ComandaService,
+    private signalr: SignalrService,
     private toast: ToastService
   ) {}
 
@@ -78,6 +84,22 @@ export class CaixaDetalhesComponent implements OnInit {
     if (this.caixaId) {
       this.carregarCaixa();
     }
+    this.signalr.onEvent.pipe(
+      filter(e => {
+        if (e.evento === 'ComandaFechada') return true;
+        if (e.evento === 'MovimentacaoAdicionada') {
+          const p = e.payload as { caixaId?: number } | undefined;
+          return !p || p.caixaId === this.caixaId;
+        }
+        return false;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.carregarCaixa());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregarCaixa() {

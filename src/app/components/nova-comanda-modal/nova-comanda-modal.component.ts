@@ -1,8 +1,11 @@
-import { Component, Output, EventEmitter, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreateComandaDto, TipoComanda } from '../../models/comanda.model';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { TorneioService } from '../../services/torneio.service';
+import { SignalrService } from '../../services/signalr.service';
 import { Torneio, StatusTorneio } from '../../models/torneio.model';
 
 @Component({
@@ -330,7 +333,7 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
     }
   `]
 })
-export class NovaComandaModalComponent implements OnInit, OnChanges {
+export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
   @Output() criar = new EventEmitter<CreateComandaDto>();
@@ -346,10 +349,24 @@ export class NovaComandaModalComponent implements OnInit, OnChanges {
     valorFichas: 0
   };
 
-  constructor(private torneioService: TorneioService) {}
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private torneioService: TorneioService,
+    private signalr: SignalrService
+  ) {}
 
   ngOnInit() {
     this.carregarTorneiosEmAndamento();
+    this.signalr.onEvent.pipe(
+      filter(e => ['TorneioCriado', 'TorneioAtualizado'].includes(e.evento)),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.carregarTorneiosEmAndamento());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges) {

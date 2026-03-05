@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Hubs;
 using PokerRvd.Api.Models;
 
 namespace PokerRvd.Api.Services;
@@ -9,11 +11,25 @@ public class CaixaService : ICaixaService
 {
     private readonly PokerDbContext _context;
     private readonly ILogger<CaixaService> _logger;
+    private readonly IHubContext<PokerHub> _hubContext;
 
-    public CaixaService(PokerDbContext context, ILogger<CaixaService> logger)
+    public CaixaService(PokerDbContext context, ILogger<CaixaService> logger, IHubContext<PokerHub> hubContext)
     {
         _context = context;
         _logger = logger;
+        _hubContext = hubContext;
+    }
+
+    private async Task NotificarCaixaAsync(string evento, object? payload = null)
+    {
+        try
+        {
+            await _hubContext.Clients.All.SendAsync(evento, payload);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao enviar evento SignalR {Evento}", evento);
+        }
     }
 
     public async Task<List<CaixaDto>> GetAllCaixasAsync()
@@ -71,6 +87,7 @@ public class CaixaService : ICaixaService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Caixa {CaixaId} aberto por {Usuario}", caixa.Id, usuarioNome);
+        await NotificarCaixaAsync("CaixaAberto", MapToCaixaDto(caixa));
 
         return MapToCaixaDto(caixa);
     }
@@ -96,6 +113,7 @@ public class CaixaService : ICaixaService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Caixa {CaixaId} fechado por {Usuario}", id, usuarioNome);
+        await NotificarCaixaAsync("CaixaFechado", MapToCaixaDto(caixa));
 
         return MapToCaixaDto(caixa);
     }
@@ -142,6 +160,7 @@ public class CaixaService : ICaixaService
 
         _logger.LogInformation("Movimentação {Tipo} de R$ {Valor} adicionada ao caixa {CaixaId}", 
             dto.Tipo, dto.Valor, caixaId);
+        await NotificarCaixaAsync("MovimentacaoAdicionada", new { caixaId });
 
         return true;
     }

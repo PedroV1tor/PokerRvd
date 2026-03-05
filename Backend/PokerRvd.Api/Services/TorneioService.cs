@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Hubs;
 using PokerRvd.Api.Models;
 
 namespace PokerRvd.Api.Services;
@@ -8,10 +10,24 @@ namespace PokerRvd.Api.Services;
 public class TorneioService : ITorneioService
 {
     private readonly PokerDbContext _context;
+    private readonly IHubContext<PokerHub> _hubContext;
 
-    public TorneioService(PokerDbContext context)
+    public TorneioService(PokerDbContext context, IHubContext<PokerHub> hubContext)
     {
         _context = context;
+        _hubContext = hubContext;
+    }
+
+    private async Task NotificarTorneioAsync(string evento, object? payload = null)
+    {
+        try
+        {
+            await _hubContext.Clients.All.SendAsync(evento, payload);
+        }
+        catch
+        {
+            // Silencioso - não quebrar fluxo principal
+        }
     }
 
     public async Task<List<TorneioDto>> GetAllTorneiosAsync()
@@ -47,7 +63,9 @@ public class TorneioService : ITorneioService
         _context.Torneios.Add(torneio);
         await _context.SaveChangesAsync();
 
-        return MapToDto(torneio);
+        var result = MapToDto(torneio);
+        await NotificarTorneioAsync("TorneioCriado", result);
+        return result;
     }
 
     public async Task<TorneioDto?> UpdateTorneioAsync(int id, UpdateTorneioDto dto)
@@ -64,7 +82,9 @@ public class TorneioService : ITorneioService
 
         await _context.SaveChangesAsync();
 
-        return MapToDto(torneio);
+        var result = MapToDto(torneio);
+        await NotificarTorneioAsync("TorneioAtualizado", result);
+        return result;
     }
 
     public async Task<bool> DeleteTorneioAsync(int id)
@@ -74,6 +94,7 @@ public class TorneioService : ITorneioService
 
         _context.Torneios.Remove(torneio);
         await _context.SaveChangesAsync();
+        await NotificarTorneioAsync("TorneioRemovido", new { id });
         return true;
     }
 

@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { TorneioService } from '../../services/torneio.service';
+import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
 import { Torneio, CreateTorneioDto, StatusTorneio } from '../../models/torneio.model';
@@ -15,7 +18,7 @@ import { Torneio, CreateTorneioDto, StatusTorneio } from '../../models/torneio.m
   templateUrl: './torneios.component.html',
   styleUrl: './torneios.component.scss'
 })
-export class TorneiosComponent implements OnInit {
+export class TorneiosComponent implements OnInit, OnDestroy {
   torneios: Torneio[] = [];
   torneiosFiltrados: Torneio[] = [];
   loading = false;
@@ -34,8 +37,11 @@ export class TorneiosComponent implements OnInit {
   filtroStatus: StatusTorneio | 'TODOS' = 'TODOS';
   StatusTorneio = StatusTorneio;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private torneioService: TorneioService,
+    private signalr: SignalrService,
     private router: Router,
     private toast: ToastService,
     private confirm: ConfirmService
@@ -43,6 +49,15 @@ export class TorneiosComponent implements OnInit {
 
   ngOnInit() {
     this.carregarTorneios();
+    this.signalr.onEvent.pipe(
+      filter(e => ['TorneioCriado', 'TorneioAtualizado', 'TorneioRemovido'].includes(e.evento)),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.carregarTorneios());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregarTorneios() {

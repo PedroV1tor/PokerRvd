@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
+using PokerRvd.Api.Hubs;
 using PokerRvd.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICaixaService, CaixaService>();
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 builder.Services.AddScoped<ITorneioService, TorneioService>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -84,10 +86,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngular");
 
-app.UseHttpsRedirection();
+// Em desenvolvimento, evita redirecionar HTTP->HTTPS (quebra negotiate do SignalR)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<PokerHub>("/hubs/poker");
 
 app.Run();

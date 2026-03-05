@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,8 +6,11 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { ComandaCardComponent } from '../../components/comanda-card/comanda-card.component';
 import { NovaComandaModalComponent } from '../../components/nova-comanda-modal/nova-comanda-modal.component';
 import { DashboardStatsComponent } from '../../components/dashboard-stats/dashboard-stats.component';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ComandaService } from '../../services/comanda.service';
 import { CaixaService } from '../../services/caixa.service';
+import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda } from '../../models/comanda.model';
 
@@ -25,7 +28,7 @@ import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda }
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   title = 'PokerRvd';
   comandas: Comanda[] = [];
   comandasFiltradas: Comanda[] = [];
@@ -47,15 +50,28 @@ export class DashboardComponent implements OnInit {
   // Loading
   loading = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private comandaService: ComandaService,
     private caixaService: CaixaService,
+    private signalr: SignalrService,
     private router: Router,
     private toast: ToastService
   ) {}
 
   ngOnInit() {
     this.carregarDados();
+    const eventos = ['ComandaCriada', 'ComandaAtualizada', 'ComandaFechada', 'ComandaRemovida', 'CaixaAberto', 'CaixaFechado'];
+    this.signalr.onEvent.pipe(
+      filter(e => eventos.includes(e.evento)),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.carregarDados());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregarDados() {

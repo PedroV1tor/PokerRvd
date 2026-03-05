@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start:backend": "cd Backend/PokerRvd.Api && dotnet run",
+    "start:backend": "cd Backend/PokerRvd.Api && dotnet run --launch-profile http",
     "start:all": "concurrently \"npm:start:backend\" \"npm:start\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
     "build": "ng build",
     "build:backend": "cd Backend/PokerRvd.Api && dotnet build",
@@ -26,6 +26,7 @@
     "@angular/platform-server": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@angular/ssr": "^18.2.20",
+    "@microsoft/signalr": "^8.0.17",
     "express": "^4.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

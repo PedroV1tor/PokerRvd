@@ -391,9 +391,9 @@
   border: 1px solid rgba(255, 77, 77, 0.3);
 }
 
-.acoes {
-  display: flex;
-  gap: 0.5rem;
+.acoes button:nth-child(1){
+  margin-right: 0.5rem;
+
 }
 
 .btn-editar,
@@ -897,6 +897,9 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.table-container {
+  overflow-x: auto;
+}
 
 /* Responsive */
 @media (max-width: 968px) {
@@ -974,4 +977,6 @@
   .modal-form {
     padding: 1.5rem;
   }
+
+  
 }

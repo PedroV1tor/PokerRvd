@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ComandaService } from '../../services/comanda.service';
+import { SignalrService } from '../../services/signalr.service';
 import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ToastService } from '../../services/toast.service';
@@ -19,7 +22,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './comanda-detalhes.component.html',
   styleUrl: './comanda-detalhes.component.scss'
 })
-export class ComandaDetalhesComponent implements OnInit {
+export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   comanda: Comanda | null | undefined = null;
   torneio: Torneio | null = null;
   itens: ItemComanda[] = [];
@@ -47,12 +50,15 @@ export class ComandaDetalhesComponent implements OnInit {
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private comandaService: ComandaService,
     private torneioService: TorneioService,
     private produtoService: ProdutoService,
+    private signalr: SignalrService,
     private toast: ToastService,
     private confirm: ConfirmService,
     private auth: AuthService
@@ -64,6 +70,20 @@ export class ComandaDetalhesComponent implements OnInit {
       this.carregarComanda();
     }
     this.carregarProdutos();
+    this.signalr.onEvent.pipe(
+      filter(e => e.evento === 'ComandaAtualizada'),
+      filter(e => {
+        const p = e.payload as { id?: number; comandaId?: number } | undefined;
+        if (!p) return true;
+        return p.id === this.comandaId || p.comandaId === this.comandaId;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.carregarComanda());
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregarComanda() {

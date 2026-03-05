@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { ToastComponent } from './components/toast/toast.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 import { AuthService } from './services/auth.service';
+import { SignalrService } from './services/signalr.service';
 
 @Component({
   selector: 'app-root',
@@ -14,10 +15,19 @@ import { AuthService } from './services/auth.service';
 export class AppComponent implements OnInit {
   title = 'PokerRvd';
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private signalr: SignalrService
+  ) {}
 
   ngOnInit(): void {
-    // Recarrega permissões do usuário (evita ficar com permissões antigas no localStorage)
     this.auth.refreshCurrentUser().subscribe();
+    this.auth.authState$.subscribe(state => {
+      if (state.isAuthenticated) {
+        this.signalr.connect();
+      } else {
+        this.signalr.disconnect();
+      }
+    });
   }
 }

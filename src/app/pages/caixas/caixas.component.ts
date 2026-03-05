@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { CaixaService } from '../../services/caixa.service';
+import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { CaixaDto, StatusCaixa, CreateCaixaDto } from '../../models/caixa.model';
 
@@ -14,7 +17,7 @@ import { CaixaDto, StatusCaixa, CreateCaixaDto } from '../../models/caixa.model'
   templateUrl: './caixas.component.html',
   styleUrl: './caixas.component.scss'
 })
-export class CaixasComponent implements OnInit {
+export class CaixasComponent implements OnInit, OnDestroy {
   caixas: CaixaDto[] = [];
   caixaAberto: CaixaDto | null = null;
   loading = false;
@@ -26,8 +29,11 @@ export class CaixasComponent implements OnInit {
 
   StatusCaixa = StatusCaixa;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private caixaService: CaixaService,
+    private signalr: SignalrService,
     private router: Router,
     private toast: ToastService
   ) {}
@@ -35,6 +41,18 @@ export class CaixasComponent implements OnInit {
   ngOnInit() {
     this.carregarCaixas();
     this.verificarCaixaAberto();
+    this.signalr.onEvent.pipe(
+      filter(e => e.evento === 'CaixaAberto' || e.evento === 'CaixaFechado'),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.carregarCaixas();
+      this.verificarCaixaAberto();
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregarCaixas() {

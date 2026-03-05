@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Hubs;
 using PokerRvd.Api.Models;
 
 namespace PokerRvd.Api.Services;
@@ -10,11 +12,25 @@ public class ComandaService : IComandaService
 {
     private readonly PokerDbContext _context;
     private readonly ILogger<ComandaService> _logger;
+    private readonly IHubContext<PokerHub> _hubContext;
 
-    public ComandaService(PokerDbContext context, ILogger<ComandaService> logger)
+    public ComandaService(PokerDbContext context, ILogger<ComandaService> logger, IHubContext<PokerHub> hubContext)
     {
         _context = context;
         _logger = logger;
+        _hubContext = hubContext;
+    }
+
+    private async Task NotificarComandaAsync(string evento, object? payload = null)
+    {
+        try
+        {
+            await _hubContext.Clients.All.SendAsync(evento, payload);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao enviar evento SignalR {Evento}", evento);
+        }
     }
 
     public async Task<List<ComandaDto>> GetAllComandasAsync(int? caixaId = null)
@@ -189,7 +205,7 @@ public class ComandaService : IComandaService
             await _context.SaveChangesAsync();
         }
 
-        return new ComandaDto
+        var dto = new ComandaDto
         {
             Id = comanda.Id,
             JogadorNome = comanda.JogadorNome,
@@ -202,6 +218,8 @@ public class ComandaService : IComandaService
             Status = comanda.Status.ToString(),
             DataAbertura = comanda.DataAbertura
         };
+        await NotificarComandaAsync("ComandaCriada", dto);
+        return dto;
     }
 
     public async Task<ComandaDto?> UpdateComandaAsync(int id, UpdateComandaDto updateComandaDto)
@@ -224,7 +242,7 @@ public class ComandaService : IComandaService
 
         await _context.SaveChangesAsync();
 
-        return new ComandaDto
+        var dto = new ComandaDto
         {
             Id = comanda.Id,
             JogadorNome = comanda.JogadorNome,
@@ -238,6 +256,8 @@ public class ComandaService : IComandaService
             DataAbertura = comanda.DataAbertura,
             DataFechamento = comanda.DataFechamento
         };
+        await NotificarComandaAsync("ComandaAtualizada", dto);
+        return dto;
     }
 
     public async Task<ComandaDto?> FecharComandaAsync(int id, FecharComandaDto? fecharComandaDto = null)
@@ -321,7 +341,9 @@ public class ComandaService : IComandaService
 
         await _context.SaveChangesAsync();
 
-        return await GetComandaByIdAsync(id);
+        var resultado = await GetComandaByIdAsync(id);
+        await NotificarComandaAsync("ComandaFechada", new { id, caixaId = caixaAberto.Id });
+        return resultado;
     }
 
     public async Task<bool> DeleteComandaAsync(int id)
@@ -331,6 +353,7 @@ public class ComandaService : IComandaService
 
         _context.Comandas.Remove(comanda);
         await _context.SaveChangesAsync();
+        await NotificarComandaAsync("ComandaRemovida", new { id });
         return true;
     }
 
@@ -384,6 +407,7 @@ public class ComandaService : IComandaService
         caixaAberto.TotalSaidas += item.ValorTotal;
 
         await _context.SaveChangesAsync();
+        await NotificarComandaAsync("ComandaAtualizada", new { comandaId });
         return true;
     }
 
@@ -446,6 +470,7 @@ public class ComandaService : IComandaService
         await _context.SaveChangesAsync();
         
         _logger.LogInformation("Item de fichas salvo com sucesso");
+        await NotificarComandaAsync("ComandaAtualizada", new { comandaId });
         return true;
     }
 
