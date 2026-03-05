@@ -17,11 +17,14 @@ export class ConfigService {
   private config: AppConfig = { ...DEFAULT_CONFIG };
 
   loadConfig(): Promise<AppConfig> {
-    return fetch('/config.json')
-      .then(res => res.ok ? res.json() : null)
+    const timeout = (ms: number) => new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+    return Promise.race([
+      fetch('/config.json').then(res => res.ok ? res.json() : null),
+      timeout(5000)
+    ])
       .then((data: Partial<AppConfig> | null) => {
-        if (data?.apiUrl) this.config.apiUrl = data.apiUrl.replace(/\/$/, '');
-        if (data?.hubUrl) this.config.hubUrl = data.hubUrl.replace(/\/$/, '');
+        if (data?.apiUrl) this.config.apiUrl = String(data.apiUrl).replace(/\/$/, '');
+        if (data?.hubUrl) this.config.hubUrl = String(data.hubUrl).replace(/\/$/, '');
         return this.config;
       })
       .catch(() => this.config);

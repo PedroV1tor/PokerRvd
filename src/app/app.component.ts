@@ -21,6 +21,10 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Esconde mensagem "Carregando..." quando o app inicia
+    const fallback = document.getElementById('load-fallback');
+    if (fallback) fallback.style.display = 'none';
+
     this.auth.refreshCurrentUser().subscribe();
     this.auth.authState$.subscribe(state => {
       if (state.isAuthenticated) {

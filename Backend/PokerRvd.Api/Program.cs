@@ -107,12 +107,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger em todos os ambientes (útil para debug em produção)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowAngular");
 
@@ -127,7 +124,16 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<PokerHub>("/hubs/poker");
 
-// Rota raiz para verificar se a API está online
-app.MapGet("/", () => Results.Json(new { service = "PokerRvd API", status = "online", docs = "/swagger" }));
+// Rota raiz - HTML simples para ver no navegador
+app.MapGet("/", () => Results.Content("""
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>PokerRvd API</title></head>
+<body>
+<h1>PokerRvd API</h1>
+<p><strong>Status:</strong> Online</p>
+<p><a href="/api/health">Health Check</a></p>
+<p><a href="/swagger">Swagger</a> (apenas em Development)</p>
+</body></html>
+""", "text/html"));
 
 app.Run();
