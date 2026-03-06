@@ -55,14 +55,6 @@ import { LoginRequest } from '../../models/auth.model';
             <span class="error-message" *ngIf="senhaError">{{ senhaError }}</span>
           </div>
 
-          <div class="form-options">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
-              <span>Lembrar-me</span>
-            </label>
-            <a href="#" class="forgot-password">Esqueceu a senha?</a>
-          </div>
-
           <div class="error-alert" *ngIf="errorMessage">
             <span class="icon">⚠️</span>
             {{ errorMessage }}
