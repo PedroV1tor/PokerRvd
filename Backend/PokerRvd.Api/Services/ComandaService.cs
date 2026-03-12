@@ -262,18 +262,26 @@ public class ComandaService : IComandaService
 
     public async Task<ComandaDto?> FecharComandaAsync(int id, FecharComandaDto? fecharComandaDto = null)
     {
-        // Verificar se há um caixa aberto
-        var caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
-        if (caixaAberto == null)
-        {
-            throw new InvalidOperationException("Não é possível fechar comanda. Nenhum caixa está aberto.");
-        }
-
         var comanda = await _context.Comandas
             .Include(c => c.Itens)
             .FirstOrDefaultAsync(c => c.Id == id);
-        
+
         if (comanda == null) return null;
+
+        // Usar o caixa original da comanda; se não tiver, buscar o caixa aberto atual
+        Caixa? caixaAberto = null;
+        if (comanda.CaixaId.HasValue)
+        {
+            caixaAberto = await _context.Caixas.FindAsync(comanda.CaixaId.Value);
+        }
+        if (caixaAberto == null)
+        {
+            caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        }
+        if (caixaAberto == null)
+        {
+            throw new InvalidOperationException("Não é possível fechar comanda. Nenhum caixa encontrado.");
+        }
 
         // Estoque já foi descontado ao adicionar cada item à comanda (saída na hora da venda)
 
@@ -299,6 +307,7 @@ public class ComandaService : IComandaService
                         $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorComDesconto:N2}).");
                 }
 
+                var primeiraMov = true;
                 foreach (var forma in fecharComandaDto.FormasPagamento.Where(f => f.Valor > 0))
                 {
                     var movimentacao = new MovimentacaoCaixa
@@ -312,10 +321,12 @@ public class ComandaService : IComandaService
                         ComandaId = comanda.Id,
                         ComandaNome = comanda.JogadorNome,
                         FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
+                        Desconto = primeiraMov && desconto > 0 ? desconto : null,
                         UsuarioNome = "Sistema"
                     };
                     _context.MovimentacoesCaixa.Add(movimentacao);
                     caixaAberto.TotalEntradas += forma.Valor;
+                    primeiraMov = false;
                 }
             }
             else
@@ -332,6 +343,7 @@ public class ComandaService : IComandaService
                     ComandaId = comanda.Id,
                     ComandaNome = comanda.JogadorNome,
                     FormaPagamento = null,
+                    Desconto = desconto > 0 ? desconto : null,
                     UsuarioNome = "Sistema"
                 };
                 _context.MovimentacoesCaixa.Add(movimentacao);

@@ -156,6 +156,10 @@
     color: #FF6B6B;
   }
 
+  &.desconto .valor {
+    color: #fbbf24;
+  }
+
   &.total {
     margin-top: 0.5rem;
     padding-top: 1rem;
@@ -670,6 +674,11 @@
     color: #7dd3fc;
     border-bottom-color: #7dd3fc;
   }
+
+  &.desconto {
+    color: #fbbf24;
+    border-bottom-color: #fbbf24;
+  }
 }
 
 .resumo-header-3col {
@@ -684,6 +693,15 @@
 
     .col-total {
       color: #7dd3fc;
+      font-weight: bold;
+    }
+  }
+
+  &.desconto {
+    border-left-color: #fbbf24;
+
+    .col-total {
+      color: #fbbf24;
       font-weight: bold;
     }
   }
@@ -789,6 +807,19 @@
 
     .valor {
       color: #FF6B6B;
+      font-size: 1.3rem;
+    }
+  }
+
+  &.desconto {
+    border-top-color: #fbbf24;
+
+    .label {
+      color: #fbbf24;
+    }
+
+    .valor {
+      color: #fbbf24;
       font-size: 1.3rem;
     }
   }

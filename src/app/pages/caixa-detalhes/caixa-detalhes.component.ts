@@ -102,6 +102,7 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+
   carregarCaixa() {
     this.loading = true;
     this.caixaService.getCaixa(this.caixaId).subscribe({
@@ -369,6 +370,18 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     const movs = this.caixa.movimentacoes ?? [];
     const saidas = movs.filter(m => m.tipo === TipoMovimentacao.SAIDA);
     return this.agruparMovimentacoes(saidas);
+  }
+
+  /** Resumo de descontos por comanda */
+  getResumoDescontos(): { comandaNome: string; desconto: number }[] {
+    if (!this.caixa) return [];
+    return (this.caixa.movimentacoes ?? [])
+      .filter(m => m.desconto != null && m.desconto > 0)
+      .map(m => ({ comandaNome: m.comandaNome ?? 'Comanda', desconto: m.desconto! }));
+  }
+
+  getTotalDescontos(): number {
+    return this.getResumoDescontos().reduce((s, i) => s + i.desconto, 0);
   }
 
   /** Resumo de entradas agrupado por forma de pagamento (fechamento de comandas) */

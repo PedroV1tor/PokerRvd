@@ -165,9 +165,10 @@
         background: #222;
       }
 
-      &.low-stock-row {
-        background: rgba(255, 80, 80, 0.08);
+      &.no-stock-row {
+        background: rgba(255, 50, 50, 0.12);
       }
+
 
       &.inactive-row {
         opacity: 0.6;
@@ -200,10 +201,11 @@
         color: #999;
       }
 
-      &.low-stock {
+      &.no-stock {
         color: #e74c3c;
         font-weight: 600;
       }
+
 
       &.acoes {
         display: flex;

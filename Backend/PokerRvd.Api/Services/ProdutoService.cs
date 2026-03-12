@@ -114,7 +114,15 @@ public class ProdutoService : IProdutoService
         var produto = await _context.Produtos.FindAsync(id);
         if (produto == null) return false;
 
-        produto.Ativo = false; // Soft delete
+        // Desvincula o produto dos itens de comanda antes de excluir
+        var itensVinculados = await _context.ItensComanda
+            .Where(i => i.ProdutoId == id)
+            .ToListAsync();
+
+        foreach (var item in itensVinculados)
+            item.ProdutoId = null;
+
+        _context.Produtos.Remove(produto);
         await _context.SaveChangesAsync();
         return true;
     }

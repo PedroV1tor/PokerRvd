@@ -65,13 +65,13 @@
       </thead>
       <tbody>
         <tr *ngFor="let produto of filteredProdutos" 
-            [class.low-stock-row]="produto.quantidadeEstoque <= 10"
+            [class.no-stock-row]="produto.quantidadeEstoque === 0"
             [class.inactive-row]="!produto.ativo">
           <td class="produto-nome">{{ produto.nome }}</td>
           <td>R$ {{ produto.valorCusto.toFixed(2) }}</td>
           <td class="valor-comercial">R$ {{ produto.valorComercial.toFixed(2) }}</td>
           <td class="margem">{{ calcularMargem(produto).toFixed(1) }}%</td>
-          <td [class.low-stock]="produto.quantidadeEstoque <= 10">
+          <td [class.no-stock]="produto.quantidadeEstoque === 0">
             {{ produto.quantidadeEstoque }}
           </td>
           <td>{{ produto.unidadeVenda }}</td>
@@ -184,8 +184,8 @@
         <button type="button" class="btn-cancel" (click)="fecharModal()">
           Cancelar
         </button>
-        <button type="submit" class="btn-submit" [disabled]="!isFormValid()">
-          Criar Produto
+        <button type="submit" class="btn-submit" [disabled]="!isFormValid() || isSaving">
+          {{ isSaving ? 'Salvando...' : 'Criar Produto' }}
         </button>
       </div>
     </form>
@@ -349,8 +349,8 @@
         <button type="button" class="btn-cancel" (click)="fecharModalEstoque()">
           Cancelar
         </button>
-        <button type="submit" class="btn-submit" [disabled]="!isFormEstoqueValid()">
-          Adicionar ao Estoque
+        <button type="submit" class="btn-submit" [disabled]="!isFormEstoqueValid() || isSaving">
+          {{ isSaving ? 'Salvando...' : 'Adicionar ao Estoque' }}
         </button>
       </div>
     </form>

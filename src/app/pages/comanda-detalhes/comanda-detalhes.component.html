@@ -209,8 +209,8 @@
       <button class="btn btn-secondary" (click)="fecharModalBebida()">
         Cancelar
       </button>
-      <button class="btn btn-primary" (click)="adicionarBebida()">
-        Adicionar
+      <button class="btn btn-primary" (click)="adicionarBebida()" [disabled]="isSaving">
+        {{ isSaving ? 'Salvando...' : 'Adicionar' }}
       </button>
     </div>
   </div>
@@ -284,8 +284,8 @@
 
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="fecharModalFechar()">Cancelar</button>
-      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="!totalBateComFormas || somaFormasPagamento <= 0 || valorComDesconto < 0">
-        Fechar Comanda
+      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="!totalBateComFormas || somaFormasPagamento <= 0 || valorComDesconto < 0 || isSaving">
+        {{ isSaving ? 'Fechando...' : 'Fechar Comanda' }}
       </button>
     </div>
   </div>
@@ -330,8 +330,8 @@
       <button class="btn btn-secondary" (click)="fecharModalFichas()">
         Cancelar
       </button>
-      <button class="btn btn-primary" (click)="confirmarAdicionarFichas()">
-        Adicionar
+      <button class="btn btn-primary" (click)="confirmarAdicionarFichas()" [disabled]="isSaving">
+        {{ isSaving ? 'Salvando...' : 'Adicionar' }}
       </button>
     </div>
   </div>

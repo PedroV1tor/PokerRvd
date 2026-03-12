@@ -156,6 +156,7 @@
   <!-- Modal Nova Comanda -->
   <app-nova-comanda-modal
     [isOpen]="mostrarModalNovaComanda"
+    [isSaving]="isCreatingComanda"
     (close)="fecharModalNovaComanda()"
     (criar)="criarComanda($event)">
   </app-nova-comanda-modal>

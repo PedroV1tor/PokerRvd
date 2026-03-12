@@ -66,8 +66,8 @@ export class AuthService {
   // ==================== LOGOUT ====================
   
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    sessionStorage.removeItem(this.TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
     this.authStateSubject.next({
       user: null,
       isAuthenticated: false,
@@ -80,9 +80,9 @@ export class AuthService {
   
   private setSession(user: User, token?: string): void {
     if (token) {
-      localStorage.setItem(this.TOKEN_KEY, token);
+      sessionStorage.setItem(this.TOKEN_KEY, token);
     }
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   private updateAuthState(): void {
@@ -96,7 +96,7 @@ export class AuthService {
   // ==================== GETTERS ====================
   
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return sessionStorage.getItem(this.TOKEN_KEY);
   }
 
   getCurrentUser(): User | null {
@@ -204,7 +204,7 @@ export class AuthService {
   }
 
   private getUserFromStorage(): User | null {
-    const userStr = localStorage.getItem(this.USER_KEY);
+    const userStr = sessionStorage.getItem(this.USER_KEY);
     if (userStr) {
       try {
         return JSON.parse(userStr);

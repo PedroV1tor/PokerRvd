@@ -88,8 +88,7 @@ public class CaixasController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Por enquanto usando usuário fixo, depois pegar do token de autenticação
-            var usuarioNome = "Administrador";
+            var usuarioNome = !string.IsNullOrWhiteSpace(dto.UsuarioNome) ? dto.UsuarioNome : "Sistema";
 
             var caixa = await _caixaService.AbrirCaixaAsync(dto, usuarioNome);
             return CreatedAtAction(nameof(GetCaixa), new { id = caixa.Id }, caixa);

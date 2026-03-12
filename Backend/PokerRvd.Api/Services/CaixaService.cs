@@ -212,6 +212,7 @@ public class CaixaService : ICaixaService
                 ComandaId = m.ComandaId,
                 ComandaNome = m.ComandaNome,
                 FormaPagamento = m.FormaPagamento,
+                Desconto = m.Desconto,
                 UsuarioNome = m.UsuarioNome
             }).OrderByDescending(m => m.DataHora).ToList()
         };

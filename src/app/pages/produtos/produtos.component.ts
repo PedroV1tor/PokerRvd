@@ -24,6 +24,7 @@ export class ProdutosComponent implements OnInit {
   showModalEdicao: boolean = false;
   showModalEstoque: boolean = false;
   isLoading: boolean = false;
+  isSaving: boolean = false;
 
   novoProduto: CreateProdutoDto = {
     nome: '',
@@ -131,18 +132,18 @@ export class ProdutosComponent implements OnInit {
   }
 
   criarProduto(): void {
-    if (!this.isFormValid()) {
-      this.toast.warning('Por favor, preencha todos os campos obrigatórios!');
-      return;
-    }
+    if (!this.isFormValid() || this.isSaving) return;
 
+    this.isSaving = true;
     this.produtoService.createProduto(this.novoProduto).subscribe({
       next: () => {
+        this.isSaving = false;
         this.carregarProdutos();
         this.fecharModal();
         this.toast.success('Produto criado com sucesso!');
       },
       error: () => {
+        this.isSaving = false;
         this.toast.error('Erro ao criar produto. Tente novamente.');
       }
     });
@@ -275,10 +276,7 @@ export class ProdutosComponent implements OnInit {
   }
 
   adicionarEstoque(): void {
-    if (!this.isFormEstoqueValid()) {
-      this.toast.warning('Por favor, selecione um produto e informe a quantidade!');
-      return;
-    }
+    if (!this.isFormEstoqueValid() || this.isSaving) return;
 
     const produtoId = Number(this.estoqueAdd.produtoId);
     const produto = this.produtos.find(p => p.id === produtoId);
@@ -300,13 +298,16 @@ export class ProdutosComponent implements OnInit {
       ativo: produto.ativo
     };
 
+    this.isSaving = true;
     this.produtoService.updateProduto(produto.id, updateDto).subscribe({
       next: () => {
+        this.isSaving = false;
         this.carregarProdutos();
         this.fecharModalEstoque();
         this.toast.success(`Estoque atualizado! ${produto.nome}: ${produto.quantidadeEstoque} → ${novoEstoque}`);
       },
       error: () => {
+        this.isSaving = false;
         this.toast.error('Erro ao adicionar estoque. Tente novamente.');
       }
     });

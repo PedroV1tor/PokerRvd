@@ -8,6 +8,7 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { CaixaService } from '../../services/caixa.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 import { CaixaDto, StatusCaixa, CreateCaixaDto } from '../../models/caixa.model';
 
 @Component({
@@ -35,7 +36,8 @@ export class CaixasComponent implements OnInit, OnDestroy {
     private caixaService: CaixaService,
     private signalr: SignalrService,
     private router: Router,
-    private toast: ToastService
+    private toast: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -95,9 +97,11 @@ export class CaixasComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const usuario = this.authService.getCurrentUser();
     const dto: CreateCaixaDto = {
       saldoInicial: this.saldoInicial,
-      observacoesAbertura: this.observacoesAbertura || undefined
+      observacoesAbertura: this.observacoesAbertura || undefined,
+      usuarioNome: usuario?.nome
     };
 
     this.caixaService.abrirCaixa(dto).subscribe({

@@ -49,6 +49,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Loading
   loading = false;
+  isCreatingComanda = false;
 
   private destroy$ = new Subject<void>();
 
@@ -149,11 +150,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   criarComanda(comanda: CreateComandaDto) {
+    if (this.isCreatingComanda) return;
+
+    this.isCreatingComanda = true;
     this.comandaService.createComanda(comanda).subscribe({
       next: () => {
+        this.isCreatingComanda = false;
         this.carregarDados();
       },
       error: (error) => {
+        this.isCreatingComanda = false;
         let msg: string;
         if (typeof error.error === 'object' && error.error?.message) {
           msg = error.error.message;

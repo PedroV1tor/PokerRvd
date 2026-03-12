@@ -47,6 +47,8 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
   descontoFechar = 0; // Desconto em R$ ao fechar a comanda
 
+  isSaving = false;
+
   StatusComanda = StatusComanda;
   TipoComanda = TipoComanda;
 
@@ -208,16 +210,18 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   }
 
   adicionarFichasDireto(nome: string, valor: number) {
-    if (!this.comanda) return;
+    if (!this.comanda || this.isSaving) return;
 
-    // Adicionar via API
+    this.isSaving = true;
     this.comandaService.adicionarFichas(this.comanda.id, nome, valor).subscribe({
       next: () => {
+        this.isSaving = false;
         this.toast.success(`${nome} de R$ ${valor.toFixed(2)} adicionado com sucesso!`);
         this.fecharModalFichas();
         this.carregarComanda();
       },
       error: () => {
+        this.isSaving = false;
         this.toast.error(`Erro ao adicionar ${nome}. Tente novamente.`);
       }
     });
@@ -319,7 +323,7 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   }
 
   fecharComanda() {
-    if (!this.comanda) return;
+    if (!this.comanda || this.isSaving) return;
 
     const comFormas = this.formasPagamento.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
     if (comFormas.length === 0) {
@@ -331,14 +335,17 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.isSaving = true;
     const desconto = Number(this.descontoFechar) || 0;
     this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto }).subscribe({
       next: () => {
+        this.isSaving = false;
         this.toast.success('Comanda fechada com sucesso!');
         this.fecharModalFechar();
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
+        this.isSaving = false;
         let msg = 'Erro ao fechar comanda. Tente novamente.';
         if (typeof error.error === 'string') {
           try {
@@ -377,18 +384,18 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   }
 
   adicionarBebida() {
-    if (!this.produtoSelecionadoId || this.quantidadeProduto < 1) {
-      this.toast.warning('Selecione um produto e quantidade válidos');
-      return;
-    }
+    if (!this.produtoSelecionadoId || this.quantidadeProduto < 1 || this.isSaving) return;
 
+    this.isSaving = true;
     this.comandaService.adicionarProduto(this.comandaId, this.produtoSelecionadoId, this.quantidadeProduto).subscribe({
       next: () => {
+        this.isSaving = false;
         this.toast.success('Bebida adicionada com sucesso!');
         this.fecharModalBebida();
         this.carregarComanda();
       },
       error: () => {
+        this.isSaving = false;
         this.toast.error('Erro ao adicionar bebida. Tente novamente.');
       }
     });

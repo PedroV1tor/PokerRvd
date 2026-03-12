@@ -80,6 +80,11 @@
               <span class="valor">R$ {{ caixa.totalSaidas.toFixed(2) }}</span>
             </div>
 
+            <div class="resumo-item desconto" *ngIf="getTotalDescontos() > 0">
+              <span class="label">Descontos:</span>
+              <span class="valor">- R$ {{ getTotalDescontos().toFixed(2) }}</span>
+            </div>
+
             <div class="divider"></div>
             
             <div class="resumo-item total">
@@ -164,6 +169,7 @@
                     : 'Pendências deste caixa (fechado). Quitar para registrar o pagamento no caixa atual.' }}
                 </ng-container>
               </p>
+
               <div class="pendentes-tabela" *ngIf="comandasAbertas.length > 0">
                 <div class="pendentes-thead">
                   <span class="col-comanda">Comanda</span>
@@ -240,7 +246,30 @@
 
             <!-- Aba: Resumo -->
             <div class="resumo-container" *ngIf="abaAtiva === 'resumo'">
-              
+
+              <!-- Resumo de Descontos -->
+              <div class="resumo-section resumo-descontos" *ngIf="getResumoDescontos().length > 0">
+                <h4 class="resumo-section-title desconto">💰 Descontos Concedidos</h4>
+                <div class="resumo-table">
+                  <div class="resumo-header resumo-header-3col">
+                    <span class="col-categoria">Comanda</span>
+                    <span class="col-quantidade">–</span>
+                    <span class="col-total">Desconto</span>
+                  </div>
+                  <div
+                    *ngFor="let item of getResumoDescontos()"
+                    class="resumo-row resumo-row-3col desconto">
+                    <span class="col-categoria">{{ item.comandaNome }}</span>
+                    <span class="col-quantidade">–</span>
+                    <span class="col-total">R$ {{ item.desconto.toFixed(2) }}</span>
+                  </div>
+                  <div class="resumo-total desconto">
+                    <span class="label">Total de Descontos:</span>
+                    <span class="valor">R$ {{ getTotalDescontos().toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Resumo por Forma de Pagamento -->
               <div class="resumo-section resumo-forma-pagamento" *ngIf="getResumoPorFormaPagamento().length > 0">
                 <h4 class="resumo-section-title forma-pagamento">💳 Por Forma de Pagamento</h4>

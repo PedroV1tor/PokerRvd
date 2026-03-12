@@ -33,6 +33,7 @@ public class MovimentacaoCaixaDto
     public int? ComandaId { get; set; }
     public string? ComandaNome { get; set; }
     public string? FormaPagamento { get; set; }
+    public decimal? Desconto { get; set; }
     public string UsuarioNome { get; set; } = string.Empty;
 }
 
@@ -40,6 +41,7 @@ public class CreateCaixaDto
 {
     public decimal SaldoInicial { get; set; }
     public string? ObservacoesAbertura { get; set; }
+    public string? UsuarioNome { get; set; }
 }
 
 public class FecharCaixaDto

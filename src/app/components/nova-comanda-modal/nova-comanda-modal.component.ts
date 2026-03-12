@@ -104,8 +104,8 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
             <button type="button" class="btn-cancelar" (click)="onClose()">
               Cancelar
             </button>
-            <button type="submit" class="btn-criar" [disabled]="!isFormValid()">
-              Criar Comanda
+            <button type="submit" class="btn-criar" [disabled]="!isFormValid() || isSaving">
+              {{ isSaving ? 'Criando...' : 'Criar Comanda' }}
             </button>
           </div>
         </form>
@@ -335,6 +335,7 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
 })
 export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
+  @Input() isSaving = false;
   @Output() close = new EventEmitter<void>();
   @Output() criar = new EventEmitter<CreateComandaDto>();
 

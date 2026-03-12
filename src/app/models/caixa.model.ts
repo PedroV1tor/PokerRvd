@@ -25,6 +25,7 @@ export interface MovimentacaoCaixa {
   comandaId?: number;
   comandaNome?: string;
   formaPagamento?: string;
+  desconto?: number;
   usuarioNome: string;
 }
 
@@ -41,6 +42,7 @@ export enum TipoMovimentacao {
 export interface CreateCaixaDto {
   saldoInicial: number;
   observacoesAbertura?: string;
+  usuarioNome?: string;
 }
 
 export interface FecharCaixaDto {
