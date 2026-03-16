@@ -50,6 +50,9 @@ export interface UpdateComandaDto {
   valorFichas?: number;
   valorBebidas?: number;
   status?: StatusComanda;
+  tipo?: string;
+  torneioId?: number;
+  torneioNome?: string;
 }
 
 /** Forma de pagamento e valor ao fechar a comanda */

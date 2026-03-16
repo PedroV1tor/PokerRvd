@@ -12,5 +12,6 @@ public interface IComandaService
     Task<bool> DeleteComandaAsync(int id);
     Task<bool> AddItemToComandaAsync(int comandaId, AddItemComandaDto addItemDto);
     Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto);
+    Task<bool> RemoveItemFromComandaAsync(int comandaId, int itemId);
     Task<DashboardStatsDto> GetDashboardStatsAsync(int? caixaId = null);
 }

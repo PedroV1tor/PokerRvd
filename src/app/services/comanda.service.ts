@@ -87,6 +87,12 @@ export class ComandaService {
     );
   }
 
+  removerItem(comandaId: number, itemId: number): Observable<boolean> {
+    return this.http.delete(`${this.apiUrl}/comandas/${comandaId}/itens/${itemId}`).pipe(
+      map(() => true)
+    );
+  }
+
   // ==================== FILTROS (Local) ====================
   
   filtrarComandas(comandas: Comanda[], filtro: TipoComanda, busca: string): Comanda[] {

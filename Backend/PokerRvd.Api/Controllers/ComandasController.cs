@@ -212,6 +212,27 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
+    /// Remove um item de uma comanda e reverte a saída de caixa correspondente
+    /// </summary>
+    [HttpDelete("{id}/itens/{itemId}")]
+    public async Task<ActionResult> RemoveItemFromComanda(int id, int itemId)
+    {
+        try
+        {
+            var result = await _comandaService.RemoveItemFromComandaAsync(id, itemId);
+            if (!result)
+                return NotFound("Item não encontrado na comanda");
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao remover item {ItemId} da comanda {ComandaId}", itemId, id);
+            return StatusCode(500, "Erro interno do servidor");
+        }
+    }
+
+    /// <summary>
     /// Remove uma comanda
     /// </summary>
     [HttpDelete("{id}")]

@@ -188,6 +188,59 @@
   font-size: 1rem;
 }
 
+.btn-alterar-tipo {
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: #00FF00;
+    color: #fff;
+  }
+}
+
+.tipo-opcoes {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.tipo-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, color 0.2s;
+
+  input[type="radio"] { display: none; }
+
+  &.selected {
+    border-color: #00FF00;
+    color: #00FF00;
+  }
+
+  &:hover {
+    border-color: #666;
+  }
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.4rem;
+}
+
 /* Actions Box */
 .actions-box {
   background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);

@@ -10,8 +10,8 @@ import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor } from '../../models/comanda.model';
-import { Torneio } from '../../models/torneio.model';
+import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor, UpdateComandaDto } from '../../models/comanda.model';
+import { Torneio, StatusTorneio } from '../../models/torneio.model';
 import { Produto } from '../../models/produto.model';
 import { AuthService } from '../../services/auth.service';
 
@@ -40,6 +40,12 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   valorFichas: number = 0;
   nomeFichas: string = 'Fichas';
   tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
+
+  // Modal de alterar tipo da comanda
+  mostrarModalAlterarTipo = false;
+  novoTipo: TipoComanda = TipoComanda.BAR;
+  torneioSelecionadoId: number | null = null;
+  torneiosDisponiveis: Torneio[] = [];
 
   // Modal de fechar comanda (formas de pagamento)
   mostrarModalFechar = false;
@@ -90,6 +96,7 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
 
   carregarComanda() {
     this.loading = true;
+    this.torneio = null; // limpa torneio antes de recarregar
     this.comandaService.getComanda(this.comandaId).subscribe({
       next: (comanda) => {
         if (comanda) {
@@ -231,12 +238,15 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     this.confirm.confirm({ message: 'Deseja realmente remover este item?', confirmText: 'Remover' }).then(ok => {
       if (!ok) return;
       const item = this.itens[index];
-      this.itens.splice(index, 1);
-      if (item.produtoId === 0) {
-        this.atualizarValorFichas();
-      } else {
-        this.atualizarValorBebidas();
-      }
+      this.comandaService.removerItem(this.comandaId, item.id).subscribe({
+        next: () => {
+          this.toast.success('Item removido com sucesso!');
+          this.carregarComanda();
+        },
+        error: () => {
+          this.toast.error('Erro ao remover item. Tente novamente.');
+        }
+      });
     });
   }
 
@@ -275,8 +285,10 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
 
   abrirModalFechar() {
     this.descontoFechar = 0;
-    // Pré-preenche com o total da comanda para o usuário confirmar ou alterar (ex.: dividir em várias formas)
-    this.formasPagamento = [{ formaPagamento: 'Dinheiro', valor: this.valorTotal }];
+    const total = this.valorTotal;
+    this.formasPagamento = total > 0
+      ? [{ formaPagamento: 'Dinheiro', valor: total }]
+      : [{ formaPagamento: 'Dinheiro', valor: 0 }];
     this.mostrarModalFechar = true;
   }
 
@@ -312,6 +324,61 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     return Math.abs(this.somaFormasPagamento - this.valorComDesconto) < 0.01;
   }
 
+  // ==================== ALTERAR TIPO ====================
+
+  abrirModalAlterarTipo() {
+    if (!this.comanda) return;
+    this.novoTipo = this.comanda.tipo;
+    this.torneioSelecionadoId = this.comanda.torneioId ?? null;
+    this.torneioService.getTorneios().subscribe({
+      next: (torneios) => {
+        this.torneiosDisponiveis = torneios.filter(t => t.status === StatusTorneio.EM_ANDAMENTO || t.status === StatusTorneio.AGUARDANDO);
+        this.mostrarModalAlterarTipo = true;
+      },
+      error: () => {
+        this.torneiosDisponiveis = [];
+        this.mostrarModalAlterarTipo = true;
+      }
+    });
+  }
+
+  fecharModalAlterarTipo() {
+    this.mostrarModalAlterarTipo = false;
+  }
+
+  salvarAlteracaoTipo() {
+    if (!this.comanda || this.isSaving) return;
+
+    const torneio = this.novoTipo === TipoComanda.TORNEIO
+      ? this.torneiosDisponiveis.find(t => t.id === Number(this.torneioSelecionadoId))
+      : null;
+
+    if (this.novoTipo === TipoComanda.TORNEIO && !torneio) {
+      this.toast.warning('Selecione um torneio.');
+      return;
+    }
+
+    this.isSaving = true;
+    const dto: UpdateComandaDto = {
+      tipo: this.novoTipo,
+      torneioId: torneio?.id,
+      torneioNome: torneio?.nome
+    };
+
+    this.comandaService.updateComanda(this.comandaId, dto).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.fecharModalAlterarTipo();
+        this.toast.success('Tipo da comanda alterado com sucesso!');
+        this.carregarComanda();
+      },
+      error: () => {
+        this.isSaving = false;
+        this.toast.error('Erro ao alterar tipo da comanda.');
+      }
+    });
+  }
+
   // ==================== PERMISSÕES DE AÇÃO ====================
 
   get podeFecharComanda(): boolean {
@@ -325,18 +392,24 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   fecharComanda() {
     if (!this.comanda || this.isSaving) return;
 
-    const comFormas = this.formasPagamento.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
-    if (comFormas.length === 0) {
+    const desconto = Number(this.descontoFechar) || 0;
+    const valorFinal = this.valorComDesconto;
+
+    // Comanda zerada: não precisa de forma de pagamento
+    const comFormas = valorFinal <= 0
+      ? []
+      : this.formasPagamento.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
+
+    if (valorFinal > 0 && comFormas.length === 0) {
       this.toast.warning('Informe pelo menos uma forma de pagamento com valor maior que zero.');
       return;
     }
-    if (!this.totalBateComFormas) {
+    if (valorFinal > 0 && !this.totalBateComFormas) {
       this.toast.warning(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorComDesconto.toFixed(2)}).`);
       return;
     }
 
     this.isSaving = true;
-    const desconto = Number(this.descontoFechar) || 0;
     this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto }).subscribe({
       next: () => {
         this.isSaving = false;

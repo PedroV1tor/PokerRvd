@@ -240,6 +240,14 @@ public class ComandaService : IComandaService
                 comanda.DataFechamento = DateTime.UtcNow;
         }
 
+        if (!string.IsNullOrWhiteSpace(updateComandaDto.Tipo) &&
+            Enum.TryParse<TipoComanda>(updateComandaDto.Tipo, true, out var novoTipo))
+        {
+            comanda.Tipo = novoTipo;
+            comanda.TorneioId = novoTipo == TipoComanda.TORNEIO ? updateComandaDto.TorneioId : null;
+            comanda.TorneioNome = novoTipo == TipoComanda.TORNEIO ? updateComandaDto.TorneioNome : null;
+        }
+
         await _context.SaveChangesAsync();
 
         var dto = new ComandaDto
@@ -249,6 +257,8 @@ public class ComandaService : IComandaService
             JogadorFoto = comanda.JogadorFoto,
             Mesa = comanda.Mesa,
             Tipo = comanda.Tipo.ToString(),
+            TorneioId = comanda.TorneioId,
+            TorneioNome = comanda.TorneioNome,
             ValorFichas = comanda.ValorFichas,
             ValorBebidas = comanda.ValorBebidas,
             ValorTotal = comanda.ValorTotal,
@@ -295,43 +305,20 @@ public class ComandaService : IComandaService
         if (desconto > valorTotal) desconto = valorTotal;
         var valorComDesconto = valorTotal - desconto;
 
-        if (valorComDesconto > 0)
+        // Registrar movimentação sempre, mesmo para comanda zerada
+        if (valorComDesconto > 0 && fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
         {
-            // Se foram informadas formas de pagamento, validar soma e criar uma movimentação por forma
-            if (fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
+            // Validar soma das formas de pagamento
+            var somaFormas = fecharComandaDto.FormasPagamento.Sum(f => f.Valor);
+            if (Math.Abs(somaFormas - valorComDesconto) > 0.01m)
             {
-                var somaFormas = fecharComandaDto.FormasPagamento.Sum(f => f.Valor);
-                if (Math.Abs(somaFormas - valorComDesconto) > 0.01m)
-                {
-                    throw new InvalidOperationException(
-                        $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorComDesconto:N2}).");
-                }
-
-                var primeiraMov = true;
-                foreach (var forma in fecharComandaDto.FormasPagamento.Where(f => f.Valor > 0))
-                {
-                    var movimentacao = new MovimentacaoCaixa
-                    {
-                        CaixaId = caixaAberto.Id,
-                        DataHora = DateTime.UtcNow,
-                        Tipo = "ENTRADA",
-                        Categoria = "Comanda",
-                        Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
-                        Valor = forma.Valor,
-                        ComandaId = comanda.Id,
-                        ComandaNome = comanda.JogadorNome,
-                        FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
-                        Desconto = primeiraMov && desconto > 0 ? desconto : null,
-                        UsuarioNome = "Sistema"
-                    };
-                    _context.MovimentacoesCaixa.Add(movimentacao);
-                    caixaAberto.TotalEntradas += forma.Valor;
-                    primeiraMov = false;
-                }
+                throw new InvalidOperationException(
+                    $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorComDesconto:N2}).");
             }
-            else
+
+            var primeiraMov = true;
+            foreach (var forma in fecharComandaDto.FormasPagamento.Where(f => f.Valor > 0))
             {
-                // Comportamento anterior: uma única movimentação sem forma de pagamento (valor já com desconto)
                 var movimentacao = new MovimentacaoCaixa
                 {
                     CaixaId = caixaAberto.Id,
@@ -339,16 +326,37 @@ public class ComandaService : IComandaService
                     Tipo = "ENTRADA",
                     Categoria = "Comanda",
                     Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
-                    Valor = valorComDesconto,
+                    Valor = forma.Valor,
                     ComandaId = comanda.Id,
                     ComandaNome = comanda.JogadorNome,
-                    FormaPagamento = null,
-                    Desconto = desconto > 0 ? desconto : null,
+                    FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
+                    Desconto = primeiraMov && desconto > 0 ? desconto : null,
                     UsuarioNome = "Sistema"
                 };
                 _context.MovimentacoesCaixa.Add(movimentacao);
-                caixaAberto.TotalEntradas += valorComDesconto;
+                caixaAberto.TotalEntradas += forma.Valor;
+                primeiraMov = false;
             }
+        }
+        else
+        {
+            // Comanda zerada ou sem formas de pagamento informadas: registra uma movimentação zerada
+            var movimentacao = new MovimentacaoCaixa
+            {
+                CaixaId = caixaAberto.Id,
+                DataHora = DateTime.UtcNow,
+                Tipo = "ENTRADA",
+                Categoria = "Comanda",
+                Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
+                Valor = valorComDesconto,
+                ComandaId = comanda.Id,
+                ComandaNome = comanda.JogadorNome,
+                FormaPagamento = null,
+                Desconto = desconto > 0 ? desconto : null,
+                UsuarioNome = "Sistema"
+            };
+            _context.MovimentacoesCaixa.Add(movimentacao);
+            caixaAberto.TotalEntradas += valorComDesconto;
         }
 
         await _context.SaveChangesAsync();
@@ -482,6 +490,56 @@ public class ComandaService : IComandaService
         await _context.SaveChangesAsync();
         
         _logger.LogInformation("Item de fichas salvo com sucesso");
+        await NotificarComandaAsync("ComandaAtualizada", new { comandaId });
+        return true;
+    }
+
+    public async Task<bool> RemoveItemFromComandaAsync(int comandaId, int itemId)
+    {
+        var comanda = await _context.Comandas.FindAsync(comandaId);
+        if (comanda == null) return false;
+
+        var item = await _context.ItensComanda
+            .FirstOrDefaultAsync(i => i.Id == itemId && i.ComandaId == comandaId);
+        if (item == null) return false;
+
+        var isFichas = item.ProdutoId == null;
+        var valorItem = item.ValorTotal;
+
+        // Reverter movimentação de saída correspondente no caixa
+        var movParaRemover = await _context.MovimentacoesCaixa
+            .Where(m => m.ComandaId == comandaId && m.Tipo == "SAIDA" && m.Valor == valorItem)
+            .OrderByDescending(m => m.DataHora)
+            .FirstOrDefaultAsync();
+
+        if (movParaRemover != null)
+        {
+            var caixa = await _context.Caixas.FindAsync(movParaRemover.CaixaId);
+            if (caixa != null)
+                caixa.TotalSaidas -= valorItem;
+
+            _context.MovimentacoesCaixa.Remove(movParaRemover);
+        }
+
+        // Restaurar estoque do produto
+        if (!isFichas && item.ProdutoId.HasValue)
+        {
+            var produto = await _context.Produtos.FindAsync(item.ProdutoId.Value);
+            if (produto != null)
+                produto.QuantidadeEstoque += item.Quantidade;
+        }
+
+        // Atualizar valor da comanda
+        if (isFichas)
+            comanda.ValorFichas -= valorItem;
+        else
+            comanda.ValorBebidas -= valorItem;
+
+        if (comanda.ValorFichas < 0) comanda.ValorFichas = 0;
+        if (comanda.ValorBebidas < 0) comanda.ValorBebidas = 0;
+
+        _context.ItensComanda.Remove(item);
+        await _context.SaveChangesAsync();
         await NotificarComandaAsync("ComandaAtualizada", new { comandaId });
         return true;
     }

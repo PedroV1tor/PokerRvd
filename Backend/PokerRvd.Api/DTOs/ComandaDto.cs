@@ -48,6 +48,9 @@ public class UpdateComandaDto
     public decimal? ValorFichas { get; set; }
     public decimal? ValorBebidas { get; set; }
     public StatusComanda? Status { get; set; }
+    public string? Tipo { get; set; }
+    public int? TorneioId { get; set; }
+    public string? TorneioNome { get; set; }
 }
 
 public class ComandaDetailsDto : ComandaDto
