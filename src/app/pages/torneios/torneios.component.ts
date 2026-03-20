@@ -9,7 +9,7 @@ import { TorneioService } from '../../services/torneio.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { Torneio, CreateTorneioDto, StatusTorneio } from '../../models/torneio.model';
+import { Torneio, CreateTorneioDto, StatusTorneio, TorneioStats } from '../../models/torneio.model';
 
 @Component({
   selector: 'app-torneios',
@@ -32,6 +32,11 @@ export class TorneiosComponent implements OnInit, OnDestroy {
     valorRebuyDuplo: 0,
     valorAddOn: 0
   };
+
+  // Modal de estatísticas
+  mostrarModalStats = false;
+  statsCarregando = false;
+  torneioStats: TorneioStats | null = null;
 
   // Filtros
   filtroStatus: StatusTorneio | 'TODOS' = 'TODOS';
@@ -202,5 +207,27 @@ export class TorneiosComponent implements OnInit, OnDestroy {
 
   formatarValor(valor: number): string {
     return `R$ ${valor.toFixed(2)}`;
+  }
+
+  abrirStats(torneio: Torneio) {
+    this.mostrarModalStats = true;
+    this.torneioStats = null;
+    this.statsCarregando = true;
+    this.torneioService.getEstatisticas(torneio.id).subscribe({
+      next: (stats) => {
+        this.torneioStats = stats;
+        this.statsCarregando = false;
+      },
+      error: () => {
+        this.toast.error('Erro ao carregar estatísticas do torneio.');
+        this.statsCarregando = false;
+        this.mostrarModalStats = false;
+      }
+    });
+  }
+
+  fecharModalStats() {
+    this.mostrarModalStats = false;
+    this.torneioStats = null;
   }
 }

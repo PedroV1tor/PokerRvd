@@ -12,4 +12,5 @@ public interface ITorneioService
     Task<TorneioDto?> IniciarTorneioAsync(int id);
     Task<TorneioDto?> FinalizarTorneioAsync(int id);
     Task<TorneioDto?> CancelarTorneioAsync(int id);
+    Task<TorneioStatsDto?> GetEstatisticasAsync(int id);
 }

@@ -47,6 +47,9 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   // Controle de abas
   abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' | 'pendentes' = 'todas';
 
+  // Filtro dentro da aba Resumo
+  filtroResumo: 'todos' | 'entradas' | 'saidas' | 'descontos' | 'taxas' = 'todos';
+
   // Verificação de comandas abertas (pendentes deste caixa)
   comandasAbertas: Comanda[] = [];
   valorPendente: number = 0;
@@ -57,15 +60,22 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   comandaSelecionadaQuitar: Comanda | null = null;
   formasPagamentoQuitar: FormaPagamentoValor[] = [];
   descontoFecharQuitar = 0;
+  taxaFecharQuitar = 0;
   formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
   salvandoQuitar = false;
 
-  get valorComDescontoQuitar(): number {
+  get valorFinalQuitar(): number {
     if (!this.comandaSelecionadaQuitar) return 0;
-    const total = this.comandaSelecionadaQuitar.valorTotal;
+    const restante = this.comandaSelecionadaQuitar.valorRestante;
     const d = this.descontoFecharQuitar || 0;
-    if (d >= total) return 0;
-    return total - d;
+    const t = this.taxaFecharQuitar || 0;
+    const resultado = restante + t - d;
+    return resultado < 0 ? 0 : resultado;
+  }
+
+  /** @deprecated use valorFinalQuitar */
+  get valorComDescontoQuitar(): number {
+    return this.valorFinalQuitar;
   }
 
   private destroy$ = new Subject<void>();
@@ -148,7 +158,7 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     this.comandaService.getComandas(this.caixaId).subscribe({
       next: (comandas) => {
         this.comandasAbertas = comandas.filter(c => c.status === StatusComanda.ATIVO);
-        this.valorPendente = this.comandasAbertas.reduce((total, c) => total + c.valorTotal, 0);
+        this.valorPendente = this.comandasAbertas.reduce((total, c) => total + c.valorRestante, 0);
         this.mostrarAvisoComandas = this.comandasAbertas.length > 0;
       },
       error: () => {
@@ -289,7 +299,8 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   abrirModalQuitarPendencia(comanda: Comanda) {
     this.comandaSelecionadaQuitar = comanda;
     this.descontoFecharQuitar = 0;
-    this.formasPagamentoQuitar = [{ formaPagamento: 'Dinheiro', valor: comanda.valorTotal }];
+    this.taxaFecharQuitar = 0;
+    this.formasPagamentoQuitar = [{ formaPagamento: 'Dinheiro', valor: comanda.valorRestante }];
     this.mostrarModalQuitarPendencia = true;
   }
 
@@ -298,12 +309,12 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     this.comandaSelecionadaQuitar = null;
     this.formasPagamentoQuitar = [];
     this.descontoFecharQuitar = 0;
+    this.taxaFecharQuitar = 0;
   }
 
-  aplicarDescontoNoTotalQuitar() {
-    const v = this.valorComDescontoQuitar;
+  aplicarDescontoOuTaxaNoTotalQuitar() {
     if (this.formasPagamentoQuitar.length === 1) {
-      this.formasPagamentoQuitar[0].valor = v;
+      this.formasPagamentoQuitar[0].valor = this.valorFinalQuitar;
     }
   }
 
@@ -331,7 +342,8 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     const comFormas = this.formasPagamentoQuitar.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
     if (comFormas.length === 0) return;
     const desconto = Number(this.descontoFecharQuitar) || 0;
-    const dto: FecharComandaDto = { formasPagamento: comFormas, desconto };
+    const taxa = Number(this.taxaFecharQuitar) || 0;
+    const dto: FecharComandaDto = { formasPagamento: comFormas, desconto, taxa };
     this.salvandoQuitar = true;
     this.comandaService.fecharComanda(this.comandaSelecionadaQuitar.id, dto).subscribe({
       next: () => {
@@ -382,6 +394,18 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
 
   getTotalDescontos(): number {
     return this.getResumoDescontos().reduce((s, i) => s + i.desconto, 0);
+  }
+
+  /** Resumo de taxas por comanda */
+  getResumoTaxas(): { comandaNome: string; taxa: number }[] {
+    if (!this.caixa) return [];
+    return (this.caixa.movimentacoes ?? [])
+      .filter(m => m.taxa != null && m.taxa > 0)
+      .map(m => ({ comandaNome: m.comandaNome ?? 'Comanda', taxa: m.taxa! }));
+  }
+
+  getTotalTaxas(): number {
+    return this.getResumoTaxas().reduce((s, i) => s + i.taxa, 0);
   }
 
   /** Resumo de entradas agrupado por forma de pagamento (fechamento de comandas) */

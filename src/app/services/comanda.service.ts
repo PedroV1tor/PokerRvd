@@ -9,7 +9,8 @@ import {
   DashboardStats,
   StatusComanda,
   TipoComanda,
-  FecharComandaDto
+  FecharComandaDto,
+  PagamentoParcialDto
 } from '../models/comanda.model';
 
 @Injectable({
@@ -52,6 +53,12 @@ export class ComandaService {
 
   fecharComanda(id: number, formasPagamento?: FecharComandaDto): Observable<Comanda | null> {
     return this.http.post(`${this.apiUrl}/comandas/${id}/fechar`, formasPagamento ?? {}, { responseType: 'text' }).pipe(
+      map(text => (text ? JSON.parse(text) as Comanda : null))
+    );
+  }
+
+  pagamentoParcial(id: number, pagamento: PagamentoParcialDto): Observable<Comanda | null> {
+    return this.http.post(`${this.apiUrl}/comandas/${id}/pagamento-parcial`, pagamento, { responseType: 'text' }).pipe(
       map(text => (text ? JSON.parse(text) as Comanda : null))
     );
   }

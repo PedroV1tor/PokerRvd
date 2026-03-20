@@ -150,6 +150,41 @@ public class ComandasController : ControllerBase
     }
 
     /// <summary>
+    /// Registra um pagamento parcial sem fechar a comanda
+    /// </summary>
+    [HttpPost("{id}/pagamento-parcial")]
+    public async Task<ActionResult<ComandaDto>> PagamentoParcial(int id, [FromBody] PagamentoParcialDto pagamentoDto)
+    {
+        try
+        {
+            var comanda = await _comandaService.RegistrarPagamentoParcialAsync(id, pagamentoDto);
+            if (comanda == null)
+                return NotFound($"Comanda com ID {id} não encontrada");
+
+            return Ok(comanda);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(new { message = ex.Message }),
+                ContentType = "application/json",
+                StatusCode = 400
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao registrar pagamento parcial na comanda {ComandaId}", id);
+            return new ContentResult
+            {
+                Content = JsonSerializer.Serialize(new { message = "Erro interno do servidor" }),
+                ContentType = "application/json",
+                StatusCode = 500
+            };
+        }
+    }
+
+    /// <summary>
     /// Adiciona um item (produto) à comanda
     /// </summary>
     [HttpPost("{id}/itens")]

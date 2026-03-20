@@ -10,7 +10,7 @@ import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor, UpdateComandaDto } from '../../models/comanda.model';
+import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor, UpdateComandaDto, PagamentoParcialDto } from '../../models/comanda.model';
 import { Torneio, StatusTorneio } from '../../models/torneio.model';
 import { Produto } from '../../models/produto.model';
 import { AuthService } from '../../services/auth.service';
@@ -41,6 +41,10 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   nomeFichas: string = 'Fichas';
   tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
 
+  // Edição inline de mesa
+  editandoMesa = false;
+  mesaEditando = '';
+
   // Modal de alterar tipo da comanda
   mostrarModalAlterarTipo = false;
   novoTipo: TipoComanda = TipoComanda.BAR;
@@ -51,7 +55,15 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   mostrarModalFechar = false;
   formasPagamento: FormaPagamentoValor[] = [];
   formasPagamentoOpcoes = ['Dinheiro', 'PIX', 'Cartão Débito', 'Cartão Crédito', 'Outro'];
-  descontoFechar = 0; // Desconto em R$ ao fechar a comanda
+  descontoFechar = 0;
+  taxaFechar = 0;
+
+  // Modal de pagamento parcial
+  mostrarModalParcial = false;
+  formasPagamentoParcial: FormaPagamentoValor[] = [];
+  valorBaseParcial = 0;   // Valor da comanda que o jogador quer pagar agora
+  descontoParcial = 0;
+  taxaParcial = 0;
 
   isSaving = false;
 
@@ -275,19 +287,141 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     return this.comanda.valorFichas + this.comanda.valorBebidas;
   }
 
-  get valorComDesconto(): number {
+  get valorPago(): number {
+    return this.comanda?.valorPago ?? 0;
+  }
+
+  get valorRestante(): number {
+    return Math.max(0, this.valorTotal - this.valorPago);
+  }
+
+  get valorFinalFechar(): number {
     const d = this.descontoFechar || 0;
-    const total = this.valorTotal;
-    if (d <= 0) return total;
-    if (d >= total) return 0;
-    return total - d;
+    const t = this.taxaFechar || 0;
+    const base = this.valorRestante + t;
+    const resultado = base - d;
+    return resultado < 0 ? 0 : resultado;
+  }
+
+  /** @deprecated use valorFinalFechar */
+  get valorComDesconto(): number {
+    return this.valorFinalFechar;
+  }
+
+  // ==================== MODAL PAGAMENTO PARCIAL ====================
+
+  /** Total efetivamente cobrado do jogador = base + taxa - desconto */
+  get totalACobrarParcial(): number {
+    const base = this.valorBaseParcial || 0;
+    const t = this.taxaParcial || 0;
+    const d = this.descontoParcial || 0;
+    const resultado = base + t - d;
+    return resultado < 0 ? 0 : resultado;
+  }
+
+  /** @deprecated use totalACobrarParcial */
+  get valorComDescontoParcial(): number {
+    return this.totalACobrarParcial;
+  }
+
+  get somaFormasParcial(): number {
+    return this.formasPagamentoParcial.reduce((s, f) => s + (f.valor || 0), 0);
+  }
+
+  get parcialValido(): boolean {
+    return this.somaFormasParcial > 0 && Math.abs(this.somaFormasParcial - this.totalACobrarParcial) < 0.01;
+  }
+
+  aplicarTaxaDescontoParcial() {
+    if (this.formasPagamentoParcial.length === 1) {
+      this.formasPagamentoParcial[0].valor = this.totalACobrarParcial;
+    }
+  }
+
+  abrirModalParcial() {
+    this.valorBaseParcial = 0;
+    this.descontoParcial = 0;
+    this.taxaParcial = 0;
+    this.formasPagamentoParcial = [{ formaPagamento: 'Dinheiro', valor: 0 }];
+    this.mostrarModalParcial = true;
+  }
+
+  fecharModalParcial() {
+    this.mostrarModalParcial = false;
+    this.formasPagamentoParcial = [];
+    this.valorBaseParcial = 0;
+    this.descontoParcial = 0;
+    this.taxaParcial = 0;
+  }
+
+  adicionarFormaParcial() {
+    this.formasPagamentoParcial.push({ formaPagamento: 'Dinheiro', valor: 0 });
+  }
+
+  removerFormaParcial(index: number) {
+    if (this.formasPagamentoParcial.length > 1) {
+      this.formasPagamentoParcial.splice(index, 1);
+    }
+  }
+
+  confirmarPagamentoParcial() {
+    if (!this.comanda || this.isSaving) return;
+
+    const formasValidas = this.formasPagamentoParcial.filter(f => f.valor > 0 && (f.formaPagamento?.trim() ?? '') !== '');
+    if (formasValidas.length === 0) {
+      this.toast.warning('Informe pelo menos uma forma de pagamento com valor maior que zero.');
+      return;
+    }
+
+    const soma = formasValidas.reduce((s, f) => s + f.valor, 0);
+    if (Math.abs(soma - this.totalACobrarParcial) > 0.01) {
+      this.toast.warning(`A soma dos pagamentos (R$ ${soma.toFixed(2)}) deve ser igual ao total a cobrar (R$ ${this.totalACobrarParcial.toFixed(2)}).`);
+      return;
+    }
+    if ((this.valorBaseParcial || 0) > this.valorRestante + 0.01) {
+      this.toast.warning(`O valor parcial (R$ ${this.valorBaseParcial.toFixed(2)}) não pode ser maior que o saldo em aberto (R$ ${this.valorRestante.toFixed(2)}).`);
+      return;
+    }
+
+    const dto: PagamentoParcialDto = {
+      formasPagamento: formasValidas,
+      desconto: this.descontoParcial || 0,
+      taxa: this.taxaParcial || 0
+    };
+
+    this.isSaving = true;
+    this.comandaService.pagamentoParcial(this.comandaId, dto).subscribe({
+      next: (comanda) => {
+        this.isSaving = false;
+        if (comanda) this.comanda = comanda;
+        this.toast.success(`Pagamento de R$ ${soma.toFixed(2)} registrado! Restante: R$ ${(comanda?.valorRestante ?? 0).toFixed(2)}`);
+        this.fecharModalParcial();
+        this.carregarComanda();
+      },
+      error: (error) => {
+        this.isSaving = false;
+        let msg = 'Erro ao registrar pagamento. Tente novamente.';
+        if (typeof error.error === 'string') {
+          try {
+            const body = JSON.parse(error.error);
+            msg = body.message || error.error;
+          } catch {
+            msg = error.error;
+          }
+        } else {
+          msg = error.error?.message || error.message || msg;
+        }
+        this.toast.error(msg);
+      }
+    });
   }
 
   abrirModalFechar() {
     this.descontoFechar = 0;
-    const total = this.valorTotal;
-    this.formasPagamento = total > 0
-      ? [{ formaPagamento: 'Dinheiro', valor: total }]
+    this.taxaFechar = 0;
+    const restante = this.valorRestante;
+    this.formasPagamento = restante > 0
+      ? [{ formaPagamento: 'Dinheiro', valor: restante }]
       : [{ formaPagamento: 'Dinheiro', valor: 0 }];
     this.mostrarModalFechar = true;
   }
@@ -296,13 +430,12 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     this.mostrarModalFechar = false;
     this.formasPagamento = [];
     this.descontoFechar = 0;
+    this.taxaFechar = 0;
   }
 
-  aplicarDescontoNoTotal() {
-    // Atualiza o valor único das formas para refletir o total com desconto
-    const v = this.valorComDesconto;
+  aplicarDescontoOuTaxaNoTotal() {
     if (this.formasPagamento.length === 1) {
-      this.formasPagamento[0].valor = v;
+      this.formasPagamento[0].valor = this.valorFinalFechar;
     }
   }
 
@@ -321,7 +454,44 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   }
 
   get totalBateComFormas(): boolean {
-    return Math.abs(this.somaFormasPagamento - this.valorComDesconto) < 0.01;
+    return Math.abs(this.somaFormasPagamento - this.valorFinalFechar) < 0.01;
+  }
+
+  // ==================== EDITAR MESA ====================
+
+  iniciarEdicaoMesa() {
+    this.mesaEditando = this.comanda?.mesa || '';
+    this.editandoMesa = true;
+  }
+
+  cancelarEdicaoMesa() {
+    this.editandoMesa = false;
+    this.mesaEditando = '';
+  }
+
+  salvarMesa() {
+    if (!this.comanda || this.isSaving) return;
+
+    const novaMesa = this.mesaEditando.trim() || '';
+
+    this.isSaving = true;
+    this.comandaService.updateComanda(this.comandaId, {
+      mesa: novaMesa || undefined,
+      atualizarMesa: true
+    }).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.editandoMesa = false;
+        // Atualiza imediatamente na tela sem aguardar o reload
+        if (this.comanda) this.comanda.mesa = novaMesa;
+        this.carregarComanda();
+        this.toast.success('Mesa atualizada com sucesso!');
+      },
+      error: () => {
+        this.isSaving = false;
+        this.toast.error('Erro ao atualizar mesa.');
+      }
+    });
   }
 
   // ==================== ALTERAR TIPO ====================
@@ -393,7 +563,8 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     if (!this.comanda || this.isSaving) return;
 
     const desconto = Number(this.descontoFechar) || 0;
-    const valorFinal = this.valorComDesconto;
+    const taxa = Number(this.taxaFechar) || 0;
+    const valorFinal = this.valorFinalFechar;
 
     // Comanda zerada: não precisa de forma de pagamento
     const comFormas = valorFinal <= 0
@@ -405,12 +576,12 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
       return;
     }
     if (valorFinal > 0 && !this.totalBateComFormas) {
-      this.toast.warning(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorComDesconto.toFixed(2)}).`);
+      this.toast.warning(`A soma das formas de pagamento (R$ ${this.somaFormasPagamento.toFixed(2)}) deve ser igual ao valor a receber (R$ ${this.valorFinalFechar.toFixed(2)}).`);
       return;
     }
 
     this.isSaving = true;
-    this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto }).subscribe({
+    this.comandaService.fecharComanda(this.comandaId, { formasPagamento: comFormas, desconto, taxa }).subscribe({
       next: () => {
         this.isSaving = false;
         this.toast.success('Comanda fechada com sucesso!');

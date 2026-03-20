@@ -549,3 +549,115 @@
     padding: 1.5rem;
   }
 }
+
+/* Cursor de pointer no card clicável */
+.torneio-card {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Modal Estatísticas */
+.modal-stats {
+  max-width: 520px;
+  width: 95%;
+}
+
+.stats-torneio-nome {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #00FF00;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #333;
+}
+
+.stats-resumo {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .stat-resumo-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.9rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    &.highlight {
+      border-color: #00FF00;
+      background: rgba(0, 255, 0, 0.06);
+
+      .stat-resumo-value {
+        color: #00FF00;
+      }
+    }
+  }
+
+  .stat-resumo-label {
+    font-size: 0.78rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-resumo-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+  }
+}
+
+.stats-tabela {
+  border: 1px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+
+  .stats-tabela-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr;
+    padding: 0.6rem 1rem;
+    background: #1a1a1a;
+    color: #888;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .stats-tabela-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #2a2a2a;
+    align-items: center;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stats-tipo {
+      color: #ddd;
+      font-size: 0.9rem;
+    }
+
+    .stats-qtd {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      text-align: center;
+    }
+
+    .stats-valor {
+      color: #00FF00;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+  }
+}

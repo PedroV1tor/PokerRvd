@@ -26,11 +26,13 @@ public class PokerDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.JogadorNome).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Mesa).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Mesa).IsRequired(false).HasMaxLength(50);
             entity.Property(e => e.TorneioNome).HasMaxLength(200);
             entity.Property(e => e.ValorFichas).HasPrecision(18, 2);
             entity.Property(e => e.ValorBebidas).HasPrecision(18, 2);
+            entity.Property(e => e.ValorPago).HasPrecision(18, 2);
             entity.Ignore(e => e.ValorTotal);
+            entity.Ignore(e => e.ValorRestante);
             entity.Property(e => e.CaixaId);
             entity.HasMany(e => e.Itens).WithOne(i => i.Comanda).HasForeignKey(i => i.ComandaId);
         });
@@ -81,6 +83,7 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(500);
             entity.Property(e => e.FormaPagamento).HasMaxLength(50);
             entity.Property(e => e.Desconto).HasPrecision(18, 2);
+            entity.Property(e => e.Taxa).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<Torneio>(entity =>

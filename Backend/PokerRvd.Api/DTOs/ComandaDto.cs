@@ -16,6 +16,8 @@ public class ComandaDto
     public decimal ValorFichas { get; set; }
     public decimal ValorBebidas { get; set; }
     public decimal ValorTotal { get; set; }
+    public decimal ValorPago { get; set; }
+    public decimal ValorRestante { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime DataAbertura { get; set; }
     public DateTime? DataFechamento { get; set; }
@@ -28,9 +30,8 @@ public class CreateComandaDto
     [MaxLength(100, ErrorMessage = "Nome do jogador deve ter no máximo 100 caracteres")]
     public string JogadorNome { get; set; } = string.Empty;
     
-    [Required(ErrorMessage = "Mesa é obrigatória")]
     [MaxLength(50, ErrorMessage = "Mesa deve ter no máximo 50 caracteres")]
-    public string Mesa { get; set; } = string.Empty;
+    public string? Mesa { get; set; }
     
     [Required(ErrorMessage = "Tipo é obrigatório")]
     public string Tipo { get; set; } = string.Empty;
@@ -51,6 +52,8 @@ public class UpdateComandaDto
     public string? Tipo { get; set; }
     public int? TorneioId { get; set; }
     public string? TorneioNome { get; set; }
+    public string? Mesa { get; set; }
+    public bool AtualizarMesa { get; set; } = false;
 }
 
 public class ComandaDetailsDto : ComandaDto
@@ -111,7 +114,25 @@ public class FecharComandaDto
 {
     [JsonPropertyName("formasPagamento")]
     public List<FormaPagamentoValorDto> FormasPagamento { get; set; } = new();
-    /// <summary>Desconto em reais (R$). O valor a receber será Total - Desconto.</summary>
+    /// <summary>Desconto em reais (R$). Reduz o valor a receber.</summary>
     [JsonPropertyName("desconto")]
     public decimal Desconto { get; set; }
+    /// <summary>Taxa/acréscimo em reais (R$). Aumenta o valor a receber.</summary>
+    [JsonPropertyName("taxa")]
+    public decimal Taxa { get; set; }
+}
+
+/// <summary>
+/// DTO para registrar um pagamento parcial sem fechar a comanda
+/// </summary>
+public class PagamentoParcialDto
+{
+    [JsonPropertyName("formasPagamento")]
+    public List<FormaPagamentoValorDto> FormasPagamento { get; set; } = new();
+    /// <summary>Desconto em reais (R$) aplicado neste pagamento parcial.</summary>
+    [JsonPropertyName("desconto")]
+    public decimal Desconto { get; set; }
+    /// <summary>Taxa/acréscimo em reais (R$) aplicado neste pagamento parcial.</summary>
+    [JsonPropertyName("taxa")]
+    public decimal Taxa { get; set; }
 }

@@ -34,6 +34,7 @@ public class MovimentacaoCaixaDto
     public string? ComandaNome { get; set; }
     public string? FormaPagamento { get; set; }
     public decimal? Desconto { get; set; }
+    public decimal? Taxa { get; set; }
     public string UsuarioNome { get; set; } = string.Empty;
 }
 

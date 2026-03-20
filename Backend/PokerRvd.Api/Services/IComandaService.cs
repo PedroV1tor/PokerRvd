@@ -9,6 +9,7 @@ public interface IComandaService
     Task<ComandaDto> CreateComandaAsync(CreateComandaDto createComandaDto);
     Task<ComandaDto?> UpdateComandaAsync(int id, UpdateComandaDto updateComandaDto);
     Task<ComandaDto?> FecharComandaAsync(int id, FecharComandaDto? fecharComandaDto = null);
+    Task<ComandaDto?> RegistrarPagamentoParcialAsync(int id, PagamentoParcialDto pagamentoDto);
     Task<bool> DeleteComandaAsync(int id);
     Task<bool> AddItemToComandaAsync(int comandaId, AddItemComandaDto addItemDto);
     Task<bool> AddItemFichasAsync(int comandaId, AddItemFichasDto addItemDto);

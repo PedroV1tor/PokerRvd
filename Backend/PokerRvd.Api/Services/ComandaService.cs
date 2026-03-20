@@ -46,13 +46,15 @@ public class ComandaService : IComandaService
                 Id = c.Id,
                 JogadorNome = c.JogadorNome,
                 JogadorFoto = c.JogadorFoto,
-                Mesa = c.Mesa,
+                Mesa = c.Mesa ?? string.Empty,
                 Tipo = c.Tipo.ToString(),
                 TorneioId = c.TorneioId,
                 TorneioNome = c.TorneioNome,
                 ValorFichas = c.ValorFichas,
                 ValorBebidas = c.ValorBebidas,
-                ValorTotal = c.ValorTotal,
+                ValorTotal = c.ValorFichas + c.ValorBebidas,
+                ValorPago = c.ValorPago,
+                ValorRestante = c.ValorFichas + c.ValorBebidas - c.ValorPago,
                 Status = c.Status.ToString(),
                 DataAbertura = c.DataAbertura,
                 DataFechamento = c.DataFechamento,
@@ -80,13 +82,15 @@ public class ComandaService : IComandaService
             Id = comanda.Id,
             JogadorNome = comanda.JogadorNome,
             JogadorFoto = comanda.JogadorFoto,
-            Mesa = comanda.Mesa,
+            Mesa = comanda.Mesa ?? string.Empty,
             Tipo = comanda.Tipo.ToString(),
             TorneioId = comanda.TorneioId,
             TorneioNome = comanda.TorneioNome,
             ValorFichas = comanda.ValorFichas,
             ValorBebidas = comanda.ValorBebidas,
             ValorTotal = comanda.ValorTotal,
+            ValorPago = comanda.ValorPago,
+            ValorRestante = comanda.ValorRestante,
             Status = comanda.Status.ToString(),
             DataAbertura = comanda.DataAbertura,
             DataFechamento = comanda.DataFechamento,
@@ -126,7 +130,7 @@ public class ComandaService : IComandaService
         var comanda = new Comanda
         {
             JogadorNome = createComandaDto.JogadorNome,
-            Mesa = createComandaDto.Mesa,
+            Mesa = createComandaDto.Mesa ?? string.Empty,
             Tipo = tipoEnum,
             TorneioId = createComandaDto.TorneioId,
             TorneioNome = createComandaDto.TorneioNome,
@@ -210,11 +214,13 @@ public class ComandaService : IComandaService
             Id = comanda.Id,
             JogadorNome = comanda.JogadorNome,
             JogadorFoto = comanda.JogadorFoto,
-            Mesa = comanda.Mesa,
+            Mesa = comanda.Mesa ?? string.Empty,
             Tipo = comanda.Tipo.ToString(),
             ValorFichas = comanda.ValorFichas,
             ValorBebidas = comanda.ValorBebidas,
             ValorTotal = comanda.ValorTotal,
+            ValorPago = comanda.ValorPago,
+            ValorRestante = comanda.ValorRestante,
             Status = comanda.Status.ToString(),
             DataAbertura = comanda.DataAbertura
         };
@@ -248,6 +254,11 @@ public class ComandaService : IComandaService
             comanda.TorneioNome = novoTipo == TipoComanda.TORNEIO ? updateComandaDto.TorneioNome : null;
         }
 
+        if (updateComandaDto.AtualizarMesa)
+        {
+            comanda.Mesa = string.IsNullOrWhiteSpace(updateComandaDto.Mesa) ? null : updateComandaDto.Mesa.Trim();
+        }
+
         await _context.SaveChangesAsync();
 
         var dto = new ComandaDto
@@ -255,13 +266,15 @@ public class ComandaService : IComandaService
             Id = comanda.Id,
             JogadorNome = comanda.JogadorNome,
             JogadorFoto = comanda.JogadorFoto,
-            Mesa = comanda.Mesa,
+            Mesa = comanda.Mesa ?? string.Empty,
             Tipo = comanda.Tipo.ToString(),
             TorneioId = comanda.TorneioId,
             TorneioNome = comanda.TorneioNome,
             ValorFichas = comanda.ValorFichas,
             ValorBebidas = comanda.ValorBebidas,
             ValorTotal = comanda.ValorTotal,
+            ValorPago = comanda.ValorPago,
+            ValorRestante = comanda.ValorRestante,
             Status = comanda.Status.ToString(),
             DataAbertura = comanda.DataAbertura,
             DataFechamento = comanda.DataFechamento
@@ -299,21 +312,25 @@ public class ComandaService : IComandaService
         comanda.Status = StatusComanda.FECHADO;
         comanda.DataFechamento = DateTime.UtcNow;
 
-        var valorTotal = comanda.ValorTotal;
+        // O valor base para o fechamento é o restante (total - já pago)
+        var valorRestante = comanda.ValorRestante;
         var desconto = fecharComandaDto?.Desconto ?? 0m;
+        var taxa = fecharComandaDto?.Taxa ?? 0m;
         if (desconto < 0) desconto = 0;
-        if (desconto > valorTotal) desconto = valorTotal;
-        var valorComDesconto = valorTotal - desconto;
+        if (taxa < 0) taxa = 0;
+        if (desconto > valorRestante + taxa) desconto = valorRestante + taxa;
+        var valorFinal = valorRestante + taxa - desconto;
+        if (valorFinal < 0) valorFinal = 0;
 
         // Registrar movimentação sempre, mesmo para comanda zerada
-        if (valorComDesconto > 0 && fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
+        if (valorFinal > 0 && fecharComandaDto?.FormasPagamento != null && fecharComandaDto.FormasPagamento.Count > 0)
         {
             // Validar soma das formas de pagamento
             var somaFormas = fecharComandaDto.FormasPagamento.Sum(f => f.Valor);
-            if (Math.Abs(somaFormas - valorComDesconto) > 0.01m)
+            if (Math.Abs(somaFormas - valorFinal) > 0.01m)
             {
                 throw new InvalidOperationException(
-                    $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorComDesconto:N2}).");
+                    $"A soma das formas de pagamento (R$ {somaFormas:N2}) deve ser igual ao valor a receber (R$ {valorFinal:N2}).");
             }
 
             var primeiraMov = true;
@@ -331,10 +348,12 @@ public class ComandaService : IComandaService
                     ComandaNome = comanda.JogadorNome,
                     FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
                     Desconto = primeiraMov && desconto > 0 ? desconto : null,
+                    Taxa = primeiraMov && taxa > 0 ? taxa : null,
                     UsuarioNome = "Sistema"
                 };
                 _context.MovimentacoesCaixa.Add(movimentacao);
                 caixaAberto.TotalEntradas += forma.Valor;
+                comanda.ValorPago += forma.Valor;
                 primeiraMov = false;
             }
         }
@@ -348,21 +367,117 @@ public class ComandaService : IComandaService
                 Tipo = "ENTRADA",
                 Categoria = "Comanda",
                 Descricao = $"Fechamento da comanda - {comanda.JogadorNome}",
-                Valor = valorComDesconto,
+                Valor = valorFinal,
                 ComandaId = comanda.Id,
                 ComandaNome = comanda.JogadorNome,
                 FormaPagamento = null,
                 Desconto = desconto > 0 ? desconto : null,
+                Taxa = taxa > 0 ? taxa : null,
                 UsuarioNome = "Sistema"
             };
             _context.MovimentacoesCaixa.Add(movimentacao);
-            caixaAberto.TotalEntradas += valorComDesconto;
+            caixaAberto.TotalEntradas += valorFinal;
+            comanda.ValorPago += valorFinal;
         }
 
         await _context.SaveChangesAsync();
 
         var resultado = await GetComandaByIdAsync(id);
         await NotificarComandaAsync("ComandaFechada", new { id, caixaId = caixaAberto.Id });
+        return resultado;
+    }
+
+    public async Task<ComandaDto?> RegistrarPagamentoParcialAsync(int id, PagamentoParcialDto pagamentoDto)
+    {
+        var comanda = await _context.Comandas
+            .Include(c => c.Itens)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (comanda == null) return null;
+        if (comanda.Status == StatusComanda.FECHADO)
+            throw new InvalidOperationException("Não é possível registrar pagamento em uma comanda já fechada.");
+
+        Caixa? caixaAberto = null;
+        if (comanda.CaixaId.HasValue)
+            caixaAberto = await _context.Caixas.FindAsync(comanda.CaixaId.Value);
+        if (caixaAberto == null)
+            caixaAberto = await _context.Caixas.FirstOrDefaultAsync(c => c.Status == "ABERTO");
+        if (caixaAberto == null)
+            throw new InvalidOperationException("Não é possível registrar pagamento. Nenhum caixa encontrado.");
+
+        var valorRestante = comanda.ValorRestante;
+        if (valorRestante <= 0)
+            throw new InvalidOperationException("Esta comanda não possui saldo em aberto para pagamento.");
+
+        var desconto = pagamentoDto.Desconto;
+        var taxa = pagamentoDto.Taxa;
+        if (desconto < 0) desconto = 0;
+        if (taxa < 0) taxa = 0;
+        if (desconto > valorRestante + taxa) desconto = valorRestante + taxa;
+
+        var formasValidas = pagamentoDto.FormasPagamento.Where(f => f.Valor > 0).ToList();
+        if (formasValidas.Count == 0)
+            throw new InvalidOperationException("Informe pelo menos uma forma de pagamento com valor maior que zero.");
+
+        var somaFormas = formasValidas.Sum(f => f.Valor);
+        var valorMaximo = valorRestante + taxa - desconto;
+
+        if (somaFormas > valorMaximo + 0.01m)
+            throw new InvalidOperationException(
+                $"O valor informado (R$ {somaFormas:N2}) é maior que o saldo em aberto (R$ {valorMaximo:N2}).");
+
+        var primeiraMov = true;
+        foreach (var forma in formasValidas)
+        {
+            var movimentacao = new MovimentacaoCaixa
+            {
+                CaixaId = caixaAberto.Id,
+                DataHora = DateTime.UtcNow,
+                Tipo = "ENTRADA",
+                Categoria = "Comanda",
+                Descricao = $"Pagamento parcial - {comanda.JogadorNome}",
+                Valor = forma.Valor,
+                ComandaId = comanda.Id,
+                ComandaNome = comanda.JogadorNome,
+                FormaPagamento = forma.FormaPagamento?.Trim() ?? "Não informado",
+                Desconto = primeiraMov && desconto > 0 ? desconto : null,
+                Taxa = primeiraMov && taxa > 0 ? taxa : null,
+                UsuarioNome = "Sistema"
+            };
+            _context.MovimentacoesCaixa.Add(movimentacao);
+            caixaAberto.TotalEntradas += forma.Valor;
+            primeiraMov = false;
+        }
+
+        // Taxa não abate o saldo da comanda — só a parte da comanda (somaFormas - taxa + desconto)
+        // reduz o ValorRestante. A taxa é cobrada extra e vai para o caixa mas não é débito da comanda.
+        var valorAbatidoNaComanda = somaFormas - taxa + desconto;
+        if (valorAbatidoNaComanda < 0) valorAbatidoNaComanda = 0;
+        if (valorAbatidoNaComanda > valorRestante) valorAbatidoNaComanda = valorRestante;
+        comanda.ValorPago += valorAbatidoNaComanda;
+
+        await _context.SaveChangesAsync();
+
+        var resultado = new ComandaDto
+        {
+            Id = comanda.Id,
+            JogadorNome = comanda.JogadorNome,
+            JogadorFoto = comanda.JogadorFoto,
+            Mesa = comanda.Mesa ?? string.Empty,
+            Tipo = comanda.Tipo.ToString(),
+            TorneioId = comanda.TorneioId,
+            TorneioNome = comanda.TorneioNome,
+            ValorFichas = comanda.ValorFichas,
+            ValorBebidas = comanda.ValorBebidas,
+            ValorTotal = comanda.ValorTotal,
+            ValorPago = comanda.ValorPago,
+            ValorRestante = comanda.ValorRestante,
+            Status = comanda.Status.ToString(),
+            DataAbertura = comanda.DataAbertura,
+            DataFechamento = comanda.DataFechamento,
+            CaixaId = comanda.CaixaId
+        };
+        await NotificarComandaAsync("ComandaAtualizada", resultado);
         return resultado;
     }
 

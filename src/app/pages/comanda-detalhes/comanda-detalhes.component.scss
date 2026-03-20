@@ -188,20 +188,98 @@
   font-size: 1rem;
 }
 
-.btn-alterar-tipo {
+// Campos de info editáveis (Tipo e Mesa)
+.info-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+}
+
+.info-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
+  font-weight: 600;
+}
+
+.info-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-editar-campo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   background: transparent;
-  border: 1px solid #444;
+  border: 1px solid #333;
   border-radius: 6px;
-  color: #aaa;
+  color: #888;
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.2rem 0.5rem;
-  transition: border-color 0.2s, color 0.2s;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
 
   &:hover {
     border-color: #00FF00;
-    color: #fff;
+    color: #00FF00;
+    background: rgba(0,255,0,0.05);
   }
+}
+
+.mesa-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mesa-input {
+  background: #1a1a1a;
+  border: 1px solid #00FF00;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.6rem;
+  width: 130px;
+  outline: none;
+
+  &::placeholder { color: #555; }
+}
+
+.btn-mesa-ok,
+.btn-mesa-cancel {
+  background: transparent;
+  border: 1px solid;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.2s;
+  font-weight: 600;
+}
+
+.btn-mesa-ok {
+  border-color: #28a745;
+  color: #28a745;
+  &:hover:not(:disabled) { background: rgba(40,167,69,0.15); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-mesa-cancel {
+  border-color: #555;
+  color: #999;
+  &:hover { border-color: #e74c3c; color: #e74c3c; }
 }
 
 .tipo-opcoes {
@@ -467,10 +545,63 @@
   font-weight: 600;
 }
 
+/* Linhas de pagamento parcial no resumo */
+.total-pago {
+  .total-value-pago {
+    color: #4caf50;
+    font-weight: 600;
+  }
+}
+
+.total-restante {
+  border-top: 2px dashed #ff9800;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+
+  .total-label {
+    color: #ff9800;
+  }
+
+  .total-value-restante {
+    color: #ff9800;
+    font-size: 1.5rem;
+  }
+}
+
 /* Footer Actions */
 .footer-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-pagamento-parcial {
+  background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+  border: 2px solid #ff9800;
+  color: #fff;
+  padding: 1.2rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+  }
+
+  &:disabled {
+    background: #555;
+    border-color: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.5;
+  }
 }
 
 .btn-fechar-comanda {
@@ -579,11 +710,11 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   background: rgba(0, 255, 0, 0.06);
   border: 1px solid rgba(0, 255, 0, 0.25);
   border-radius: 12px;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 
   .fechar-total-label {
     color: #999;
@@ -592,9 +723,36 @@
 
   .fechar-total-value {
     color: #00FF00;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+  }
+
+  &.fechar-total-box-pago {
+    background: rgba(76, 175, 80, 0.06);
+    border-color: rgba(76, 175, 80, 0.3);
+
+    .fechar-pago-value {
+      color: #4caf50;
+      font-size: 1.1rem;
+    }
+  }
+
+  &.fechar-total-box-destaque {
+    background: rgba(255, 152, 0, 0.06);
+    border: 2px solid rgba(255, 152, 0, 0.5);
+    margin-bottom: 1.25rem;
+
+    .fechar-total-label {
+      color: #ff9800;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .fechar-total-value {
+      color: #ff9800;
+      font-size: 1.6rem;
+    }
   }
 }
 
@@ -707,6 +865,162 @@
   &:hover {
     background: rgba(0, 255, 0, 0.06);
     border-color: rgba(0, 255, 0, 0.4);
+  }
+}
+
+/* Taxa + Desconto lado a lado */
+// ==================== MODAL PAGAMENTO PARCIAL ====================
+
+// Input de valor parcial da comanda
+.parcial-campo {
+  margin-top: 1rem;
+
+  .parcial-campo-label {
+    display: block;
+    color: #999;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .parcial-campo-input-wrap {
+    display: flex;
+    align-items: center;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus-within {
+      border-color: #00FF00;
+      box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.1);
+    }
+
+    &.erro {
+      border-color: #FF6B6B;
+    }
+
+    .parcial-campo-prefix {
+      padding: 0 0.75rem;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      background: #111;
+      border-right: 1px solid #1e1e1e;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+    }
+
+    .parcial-campo-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.6rem 0.75rem;
+      text-align: right;
+
+      &:focus { outline: none; }
+      &::placeholder { color: #333; }
+    }
+
+    .parcial-campo-max {
+      padding: 0 0.75rem;
+      color: #444;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      border-left: 1px solid #1e1e1e;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .parcial-campo-erro {
+    display: block;
+    margin-top: 0.3rem;
+    color: #FF6B6B;
+    font-size: 0.78rem;
+  }
+}
+
+// Botão confirmar pagamento parcial
+.btn-parcial-confirmar {
+  background: #00FF00;
+  border: 2px solid #00FF00;
+  color: #000;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background: #00CC00;
+    border-color: #00CC00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 0, 0.4);
+  }
+
+  &:disabled {
+    background: #2a2a2a;
+    border-color: #2a2a2a;
+    color: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.desconto-taxa-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #222;
+
+  .desconto-taxa-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      color: #666;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .desconto-input {
+      width: 90px;
+      padding: 0.5rem 0.75rem;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+      text-align: right;
+
+      &:focus {
+        outline: none;
+        border-color: #333;
+      }
+    }
+  }
+
+  .desconto-valor-receber {
+    margin-left: auto;
+    color: #666;
+    font-size: 0.85rem;
+
+    strong {
+      color: #00ff88;
+      font-weight: 600;
+    }
   }
 }
 

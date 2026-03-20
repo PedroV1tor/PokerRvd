@@ -85,6 +85,11 @@
               <span class="valor">- R$ {{ getTotalDescontos().toFixed(2) }}</span>
             </div>
 
+            <div class="resumo-item taxa" *ngIf="getTotalTaxas() > 0">
+              <span class="label">Taxas:</span>
+              <span class="valor">+ R$ {{ getTotalTaxas().toFixed(2) }}</span>
+            </div>
+
             <div class="divider"></div>
             
             <div class="resumo-item total">
@@ -182,7 +187,12 @@
                   class="pendentes-tbody-row">
                   <span class="col-comanda">{{ comanda.jogadorNome }}</span>
                   <span class="col-mesa">{{ comanda.mesa || '–' }}</span>
-                  <span class="col-valor">R$ {{ comanda.valorTotal.toFixed(2) }}</span>
+                  <span class="col-valor">
+                    R$ {{ comanda.valorRestante.toFixed(2) }}
+                    <span class="parcial-badge" *ngIf="comanda.valorPago > 0" title="Já pago: R$ {{ comanda.valorPago.toFixed(2) }}">
+                      parcial
+                    </span>
+                  </span>
                   <span class="col-acao">
                     <button type="button" class="btn-quitar" (click)="abrirModalQuitarPendencia(comanda)">
                       Quitar pendência
@@ -247,8 +257,17 @@
             <!-- Aba: Resumo -->
             <div class="resumo-container" *ngIf="abaAtiva === 'resumo'">
 
+              <!-- Filtros do Resumo -->
+              <div class="resumo-filtros">
+                <button class="resumo-filtro-btn" [class.active]="filtroResumo === 'todos'" (click)="filtroResumo = 'todos'">Todos</button>
+                <button class="resumo-filtro-btn resumo-filtro-entradas" [class.active]="filtroResumo === 'entradas'" (click)="filtroResumo = 'entradas'">Entradas</button>
+                <button class="resumo-filtro-btn resumo-filtro-saidas" [class.active]="filtroResumo === 'saidas'" (click)="filtroResumo = 'saidas'">Saídas</button>
+                <button class="resumo-filtro-btn resumo-filtro-descontos" [class.active]="filtroResumo === 'descontos'" (click)="filtroResumo = 'descontos'">Descontos</button>
+                <button class="resumo-filtro-btn resumo-filtro-taxas" [class.active]="filtroResumo === 'taxas'" (click)="filtroResumo = 'taxas'">Taxas</button>
+              </div>
+
               <!-- Resumo de Descontos -->
-              <div class="resumo-section resumo-descontos" *ngIf="getResumoDescontos().length > 0">
+              <div class="resumo-section resumo-descontos" *ngIf="(filtroResumo === 'todos' || filtroResumo === 'descontos') && getResumoDescontos().length > 0">
                 <h4 class="resumo-section-title desconto">💰 Descontos Concedidos</h4>
                 <div class="resumo-table">
                   <div class="resumo-header resumo-header-3col">
@@ -270,8 +289,31 @@
                 </div>
               </div>
 
+              <!-- Resumo de Taxas -->
+              <div class="resumo-section resumo-taxas" *ngIf="(filtroResumo === 'todos' || filtroResumo === 'taxas') && getResumoTaxas().length > 0">
+                <h4 class="resumo-section-title taxa">📋 Taxas Cobradas</h4>
+                <div class="resumo-table">
+                  <div class="resumo-header resumo-header-3col">
+                    <span class="col-categoria">Comanda</span>
+                    <span class="col-quantidade">–</span>
+                    <span class="col-total">Taxa</span>
+                  </div>
+                  <div
+                    *ngFor="let item of getResumoTaxas()"
+                    class="resumo-row resumo-row-3col taxa">
+                    <span class="col-categoria">{{ item.comandaNome }}</span>
+                    <span class="col-quantidade">–</span>
+                    <span class="col-total">R$ {{ item.taxa.toFixed(2) }}</span>
+                  </div>
+                  <div class="resumo-total taxa">
+                    <span class="label">Total de Taxas:</span>
+                    <span class="valor">R$ {{ getTotalTaxas().toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Resumo por Forma de Pagamento -->
-              <div class="resumo-section resumo-forma-pagamento" *ngIf="getResumoPorFormaPagamento().length > 0">
+              <div class="resumo-section resumo-forma-pagamento" *ngIf="(filtroResumo === 'todos' || filtroResumo === 'entradas') && getResumoPorFormaPagamento().length > 0">
                 <h4 class="resumo-section-title forma-pagamento">💳 Por Forma de Pagamento</h4>
                 <div class="resumo-table">
                   <div class="resumo-header resumo-header-3col">
@@ -290,7 +332,7 @@
               </div>
 
               <!-- Resumo de Entradas -->
-              <div class="resumo-section">
+              <div class="resumo-section" *ngIf="filtroResumo === 'todos' || filtroResumo === 'entradas'">
                 <h4 class="resumo-section-title entrada">📈 Entradas</h4>
                 <div class="resumo-table">
                   <div class="resumo-header">
@@ -315,7 +357,7 @@
               </div>
 
               <!-- Resumo de Saídas -->
-              <div class="resumo-section">
+              <div class="resumo-section" *ngIf="filtroResumo === 'todos' || filtroResumo === 'saidas'">
                 <h4 class="resumo-section-title saida">📉 Saídas</h4>
                 <div class="resumo-table">
                   <div class="resumo-header">
@@ -339,8 +381,18 @@
                 </div>
               </div>
 
-              <!-- Estado Vazio -->
-              <div *ngIf="getResumoEntradas().length === 0 && getResumoSaidas().length === 0" class="empty-state">
+              <!-- Estado vazio para filtro sem dados -->
+              <div *ngIf="filtroResumo === 'descontos' && getResumoDescontos().length === 0" class="empty-state">
+                <div class="empty-icon">💰</div>
+                <p>Nenhum desconto registrado</p>
+              </div>
+              <div *ngIf="filtroResumo === 'taxas' && getResumoTaxas().length === 0" class="empty-state">
+                <div class="empty-icon">📋</div>
+                <p>Nenhuma taxa registrada</p>
+              </div>
+
+              <!-- Estado Vazio geral -->
+              <div *ngIf="filtroResumo === 'todos' && getResumoEntradas().length === 0 && getResumoSaidas().length === 0" class="empty-state">
                 <div class="empty-icon">📊</div>
                 <p>Nenhuma movimentação para resumir</p>
               </div>
@@ -360,9 +412,19 @@
       <button class="btn-close" (click)="fecharModalQuitarPendencia()" aria-label="Fechar">✕</button>
     </div>
     <div class="modal-body modal-fechar-body">
-      <div class="fechar-total-box">
+      <div class="fechar-total-box" *ngIf="comandaSelecionadaQuitar.valorPago > 0">
         <span class="fechar-total-label">Total da comanda ({{ comandaSelecionadaQuitar.jogadorNome }})</span>
         <span class="fechar-total-value">R$ {{ comandaSelecionadaQuitar.valorTotal.toFixed(2) }}</span>
+      </div>
+      <div class="fechar-total-box fechar-total-box-pago" *ngIf="comandaSelecionadaQuitar.valorPago > 0">
+        <span class="fechar-total-label">Já pago</span>
+        <span class="fechar-total-value fechar-pago-value">R$ {{ comandaSelecionadaQuitar.valorPago.toFixed(2) }}</span>
+      </div>
+      <div class="fechar-total-box fechar-total-box-destaque">
+        <span class="fechar-total-label">
+          {{ comandaSelecionadaQuitar.valorPago > 0 ? 'Restante a pagar' : 'Total da comanda (' + comandaSelecionadaQuitar.jogadorNome + ')' }}
+        </span>
+        <span class="fechar-total-value">R$ {{ comandaSelecionadaQuitar.valorRestante.toFixed(2) }}</span>
       </div>
 
       <p class="modal-instruction">Informe as formas de pagamento. A soma deve ser igual ao valor a receber. O valor entrará no caixa atualmente aberto.</p>
@@ -393,27 +455,41 @@
         </button>
       </div>
 
-      <div class="desconto-row">
-        <label for="desconto-quitar">Desconto</label>
-        <input 
-          type="number" 
-          id="desconto-quitar"
-          [(ngModel)]="descontoFecharQuitar" 
-          (ngModelChange)="aplicarDescontoNoTotalQuitar()"
-          min="0"
-          [max]="comandaSelecionadaQuitar.valorTotal"
-          step="0.01"
-          class="form-control desconto-input"
-          placeholder="0,00"
-        />
-        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorComDescontoQuitar.toFixed(2) }}</strong></span>
+      <div class="desconto-taxa-row">
+        <div class="desconto-taxa-item">
+          <label for="taxa-quitar">Taxa (R$)</label>
+          <input
+            type="number"
+            id="taxa-quitar"
+            [(ngModel)]="taxaFecharQuitar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotalQuitar()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <div class="desconto-taxa-item">
+          <label for="desconto-quitar">Desconto (R$)</label>
+          <input
+            type="number"
+            id="desconto-quitar"
+            [(ngModel)]="descontoFecharQuitar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotalQuitar()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorFinalQuitar.toFixed(2) }}</strong></span>
       </div>
 
       <div class="resumo-formas" [class.erro]="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0">
         <span>Soma</span>
         <span class="resumo-valor">R$ {{ somaFormasPagamentoQuitar.toFixed(2) }}</span>
         <span *ngIf="totalBateComFormasQuitar" class="ok-badge">✓ Confere</span>
-        <span *ngIf="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0" class="erro-badge">Deve ser R$ {{ valorComDescontoQuitar.toFixed(2) }}</span>
+        <span *ngIf="!totalBateComFormasQuitar && somaFormasPagamentoQuitar > 0" class="erro-badge">Deve ser R$ {{ valorFinalQuitar.toFixed(2) }}</span>
       </div>
     </div>
     <div class="modal-footer">
@@ -453,7 +529,10 @@
             </div>
             <div *ngFor="let comanda of comandasAbertas" class="lista-comandas-row">
               <span class="col-comanda">{{ comanda.jogadorNome }} <span class="comanda-mesa" *ngIf="comanda.mesa">({{ comanda.mesa }})</span></span>
-              <span class="col-valor">R$ {{ comanda.valorTotal.toFixed(2) }}</span>
+              <span class="col-valor">
+                R$ {{ comanda.valorRestante.toFixed(2) }}
+                <span class="parcial-badge" *ngIf="comanda.valorPago > 0">parcial</span>
+              </span>
             </div>
             <div class="lista-comandas-total">
               <span class="col-comanda"><strong>Valor total pendente:</strong></span>

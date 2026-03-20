@@ -50,7 +50,7 @@
 
       <!-- Lista de Torneios -->
       <div *ngIf="!loading && torneiosFiltrados.length > 0" class="torneios-grid">
-        <div *ngFor="let torneio of torneiosFiltrados" class="torneio-card">
+        <div *ngFor="let torneio of torneiosFiltrados" class="torneio-card" (dblclick)="abrirStats(torneio)" title="Duplo clique para ver estatísticas">
           <!-- Header do Card -->
           <div class="card-header">
             <div class="card-title-section">
@@ -106,14 +106,6 @@
 
             <div class="card-footer-info">
               <div class="footer-item">
-                <span class="footer-icon">👥</span>
-                <span>{{ torneio.participantes }} jogadores</span>
-              </div>
-              <div class="footer-item">
-                <span class="footer-icon">💰</span>
-                <span>{{ formatarValor(torneio.premioTotal || 0) }}</span>
-              </div>
-              <div class="footer-item">
                 <span class="footer-icon">📅</span>
                 <span>{{ formatarData(torneio.dataInicio) }}</span>
               </div>
@@ -130,6 +122,74 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- Modal Estatísticas do Torneio -->
+<div class="modal-overlay" *ngIf="mostrarModalStats" (click)="fecharModalStats()">
+  <div class="modal-content modal-stats" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📊 Estatísticas do Torneio</h3>
+      <button class="btn-close" (click)="fecharModalStats()">✕</button>
+    </div>
+
+    <div class="modal-body" *ngIf="statsCarregando">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Carregando estatísticas...</p>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="!statsCarregando && torneioStats">
+      <div class="stats-torneio-nome">{{ torneioStats.torneioNome }}</div>
+
+      <div class="stats-resumo">
+        <div class="stat-resumo-item">
+          <span class="stat-resumo-label">👥 Jogadores</span>
+          <span class="stat-resumo-value">{{ torneioStats.totalJogadores }}</span>
+        </div>
+        <div class="stat-resumo-item highlight">
+          <span class="stat-resumo-label">💰 Total Arrecadado</span>
+          <span class="stat-resumo-value">{{ formatarValor(torneioStats.totalArrecadado) }}</span>
+        </div>
+      </div>
+
+      <div class="stats-tabela">
+        <div class="stats-tabela-header">
+          <span>Tipo</span>
+          <span>Quantidade</span>
+          <span>Valor Total</span>
+        </div>
+
+        <div class="stats-tabela-row">
+          <span class="stats-tipo">Buy-in</span>
+          <span class="stats-qtd">{{ torneioStats.qtdBuyIn }}</span>
+          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalBuyIn) }}</span>
+        </div>
+
+        <div class="stats-tabela-row">
+          <span class="stats-tipo">Re-buy Simples</span>
+          <span class="stats-qtd">{{ torneioStats.qtdRebuySimples }}</span>
+          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalRebuySimples) }}</span>
+        </div>
+
+        <div class="stats-tabela-row">
+          <span class="stats-tipo">Re-buy Duplo</span>
+          <span class="stats-qtd">{{ torneioStats.qtdRebuyDuplo }}</span>
+          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalRebuyDuplo) }}</span>
+        </div>
+
+        <div class="stats-tabela-row">
+          <span class="stats-tipo">Add-on</span>
+          <span class="stats-qtd">{{ torneioStats.qtdAddOn }}</span>
+          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalAddOn) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalStats()">Fechar</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal Criar Torneio -->

@@ -31,7 +31,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
         <div class="card-right">
           <div class="valor-container">
             <span class="moeda">R$</span>
-            <span class="valor">{{ comanda.valorTotal.toFixed(2) }}</span>
+            <span class="valor">{{ getValorExibir(comanda).toFixed(2) }}</span>
           </div>
 
           <button 
@@ -316,6 +316,10 @@ export class ComandaCardComponent {
       'BAR': '🍺 Bar'
     };
     return badges[tipo] || tipo;
+  }
+
+  getValorExibir(comanda: Comanda): number {
+    return comanda.valorPago > 0 ? comanda.valorRestante : comanda.valorTotal;
   }
 
   onToggleStatus() {

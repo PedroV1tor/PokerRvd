@@ -128,6 +128,44 @@ public class TorneioService : ITorneioService
         return await UpdateTorneioAsync(id, new UpdateTorneioDto { Status = "CANCELADO" });
     }
 
+    public async Task<TorneioStatsDto?> GetEstatisticasAsync(int id)
+    {
+        var torneio = await _context.Torneios.FindAsync(id);
+        if (torneio == null) return null;
+
+        var itens = await _context.ItensComanda
+            .Where(i => i.Comanda!.TorneioId == id)
+            .ToListAsync();
+
+        var qtdBuyIn       = itens.Count(i => i.NomeCustomizado != null && i.NomeCustomizado.StartsWith("Buy-in",      StringComparison.OrdinalIgnoreCase));
+        var qtdRebuySimp   = itens.Count(i => i.NomeCustomizado != null && i.NomeCustomizado.StartsWith("Re-buy Simples", StringComparison.OrdinalIgnoreCase));
+        var qtdRebuyDuplo  = itens.Count(i => i.NomeCustomizado != null && i.NomeCustomizado.StartsWith("Re-buy Duplo",   StringComparison.OrdinalIgnoreCase));
+        var qtdAddOn       = itens.Count(i => i.NomeCustomizado != null && i.NomeCustomizado.StartsWith("Add-on",        StringComparison.OrdinalIgnoreCase));
+
+        var totalJogadores = await _context.Comandas
+            .Where(c => c.TorneioId == id)
+            .CountAsync();
+
+        return new TorneioStatsDto
+        {
+            TorneioId              = id,
+            TorneioNome            = torneio.Nome,
+            TotalJogadores         = totalJogadores,
+            QtdBuyIn               = qtdBuyIn,
+            ValorTotalBuyIn        = qtdBuyIn * torneio.ValorBuyIn,
+            QtdRebuySimples        = qtdRebuySimp,
+            ValorTotalRebuySimples = qtdRebuySimp * torneio.ValorRebuySimples,
+            QtdRebuyDuplo          = qtdRebuyDuplo,
+            ValorTotalRebuyDuplo   = qtdRebuyDuplo * torneio.ValorRebuyDuplo,
+            QtdAddOn               = qtdAddOn,
+            ValorTotalAddOn        = qtdAddOn * torneio.ValorAddOn,
+            TotalArrecadado        = (qtdBuyIn * torneio.ValorBuyIn)
+                                   + (qtdRebuySimp * torneio.ValorRebuySimples)
+                                   + (qtdRebuyDuplo * torneio.ValorRebuyDuplo)
+                                   + (qtdAddOn * torneio.ValorAddOn)
+        };
+    }
+
     private static TorneioDto MapToDto(Torneio t)
     {
         return new TorneioDto

@@ -35,3 +35,18 @@ export interface UpdateTorneioDto {
   valorAddOn?: number;
   status?: StatusTorneio;
 }
+
+export interface TorneioStats {
+  torneioId: number;
+  torneioNome: string;
+  totalJogadores: number;
+  qtdBuyIn: number;
+  valorTotalBuyIn: number;
+  qtdRebuySimples: number;
+  valorTotalRebuySimples: number;
+  qtdRebuyDuplo: number;
+  valorTotalRebuyDuplo: number;
+  qtdAddOn: number;
+  valorTotalAddOn: number;
+  totalArrecadado: number;
+}

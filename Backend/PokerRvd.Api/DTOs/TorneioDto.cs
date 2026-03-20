@@ -1,5 +1,26 @@
 namespace PokerRvd.Api.DTOs;
 
+public class TorneioStatsDto
+{
+    public int TorneioId { get; set; }
+    public string TorneioNome { get; set; } = string.Empty;
+    public int TotalJogadores { get; set; }
+
+    public int QtdBuyIn { get; set; }
+    public decimal ValorTotalBuyIn { get; set; }
+
+    public int QtdRebuySimples { get; set; }
+    public decimal ValorTotalRebuySimples { get; set; }
+
+    public int QtdRebuyDuplo { get; set; }
+    public decimal ValorTotalRebuyDuplo { get; set; }
+
+    public int QtdAddOn { get; set; }
+    public decimal ValorTotalAddOn { get; set; }
+
+    public decimal TotalArrecadado { get; set; }
+}
+
 public class TorneioDto
 {
     public int Id { get; set; }

@@ -160,6 +160,10 @@
     color: #fbbf24;
   }
 
+  &.taxa .valor {
+    color: #a78bfa;
+  }
+
   &.total {
     margin-top: 0.5rem;
     padding-top: 1rem;
@@ -415,6 +419,10 @@
     .col-valor {
       color: #FFC107;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
     }
 
     .col-acao {
@@ -437,6 +445,19 @@
         background: #00FF00;
         color: #000;
       }
+    }
+
+    .parcial-badge {
+      display: inline-block;
+      background: rgba(255, 152, 0, 0.15);
+      border: 1px solid rgba(255, 152, 0, 0.5);
+      color: #ff9800;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
     }
   }
 
@@ -679,6 +700,65 @@
     color: #fbbf24;
     border-bottom-color: #fbbf24;
   }
+
+  &.taxa {
+    color: #a78bfa;
+    border-bottom-color: #a78bfa;
+  }
+}
+
+.resumo-filtros {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.resumo-filtro-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  border: 2px solid #333;
+  background: #0f0f0f;
+  color: #999;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #555;
+    color: #ccc;
+  }
+
+  &.active {
+    border-color: #fff;
+    color: #fff;
+    background: #222;
+  }
+
+  &.resumo-filtro-entradas.active {
+    border-color: #00FF00;
+    color: #00FF00;
+    background: rgba(0, 255, 0, 0.1);
+  }
+
+  &.resumo-filtro-saidas.active {
+    border-color: #FF6B6B;
+    color: #FF6B6B;
+    background: rgba(255, 107, 107, 0.1);
+  }
+
+  &.resumo-filtro-descontos.active {
+    border-color: #fbbf24;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+  }
+
+  &.resumo-filtro-taxas.active {
+    border-color: #a78bfa;
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.1);
+  }
 }
 
 .resumo-header-3col {
@@ -702,6 +782,15 @@
 
     .col-total {
       color: #fbbf24;
+      font-weight: bold;
+    }
+  }
+
+  &.taxa {
+    border-left-color: #a78bfa;
+
+    .col-total {
+      color: #a78bfa;
       font-weight: bold;
     }
   }
@@ -824,6 +913,19 @@
     }
   }
 
+  &.taxa {
+    border-top-color: #a78bfa;
+
+    .label {
+      color: #a78bfa;
+    }
+
+    .valor {
+      color: #a78bfa;
+      font-size: 1.3rem;
+    }
+  }
+
   .label {
     font-size: 1rem;
   }
@@ -917,11 +1019,11 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   background: rgba(0, 255, 0, 0.06);
   border: 1px solid rgba(0, 255, 0, 0.25);
   border-radius: 12px;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 
   .fechar-total-label {
     color: #999;
@@ -930,9 +1032,36 @@
 
   .fechar-total-value {
     color: #00FF00;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+  }
+
+  &.fechar-total-box-pago {
+    background: rgba(76, 175, 80, 0.06);
+    border-color: rgba(76, 175, 80, 0.3);
+
+    .fechar-pago-value {
+      color: #4caf50;
+      font-size: 1.1rem;
+    }
+  }
+
+  &.fechar-total-box-destaque {
+    background: rgba(255, 152, 0, 0.06);
+    border: 2px solid rgba(255, 152, 0, 0.5);
+    margin-bottom: 1.25rem;
+
+    .fechar-total-label {
+      color: #ff9800;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .fechar-total-value {
+      color: #ff9800;
+      font-size: 1.6rem;
+    }
   }
 }
 
@@ -1045,6 +1174,55 @@
   &:hover {
     background: rgba(0, 255, 0, 0.06);
     border-color: rgba(0, 255, 0, 0.4);
+  }
+}
+
+.desconto-taxa-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #222;
+
+  .desconto-taxa-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      color: #666;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .desconto-input {
+      width: 90px;
+      padding: 0.5rem 0.75rem;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+      text-align: right;
+
+      &:focus {
+        outline: none;
+        border-color: #333;
+      }
+    }
+  }
+
+  .desconto-valor-receber {
+    margin-left: auto;
+    color: #666;
+    font-size: 0.85rem;
+
+    strong {
+      color: #00ff88;
+      font-weight: 600;
+    }
   }
 }
 
@@ -1265,6 +1443,21 @@
       .col-valor {
         color: #FFD700;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .parcial-badge {
+        display: inline-block;
+        background: rgba(255, 152, 0, 0.15);
+        border: 1px solid rgba(255, 152, 0, 0.5);
+        color: #ff9800;
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
       }
 
       .comanda-mesa {

@@ -21,6 +21,10 @@ export interface Comanda {
   valorFichas: number;
   valorBebidas: number;
   valorTotal: number;
+  /** Soma dos pagamentos parciais já registrados */
+  valorPago: number;
+  /** Saldo em aberto: valorTotal - valorPago */
+  valorRestante: number;
   status: StatusComanda;
   dataAbertura: Date;
   dataFechamento?: Date;
@@ -39,7 +43,7 @@ export interface ItemComanda {
 
 export interface CreateComandaDto {
   jogadorNome: string;
-  mesa: string;
+  mesa?: string;
   tipo: TipoComanda;
   torneioId?: number;
   torneioNome?: string;
@@ -53,6 +57,8 @@ export interface UpdateComandaDto {
   tipo?: string;
   torneioId?: number;
   torneioNome?: string;
+  mesa?: string;
+  atualizarMesa?: boolean;
 }
 
 /** Forma de pagamento e valor ao fechar a comanda */
@@ -61,11 +67,22 @@ export interface FormaPagamentoValor {
   valor: number;
 }
 
-/** DTO para fechar comanda informando as formas de pagamento e opcionalmente desconto */
+/** DTO para fechar comanda informando as formas de pagamento e opcionalmente desconto/taxa */
 export interface FecharComandaDto {
   formasPagamento: FormaPagamentoValor[];
-  /** Desconto em reais (R$). O valor a receber será Total - Desconto. */
+  /** Desconto em reais (R$). Reduz o valor a receber. */
   desconto?: number;
+  /** Taxa/acréscimo em reais (R$). Aumenta o valor a receber. */
+  taxa?: number;
+}
+
+/** DTO para registrar um pagamento parcial sem fechar a comanda */
+export interface PagamentoParcialDto {
+  formasPagamento: FormaPagamentoValor[];
+  /** Desconto em reais (R$) aplicado neste pagamento parcial. */
+  desconto?: number;
+  /** Taxa/acréscimo em reais (R$) aplicado neste pagamento parcial. */
+  taxa?: number;
 }
 
 export interface DashboardStats {

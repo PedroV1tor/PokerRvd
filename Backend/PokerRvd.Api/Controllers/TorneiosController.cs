@@ -140,6 +140,24 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [HttpGet("{id}/stats")]
+    public async Task<ActionResult<TorneioStatsDto>> GetStats(int id)
+    {
+        try
+        {
+            var stats = await _torneioService.GetEstatisticasAsync(id);
+            if (stats == null)
+                return NotFound($"Torneio {id} não encontrado");
+
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao buscar estatísticas do torneio {Id}", id);
+            return StatusCode(500, "Erro ao buscar estatísticas do torneio");
+        }
+    }
+
     [HttpPost("{id}/cancelar")]
     public async Task<ActionResult<TorneioDto>> Cancelar(int id)
     {

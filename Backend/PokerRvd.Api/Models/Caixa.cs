@@ -32,6 +32,7 @@ public class MovimentacaoCaixa
     public string? ComandaNome { get; set; }
     public string? FormaPagamento { get; set; } // Dinheiro, PIX, Cartão Débito, Cartão Crédito, etc.
     public decimal? Desconto { get; set; } // Desconto em R$ dado na comanda ao fechar
+    public decimal? Taxa { get; set; } // Taxa/acréscimo em R$ adicionado ao fechar
     public string UsuarioNome { get; set; } = string.Empty;
     
     // Navegação

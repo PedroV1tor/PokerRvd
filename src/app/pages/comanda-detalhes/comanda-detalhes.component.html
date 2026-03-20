@@ -28,17 +28,56 @@
             </div>
             <h2 class="player-name">{{ comanda.jogadorNome }}</h2>
             <div class="player-info">
-              <span class="badge" [class]="getTipoClass(comanda.tipo)">
-                {{ getTipoLabel(comanda.tipo) }}
-              </span>
-              <button
-                *ngIf="comanda.status !== StatusComanda.FECHADO"
-                class="btn-alterar-tipo"
-                (click)="abrirModalAlterarTipo()"
-                title="Alterar tipo da comanda">
-                ✏️
-              </button>
-              <span class="mesa">{{ comanda.mesa }}</span>
+
+              <!-- Tipo da comanda -->
+              <div class="info-field">
+                <span class="info-label">Tipo</span>
+                <div class="info-value-row">
+                  <span class="badge" [class]="getTipoClass(comanda.tipo)">
+                    {{ getTipoLabel(comanda.tipo) }}
+                  </span>
+                  <button
+                    *ngIf="comanda.status !== StatusComanda.FECHADO"
+                    class="btn-editar-campo"
+                    (click)="abrirModalAlterarTipo()"
+                    title="Alterar tipo">
+                    ✏️ Alterar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mesa -->
+              <div class="info-field">
+                <span class="info-label">Mesa</span>
+
+                <!-- Exibição normal -->
+                <div class="info-value-row" *ngIf="!editandoMesa">
+                  <span class="mesa">{{ comanda.mesa || '—' }}</span>
+                  <button
+                    *ngIf="comanda.status !== StatusComanda.FECHADO"
+                    class="btn-editar-campo"
+                    (click)="iniciarEdicaoMesa()"
+                    title="Editar mesa">
+                    ✏️ Editar
+                  </button>
+                </div>
+
+                <!-- Edição inline -->
+                <div class="mesa-edit-row" *ngIf="editandoMesa">
+                  <input
+                    class="mesa-input"
+                    [(ngModel)]="mesaEditando"
+                    placeholder="Ex: Mesa 1"
+                    maxlength="50"
+                    (keyup.enter)="salvarMesa()"
+                    (keyup.escape)="cancelarEdicaoMesa()"
+                    autofocus
+                  />
+                  <button class="btn-mesa-ok" (click)="salvarMesa()" [disabled]="isSaving" title="Salvar">✓</button>
+                  <button class="btn-mesa-cancel" (click)="cancelarEdicaoMesa()" title="Cancelar">✕</button>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -165,17 +204,34 @@
                 <span class="total-label">TOTAL:</span>
                 <span class="total-value">R$ {{ valorTotal.toFixed(2) }}</span>
               </div>
+              <div class="total-row total-pago" *ngIf="valorPago > 0">
+                <span class="total-label">Pago:</span>
+                <span class="total-value total-value-pago">- R$ {{ valorPago.toFixed(2) }}</span>
+              </div>
+              <div class="total-row total-restante" *ngIf="valorPago > 0">
+                <span class="total-label">Restante:</span>
+                <span class="total-value total-value-restante">R$ {{ valorRestante.toFixed(2) }}</span>
+              </div>
             </div>
           </div>
 
-          <!-- Botão Fechar Comanda -->
-          <div class="footer-actions">
-            <button 
-              class="btn-fechar-comanda" 
-              (click)="abrirModalFechar()"
-              [disabled]="comanda.status === StatusComanda.FECHADO">
-              {{ comanda.status === StatusComanda.FECHADO ? 'Comanda Fechada' : 'Fechar Comanda' }}
+          <!-- Botões de ação da comanda -->
+          <div class="footer-actions" *ngIf="comanda.status !== StatusComanda.FECHADO">
+            <button
+              class="btn-pagamento-parcial"
+              (click)="abrirModalParcial()"
+              [disabled]="valorRestante <= 0"
+              title="Registrar um pagamento parcial sem fechar a comanda">
+              Pagamento Parcial
             </button>
+            <button
+              class="btn-fechar-comanda"
+              (click)="abrirModalFechar()">
+              Fechar Comanda
+            </button>
+          </div>
+          <div class="footer-actions" *ngIf="comanda.status === StatusComanda.FECHADO">
+            <button class="btn-fechar-comanda" disabled>Comanda Fechada</button>
           </div>
         </section>
       </div>
@@ -232,9 +288,17 @@
     </div>
 
     <div class="modal-body modal-fechar-body">
-      <div class="fechar-total-box">
+      <div class="fechar-total-box" *ngIf="valorPago > 0">
         <span class="fechar-total-label">Total da comanda</span>
         <span class="fechar-total-value">R$ {{ valorTotal.toFixed(2) }}</span>
+      </div>
+      <div class="fechar-total-box fechar-total-box-pago" *ngIf="valorPago > 0">
+        <span class="fechar-total-label">Já pago</span>
+        <span class="fechar-total-value fechar-pago-value">R$ {{ valorPago.toFixed(2) }}</span>
+      </div>
+      <div class="fechar-total-box fechar-total-box-destaque">
+        <span class="fechar-total-label">{{ valorPago > 0 ? 'Restante' : 'Total da comanda' }}</span>
+        <span class="fechar-total-value">R$ {{ valorRestante.toFixed(2) }}</span>
       </div>
 
       <p class="modal-instruction">Informe as formas de pagamento. A soma deve ser igual ao valor a receber.</p>
@@ -265,34 +329,164 @@
         </button>
       </div>
 
-      <div class="desconto-row">
-        <label for="desconto-fechar">Desconto</label>
-        <input 
-          type="number" 
-          id="desconto-fechar"
-          [(ngModel)]="descontoFechar" 
-          (ngModelChange)="aplicarDescontoNoTotal()"
-          min="0"
-          [max]="valorTotal"
-          step="0.01"
-          class="form-control desconto-input"
-          placeholder="0,00"
-        />
-        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorComDesconto.toFixed(2) }}</strong></span>
+      <div class="desconto-taxa-row">
+        <div class="desconto-taxa-item">
+          <label for="taxa-fechar">Taxa (R$)</label>
+          <input
+            type="number"
+            id="taxa-fechar"
+            [(ngModel)]="taxaFechar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <div class="desconto-taxa-item">
+          <label for="desconto-fechar">Desconto (R$)</label>
+          <input
+            type="number"
+            id="desconto-fechar"
+            [(ngModel)]="descontoFechar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorFinalFechar.toFixed(2) }}</strong></span>
       </div>
 
       <div class="resumo-formas" [class.erro]="!totalBateComFormas && somaFormasPagamento > 0">
         <span>Soma</span>
         <span class="resumo-valor">R$ {{ somaFormasPagamento.toFixed(2) }}</span>
         <span *ngIf="totalBateComFormas" class="ok-badge">✓ Confere</span>
-        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Deve ser R$ {{ valorComDesconto.toFixed(2) }}</span>
+        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Deve ser R$ {{ valorFinalFechar.toFixed(2) }}</span>
       </div>
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="fecharModalFechar()">Cancelar</button>
-      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="(valorComDesconto > 0 && (!totalBateComFormas || somaFormasPagamento <= 0)) || valorComDesconto < 0 || isSaving">
+      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="(valorFinalFechar > 0 && (!totalBateComFormas || somaFormasPagamento <= 0)) || valorFinalFechar < 0 || isSaving">
         {{ isSaving ? 'Fechando...' : 'Fechar Comanda' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pagamento Parcial -->
+<div class="modal-overlay modal-fechar-overlay" *ngIf="mostrarModalParcial" (click)="fecharModalParcial()">
+  <div class="modal-content modal-fechar-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Pagamento Parcial</h3>
+      <button class="btn-close" (click)="fecharModalParcial()" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="modal-body modal-fechar-body">
+
+      <div class="fechar-total-box fechar-total-box-destaque">
+        <span class="fechar-total-label">Saldo em aberto</span>
+        <span class="fechar-total-value">R$ {{ valorRestante.toFixed(2) }}</span>
+      </div>
+
+      <!-- Valor parcial da comanda -->
+      <div class="parcial-campo">
+        <label class="parcial-campo-label" for="valor-base-parcial">Valor parcial da comanda</label>
+        <div class="parcial-campo-input-wrap" [class.erro]="(valorBaseParcial || 0) > valorRestante">
+          <span class="parcial-campo-prefix">R$</span>
+          <input
+            type="number"
+            id="valor-base-parcial"
+            [(ngModel)]="valorBaseParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()"
+            min="0"
+            [max]="valorRestante"
+            step="0.01"
+            class="parcial-campo-input"
+            placeholder="0,00"
+          />
+          <span class="parcial-campo-max">máx {{ valorRestante.toFixed(2) }}</span>
+        </div>
+        <span class="parcial-campo-erro" *ngIf="(valorBaseParcial || 0) > valorRestante">
+          Excede o saldo em aberto
+        </span>
+      </div>
+
+      <!-- Taxa e Desconto -->
+      <div class="desconto-taxa-row">
+        <div class="desconto-taxa-item">
+          <label for="taxa-parcial">Taxa (R$)</label>
+          <input
+            type="number"
+            id="taxa-parcial"
+            [(ngModel)]="taxaParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <div class="desconto-taxa-item">
+          <label for="desconto-parcial">Desconto (R$)</label>
+          <input
+            type="number"
+            id="desconto-parcial"
+            [(ngModel)]="descontoParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()"
+            min="0"
+            step="0.01"
+            class="form-control desconto-input"
+            placeholder="0,00"
+          />
+        </div>
+        <span class="desconto-valor-receber">Total a cobrar: <strong>R$ {{ totalACobrarParcial.toFixed(2) }}</strong></span>
+      </div>
+
+      <p class="modal-instruction">Distribua as formas de pagamento. A soma deve ser igual ao total a cobrar.</p>
+
+      <div class="formas-pagamento-list">
+        <div class="formas-pagamento-header">
+          <span>Forma</span>
+          <span>Valor (R$)</span>
+          <span class="col-acoes"></span>
+        </div>
+        <div *ngFor="let forma of formasPagamentoParcial; let i = index" class="forma-pagamento-row">
+          <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
+            <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
+          </select>
+          <input
+            type="number"
+            [(ngModel)]="forma.valor"
+            min="0"
+            step="0.01"
+            class="form-control forma-valor"
+            placeholder="0,00"
+          />
+          <button type="button" class="btn-remover-forma" (click)="removerFormaParcial(i)"
+                  [disabled]="formasPagamentoParcial.length === 1" title="Remover">✕</button>
+        </div>
+        <button type="button" class="btn-add-forma" (click)="adicionarFormaParcial()">
+          + Adicionar forma de pagamento
+        </button>
+      </div>
+
+      <div class="resumo-formas" [class.erro]="somaFormasParcial > 0 && !parcialValido">
+        <span>Soma</span>
+        <span class="resumo-valor">R$ {{ somaFormasParcial.toFixed(2) }}</span>
+        <span *ngIf="parcialValido" class="ok-badge">✓ Confere</span>
+        <span *ngIf="somaFormasParcial > 0 && !parcialValido" class="erro-badge">Deve ser R$ {{ totalACobrarParcial.toFixed(2) }}</span>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="fecharModalParcial()">Cancelar</button>
+      <button class="btn btn-parcial-confirmar" (click)="confirmarPagamentoParcial()"
+              [disabled]="!parcialValido || totalACobrarParcial <= 0 || isSaving">
+        {{ isSaving ? 'Registrando...' : 'Registrar Pagamento' }}
       </button>
     </div>
   </div>

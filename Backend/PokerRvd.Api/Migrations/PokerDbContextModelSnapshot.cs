@@ -100,7 +100,6 @@ namespace PokerRvd.Api.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Mesa")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -122,6 +121,10 @@ namespace PokerRvd.Api.Migrations
                         .HasColumnType("numeric(18,2)");
 
                     b.Property<decimal>("ValorFichas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ValorPago")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
@@ -201,6 +204,10 @@ namespace PokerRvd.Api.Migrations
                     b.Property<string>("FormaPagamento")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<decimal?>("Taxa")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
