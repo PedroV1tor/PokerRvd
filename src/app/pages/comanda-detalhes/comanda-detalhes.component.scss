@@ -1,9 +1,12 @@
 .comanda-detalhes-container {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   color: #fff;
-  overflow-x: hidden;
+  overflow: hidden;
   max-width: 100vw;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
@@ -90,29 +93,51 @@
 
 /* Main Content */
 .main-content {
-  padding: 2rem;
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .container {
+  flex: 1;
+  min-height: 0;
   max-width: 1400px;
   margin: 0 auto;
-  overflow-x: hidden;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .grid-layout {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Sidebar Esquerda */
 .sidebar-left {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 0.25rem;
+
+  // Scrollbar discreta
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
 }
 
 .player-card {
@@ -431,7 +456,17 @@
 .content-right {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+
+  // Scrollbar discreta
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
 }
 
 .items-table-container {
@@ -1256,14 +1291,35 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+  .comanda-detalhes-container {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .main-content {
+    overflow: visible;
+  }
+
+  .container {
+    overflow: visible;
+  }
+
   .grid-layout {
     grid-template-columns: 1fr;
+    overflow: visible;
+    height: auto;
   }
 
   .sidebar-left {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    overflow: visible;
+  }
+
+  .content-right {
+    overflow: visible;
   }
 }
 
