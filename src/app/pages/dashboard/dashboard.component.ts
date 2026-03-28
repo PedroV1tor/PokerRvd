@@ -10,9 +10,11 @@ import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ComandaService } from '../../services/comanda.service';
 import { CaixaService } from '../../services/caixa.service';
+import { ProdutoService } from '../../services/produto.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda } from '../../models/comanda.model';
+import { Produto } from '../../models/produto.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,6 +45,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
   // Modal
   mostrarModalNovaComanda = false;
+
+  // Modal bebida/comida (atalho no card)
+  mostrarModalBebida = false;
+  comandaBebidaId: number | null = null;
+  comandaBebidaNome = '';
+  produtos: Produto[] = [];
+  produtoSelecionadoId: number | null = null;
+  quantidadeProduto = 1;
+  isSavingBebida = false;
   
   // UI
   mostrarComandasFechadas = false;
@@ -56,12 +67,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private comandaService: ComandaService,
     private caixaService: CaixaService,
+    private produtoService: ProdutoService,
     private signalr: SignalrService,
     private router: Router,
     private toast: ToastService
   ) {}
 
   ngOnInit() {
+    this.carregarProdutosLista();
     this.carregarDados();
     const eventos = ['ComandaCriada', 'ComandaAtualizada', 'ComandaFechada', 'ComandaRemovida', 'CaixaAberto', 'CaixaFechado'];
     this.signalr.onEvent.pipe(
@@ -147,6 +160,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   fecharModalNovaComanda() {
     this.mostrarModalNovaComanda = false;
+  }
+
+  private carregarProdutosLista(onLoaded?: () => void) {
+    this.produtoService.getProdutos().subscribe({
+      next: (produtos) => {
+        this.produtos = produtos.filter(p => p.ativo);
+        onLoaded?.();
+      },
+      error: () => {}
+    });
+  }
+
+  abrirModalBebidaCard(comandaId: number) {
+    const c = this.comandas.find(x => x.id === comandaId);
+    this.comandaBebidaId = comandaId;
+    this.comandaBebidaNome = c?.jogadorNome ?? '';
+    this.carregarProdutosLista(() => {
+      this.mostrarModalBebida = true;
+      this.produtoSelecionadoId = this.produtos.length > 0 ? this.produtos[0].id : null;
+      this.quantidadeProduto = 1;
+    });
+  }
+
+  fecharModalBebida() {
+    this.mostrarModalBebida = false;
+    this.comandaBebidaId = null;
+    this.comandaBebidaNome = '';
+    this.produtoSelecionadoId = null;
+    this.quantidadeProduto = 1;
+  }
+
+  confirmarAdicionarBebidaCard() {
+    if (!this.comandaBebidaId || !this.produtoSelecionadoId || this.quantidadeProduto < 1 || this.isSavingBebida) {
+      return;
+    }
+
+    this.isSavingBebida = true;
+    this.comandaService.adicionarProduto(this.comandaBebidaId, this.produtoSelecionadoId, this.quantidadeProduto).subscribe({
+      next: () => {
+        this.isSavingBebida = false;
+        this.toast.success('Bebida adicionada com sucesso!');
+        this.fecharModalBebida();
+        this.carregarProdutosLista();
+        this.carregarDados();
+      },
+      error: () => {
+        this.isSavingBebida = false;
+        this.toast.error('Erro ao adicionar bebida. Tente novamente.');
+      }
+    });
   }
 
   criarComanda(comanda: CreateComandaDto) {

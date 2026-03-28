@@ -44,6 +44,14 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
         </div>
       </div>
 
+      <button
+        type="button"
+        class="btn-bebida-card"
+        *ngIf="comanda.status === 'ATIVO'"
+        (click)="onAdicionarBebida(); $event.stopPropagation()">
+        <span>Adicionar  Bebida</span>
+      </button>
+
       <button class="btn-ver-comanda" (click)="onVerDetalhes(); $event.stopPropagation()">
         <span>📋</span>
         Ver comanda completa
@@ -254,9 +262,39 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       transform: scale(1.05);
     }
 
-    .btn-ver-comanda {
+    .btn-bebida-card {
       width: 100%;
       margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid #ff6b6b;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      background: rgba(255, 107, 107, 0.12);
+      color: #ffb3b3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-bebida-card:hover {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: #fff;
+      border-color: #ff8787;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(255, 107, 107, 0.35);
+    }
+
+    .btn-bebida-icon {
+      font-size: 1.1rem;
+    }
+
+    .btn-ver-comanda {
+      width: 100%;
+      margin-top: 0.65rem;
       padding: 0.875rem;
       border: 2px solid #00ff88;
       border-radius: 10px;
@@ -297,6 +335,8 @@ export class ComandaCardComponent {
   @Input() comanda!: Comanda;
   @Output() toggleStatus = new EventEmitter<number>();
   @Output() verDetalhes = new EventEmitter<number>();
+  /** Abre fluxo rápido de adicionar bebida/comida sem ir à tela da comanda */
+  @Output() adicionarBebida = new EventEmitter<number>();
 
   constructor(private router: Router) {}
 
@@ -319,6 +359,9 @@ export class ComandaCardComponent {
   }
 
   getValorExibir(comanda: Comanda): number {
+    if (comanda.status === StatusComanda.FECHADO) {
+      return comanda.valorTotal;
+    }
     return comanda.valorPago > 0 ? comanda.valorRestante : comanda.valorTotal;
   }
 
@@ -328,5 +371,9 @@ export class ComandaCardComponent {
 
   onVerDetalhes() {
     this.router.navigate(['/comanda', this.comanda.id]);
+  }
+
+  onAdicionarBebida() {
+    this.adicionarBebida.emit(this.comanda.id);
   }
 }

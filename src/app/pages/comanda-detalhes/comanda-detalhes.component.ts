@@ -606,19 +606,22 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     });
   }
 
-  carregarProdutos() {
+  carregarProdutos(onLoaded?: () => void) {
     this.produtoService.getProdutos().subscribe({
       next: (produtos) => {
         this.produtos = produtos.filter(p => p.ativo);
+        onLoaded?.();
       },
       error: () => {}
     });
   }
 
   abrirModalBebida() {
-    this.mostrarModalBebida = true;
-    this.produtoSelecionadoId = this.produtos.length > 0 ? this.produtos[0].id : null;
-    this.quantidadeProduto = 1;
+    this.carregarProdutos(() => {
+      this.mostrarModalBebida = true;
+      this.produtoSelecionadoId = this.produtos.length > 0 ? this.produtos[0].id : null;
+      this.quantidadeProduto = 1;
+    });
   }
 
   fecharModalBebida() {
@@ -637,6 +640,7 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
         this.toast.success('Bebida adicionada com sucesso!');
         this.fecharModalBebida();
         this.carregarComanda();
+        this.carregarProdutos();
       },
       error: () => {
         this.isSaving = false;

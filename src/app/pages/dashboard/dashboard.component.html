@@ -113,7 +113,8 @@
             *ngFor="let comanda of comandasFiltradas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
-            (verDetalhes)="verDetalhesComanda($event)">
+            (verDetalhes)="verDetalhesComanda($event)"
+            (adicionarBebida)="abrirModalBebidaCard($event)">
           </app-comanda-card>
         </div>
       </div>
@@ -136,7 +137,8 @@
             *ngFor="let comanda of comandasFechadasFiltradas"
             [comanda]="comanda"
             (toggleStatus)="toggleStatusComanda($event)"
-            (verDetalhes)="verDetalhesComanda($event)">
+            (verDetalhes)="verDetalhesComanda($event)"
+            (adicionarBebida)="abrirModalBebidaCard($event)">
           </app-comanda-card>
         </div>
       </div>
@@ -160,4 +162,54 @@
     (close)="fecharModalNovaComanda()"
     (criar)="criarComanda($event)">
   </app-nova-comanda-modal>
+
+  <!-- Modal rápido: bebida/comida (atalho no card) -->
+  <div class="modal-overlay modal-bebida-dashboard" *ngIf="mostrarModalBebida" (click)="fecharModalBebida()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          Adicionar Bebida
+          <span class="modal-bebida-sub" *ngIf="comandaBebidaNome"> — {{ comandaBebidaNome }}</span>
+        </h3>
+        <button type="button" class="btn-close" (click)="fecharModalBebida()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-bebida-aviso" *ngIf="produtos.length === 0">
+          Nenhum produto ativo cadastrado. Cadastre em Produtos no menu.
+        </p>
+        <div class="form-group">
+          <label>Produto:</label>
+          <select [(ngModel)]="produtoSelecionadoId" class="form-control" [disabled]="produtos.length === 0">
+            <option *ngFor="let produto of produtos" [ngValue]="produto.id">
+              {{ produto.nome }} — R$ {{ produto.valorComercial.toFixed(2) }} (Estoque: {{ produto.quantidadeEstoque }})
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quantidade:</label>
+          <input
+            type="number"
+            [(ngModel)]="quantidadeProduto"
+            min="1"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="fecharModalBebida()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmarAdicionarBebidaCard()"
+          [disabled]="isSavingBebida || !produtoSelecionadoId">
+          {{ isSavingBebida ? 'Salvando...' : 'Adicionar' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

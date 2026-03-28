@@ -886,3 +886,139 @@
     font-size: 0.8rem;
   }
 }
+
+/* Modal bebida/comida (atalho no card) */
+.modal-bebida-dashboard.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(5px);
+  padding: 1rem;
+}
+
+.modal-bebida-dashboard .modal-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  border: 2px solid #00ff88;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 255, 136, 0.25);
+}
+
+.modal-bebida-dashboard .modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+
+  h3 {
+    color: #00ff88;
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    font-weight: 700;
+  }
+}
+
+.modal-bebida-sub {
+  color: #ccc;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.modal-bebida-dashboard .btn-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0.25rem;
+
+  &:hover {
+    color: #ff6b6b;
+  }
+}
+
+.modal-bebida-dashboard .modal-body {
+  padding: 1.5rem;
+}
+
+.modal-bebida-aviso {
+  color: #ffb74d;
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 152, 0, 0.35);
+}
+
+.modal-bebida-dashboard .form-group {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    color: #ccc;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+}
+
+.modal-bebida-dashboard .modal-footer {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.modal-bebida-dashboard .btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.modal-bebida-dashboard .btn-secondary {
+  background: #333;
+  color: #fff;
+
+  &:hover {
+    background: #444;
+  }
+}
+
+.modal-bebida-dashboard .btn-primary {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  color: #000;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DashboardComponent } from './dashboard.component';
 import { ComandaService } from '../../services/comanda.service';
 import { CaixaService } from '../../services/caixa.service';
+import { ProdutoService } from '../../services/produto.service';
 import { ToastService } from '../../services/toast.service';
 import { Comanda, DashboardStats, StatusComanda, TipoComanda } from '../../models/comanda.model';
 
@@ -13,6 +14,7 @@ describe('DashboardComponent', () => {
 
   let comandaServiceSpy: jasmine.SpyObj<ComandaService>;
   let caixaServiceSpy: jasmine.SpyObj<CaixaService>;
+  let produtoServiceSpy: jasmine.SpyObj<ProdutoService>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let routerSpy: jasmine.SpyObj<Router>;
 
@@ -25,6 +27,8 @@ describe('DashboardComponent', () => {
       'filtrarComandas',
     ]);
     caixaServiceSpy = jasmine.createSpyObj('CaixaService', ['getCaixaAberto']);
+    produtoServiceSpy = jasmine.createSpyObj('ProdutoService', ['getProdutos']);
+    produtoServiceSpy.getProdutos.and.returnValue(of([]));
     toastSpy = jasmine.createSpyObj('ToastService', ['error', 'success', 'warning']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -33,6 +37,7 @@ describe('DashboardComponent', () => {
       providers: [
         { provide: ComandaService, useValue: comandaServiceSpy },
         { provide: CaixaService, useValue: caixaServiceSpy },
+        { provide: ProdutoService, useValue: produtoServiceSpy },
         { provide: ToastService, useValue: toastSpy },
         { provide: Router, useValue: routerSpy },
       ],
