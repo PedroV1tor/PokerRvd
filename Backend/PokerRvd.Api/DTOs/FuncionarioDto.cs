@@ -19,6 +19,7 @@ public class FuncionarioDto
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+    public bool PermissaoConferencia { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }
@@ -43,6 +44,7 @@ public class CreateFuncionarioDto
     public bool PermissaoProdutos { get; set; } = false;
     public bool PermissaoFuncionarios { get; set; } = false;
     public bool PermissaoCaixas { get; set; } = false;
+    public bool PermissaoConferencia { get; set; } = false;
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; } = false;
@@ -67,6 +69,7 @@ public class UpdateFuncionarioDto
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+    public bool PermissaoConferencia { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }

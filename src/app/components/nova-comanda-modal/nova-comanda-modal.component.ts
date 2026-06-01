@@ -33,16 +33,6 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
             />
           </div>
 
-          <div class="form-group">
-            <label for="mesa">Mesa <span class="campo-opcional">(opcional)</span></label>
-            <input
-              type="text"
-              id="mesa"
-              [(ngModel)]="formData.mesa"
-              name="mesa"
-              placeholder="Ex: Mesa 1, Bar"
-            />
-          </div>
 
           <div class="form-group">
             <label for="tipo">Tipo de Comanda</label>
@@ -350,7 +340,6 @@ export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
 
   formData: CreateComandaDto = {
     jogadorNome: '',
-    mesa: undefined,
     tipo: TipoComanda.CASH,
     valorFichas: 0
   };
@@ -360,7 +349,7 @@ export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private torneioService: TorneioService,
     private signalr: SignalrService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.carregarTorneiosEmAndamento();
@@ -388,17 +377,17 @@ export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
           t => t.status === StatusTorneio.EM_ANDAMENTO
         );
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
   onTipoChange() {
     const tipoValue = this.formData.tipo as string;
-    
+
     if (tipoValue.startsWith('TORNEIO_')) {
       const torneioId = parseInt(tipoValue.replace('TORNEIO_', ''));
       this.torneioSelecionado = this.torneiosEmAndamento.find(t => t.id === torneioId) || null;
-      
+
       if (this.torneioSelecionado) {
         this.formData.torneioId = this.torneioSelecionado.id;
         this.formData.torneioNome = this.torneioSelecionado.nome;
@@ -420,11 +409,6 @@ export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isFormValid()) {
       const comandaData = { ...this.formData };
 
-      // Enviar mesa como undefined se vazia (evita falha de validação no backend)
-      if (!comandaData.mesa?.trim()) {
-        comandaData.mesa = undefined;
-      }
-
       if ((comandaData.tipo as string).startsWith('TORNEIO_')) {
         comandaData.tipo = TipoComanda.TORNEIO;
         comandaData.valorFichas = this.torneioSelecionado?.valorBuyIn ?? comandaData.valorFichas ?? 0;
@@ -444,7 +428,6 @@ export class NovaComandaModalComponent implements OnInit, OnChanges, OnDestroy {
   resetForm() {
     this.formData = {
       jogadorNome: '',
-      mesa: undefined,
       tipo: TipoComanda.CASH,
       valorFichas: 0
     };

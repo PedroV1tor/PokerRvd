@@ -65,6 +65,7 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<ICaixaService, CaixaService>();
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 builder.Services.AddScoped<ITorneioService, TorneioService>();
+builder.Services.AddScoped<IConferenciaService, ConferenciaService>();
 builder.Services.AddSignalR();
 
 var app = builder.Build();

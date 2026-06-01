@@ -32,6 +32,8 @@ public class MovimentacaoCaixaDto
     public decimal Valor { get; set; }
     public int? ComandaId { get; set; }
     public string? ComandaNome { get; set; }
+    public int? TorneioId { get; set; }
+    public string? TorneioNome { get; set; }
     public string? FormaPagamento { get; set; }
     public decimal? Desconto { get; set; }
     public decimal? Taxa { get; set; }
@@ -58,4 +60,5 @@ public class CreateMovimentacaoDto
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public int? ComandaId { get; set; }
+    public int? TorneioId { get; set; }
 }

@@ -16,6 +16,7 @@ public class PokerDbContext : DbContext
     public DbSet<Caixa> Caixas { get; set; }
     public DbSet<MovimentacaoCaixa> MovimentacoesCaixa { get; set; }
     public DbSet<Torneio> Torneios { get; set; }
+    public DbSet<ConferenciaCaixa> ConferenciasCaixa { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +85,7 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.FormaPagamento).HasMaxLength(50);
             entity.Property(e => e.Desconto).HasPrecision(18, 2);
             entity.Property(e => e.Taxa).HasPrecision(18, 2);
+            entity.Property(e => e.TorneioNome).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Torneio>(entity =>
@@ -96,6 +98,25 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.ValorAddOn).HasPrecision(18, 2);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.Property(e => e.PremioTotal).HasPrecision(18, 2);
+        });
+
+        // Configurações para Conferência de Caixa
+        modelBuilder.Entity<ConferenciaCaixa>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Rake).HasPrecision(18, 2);
+            entity.Property(e => e.Caixinhas).HasPrecision(18, 2);
+            entity.Property(e => e.Bonus).HasPrecision(18, 2);
+            entity.Property(e => e.Defesas).HasPrecision(18, 2);
+            entity.Property(e => e.DespesasPagas).HasPrecision(18, 2);
+            entity.Property(e => e.Percas).HasPrecision(18, 2);
+            entity.Property(e => e.PgtoCartao).HasPrecision(18, 2);
+            entity.Property(e => e.AReceber).HasPrecision(18, 2);
+            entity.Property(e => e.SaldoConta).HasPrecision(18, 2);
+            entity.Property(e => e.Observacao).HasMaxLength(1000);
+            entity.Ignore(e => e.SaldoDia);
+            entity.Ignore(e => e.TotalCreditos);
+            entity.Ignore(e => e.Diferenca);
         });
 
     }

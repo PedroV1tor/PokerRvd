@@ -34,6 +34,7 @@ export class FuncionariosComponent implements OnInit {
     permissaoProdutos: false,
     permissaoFuncionarios: false,
     permissaoCaixas: false,
+    permissaoConferencia: false,
     permissaoFecharComanda: false,
     permissaoRemoverItemComanda: false,
     permissaoAdicionarEstoque: false,
@@ -54,6 +55,7 @@ export class FuncionariosComponent implements OnInit {
     permissaoProdutos: false,
     permissaoFuncionarios: false,
     permissaoCaixas: false,
+    permissaoConferencia: false,
     permissaoFecharComanda: false,
     permissaoRemoverItemComanda: false,
     permissaoAdicionarEstoque: false,
@@ -145,6 +147,7 @@ export class FuncionariosComponent implements OnInit {
       permissaoProdutos: false,
       permissaoFuncionarios: false,
       permissaoCaixas: false,
+      permissaoConferencia: false,
       permissaoFecharComanda: false,
       permissaoRemoverItemComanda: false,
       permissaoAdicionarEstoque: false,
@@ -180,6 +183,7 @@ export class FuncionariosComponent implements OnInit {
       permissaoProdutos: funcionario.permissaoProdutos,
       permissaoFuncionarios: funcionario.permissaoFuncionarios,
       permissaoCaixas: funcionario.permissaoCaixas,
+      permissaoConferencia: funcionario.permissaoConferencia,
       permissaoFecharComanda: funcionario.permissaoFecharComanda,
       permissaoRemoverItemComanda: funcionario.permissaoRemoverItemComanda,
       permissaoAdicionarEstoque: funcionario.permissaoAdicionarEstoque ?? false,
@@ -210,6 +214,7 @@ export class FuncionariosComponent implements OnInit {
       permissaoProdutos: this.funcionarioEditando.permissaoProdutos,
       permissaoFuncionarios: this.funcionarioEditando.permissaoFuncionarios,
       permissaoCaixas: this.funcionarioEditando.permissaoCaixas,
+      permissaoConferencia: this.funcionarioEditando.permissaoConferencia,
       permissaoFecharComanda: this.funcionarioEditando.permissaoFecharComanda,
       permissaoRemoverItemComanda: this.funcionarioEditando.permissaoRemoverItemComanda,
       permissaoAdicionarEstoque: this.funcionarioEditando.permissaoAdicionarEstoque ?? false,
@@ -302,7 +307,7 @@ export class FuncionariosComponent implements OnInit {
     caixas: false
   };
 
-  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
+  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoConferencia' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
     {
       id: 'comandas',
       label: 'Módulo Comandas',
@@ -325,7 +330,7 @@ export class FuncionariosComponent implements OnInit {
       ]
     },
     { id: 'funcionarios', label: 'Módulo Funcionários', icon: '👥', children: [{ key: 'permissaoFuncionarios', label: 'Funcionários' }] },
-    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }] }
+    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }, { key: 'permissaoConferencia', label: 'Conferência de Caixa' }] }
   ];
 
   toggleModuloExpand(id: string): void {

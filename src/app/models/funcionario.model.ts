@@ -12,6 +12,7 @@ export interface Funcionario {
   permissaoProdutos: boolean;
   permissaoFuncionarios: boolean;
   permissaoCaixas: boolean;
+  permissaoConferencia: boolean;
   permissaoFecharComanda: boolean;
   permissaoRemoverItemComanda: boolean;
   permissaoAdicionarEstoque: boolean;
@@ -29,6 +30,7 @@ export interface CreateFuncionarioDto {
   permissaoProdutos: boolean;
   permissaoFuncionarios: boolean;
   permissaoCaixas: boolean;
+  permissaoConferencia: boolean;
   permissaoFecharComanda: boolean;
   permissaoRemoverItemComanda: boolean;
   permissaoAdicionarEstoque: boolean;
@@ -46,6 +48,7 @@ export interface UpdateFuncionarioDto {
   permissaoProdutos: boolean;
   permissaoFuncionarios: boolean;
   permissaoCaixas: boolean;
+  permissaoConferencia: boolean;
   permissaoFecharComanda: boolean;
   permissaoRemoverItemComanda: boolean;
   permissaoAdicionarEstoque: boolean;

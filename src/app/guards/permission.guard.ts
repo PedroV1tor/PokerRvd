@@ -35,6 +35,9 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
     case 'caixas':
       hasPermission = authService.hasPermissionCaixas();
       break;
+    case 'conferencia':
+      hasPermission = authService.hasPermissionConferencia();
+      break;
   }
 
   if (!hasPermission) {

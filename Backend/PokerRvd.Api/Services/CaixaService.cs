@@ -134,6 +134,7 @@ public class CaixaService : ICaixaService
             Descricao = dto.Descricao,
             Valor = dto.Valor,
             ComandaId = dto.ComandaId,
+            TorneioId = dto.TorneioId,
             UsuarioNome = usuarioNome
         };
 
@@ -142,6 +143,13 @@ public class CaixaService : ICaixaService
         {
             var comanda = await _context.Comandas.FindAsync(dto.ComandaId.Value);
             movimentacao.ComandaNome = comanda?.JogadorNome;
+        }
+
+        // Se tiver torneioId, buscar o nome
+        if (dto.TorneioId.HasValue)
+        {
+            var torneio = await _context.Torneios.FindAsync(dto.TorneioId.Value);
+            movimentacao.TorneioNome = torneio?.Nome;
         }
 
         _context.MovimentacoesCaixa.Add(movimentacao);
@@ -211,6 +219,8 @@ public class CaixaService : ICaixaService
                 Valor = m.Valor,
                 ComandaId = m.ComandaId,
                 ComandaNome = m.ComandaNome,
+                TorneioId = m.TorneioId,
+                TorneioNome = m.TorneioNome,
                 FormaPagamento = m.FormaPagamento,
                 Desconto = m.Desconto,
                 Taxa = m.Taxa,

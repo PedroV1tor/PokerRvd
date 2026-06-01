@@ -10,6 +10,7 @@ export interface User {
   permissaoProdutos?: boolean;
   permissaoFuncionarios?: boolean;
   permissaoCaixas?: boolean;
+  permissaoConferencia?: boolean;
   permissaoFecharComanda?: boolean;
   permissaoRemoverItemComanda?: boolean;
   permissaoAdicionarEstoque?: boolean;

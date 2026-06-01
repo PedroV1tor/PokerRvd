@@ -19,7 +19,6 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
           <div class="nome-mesa">
             <h3 class="jogador-nome">{{ comanda.jogadorNome }}</h3>
             <p class="mesa-info">
-              <span class="mesa-badge">{{ comanda.mesa }}</span>
               <span class="tipo-badge">{{ getTipoBadge(comanda.tipo) }}</span>
             </p>
             <p class="torneio-nome" *ngIf="comanda.torneioNome">

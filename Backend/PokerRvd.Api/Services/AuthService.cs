@@ -183,6 +183,7 @@ public class AuthService : IAuthService
             PermissaoProdutos = usuario.PermissaoProdutos,
             PermissaoFuncionarios = usuario.PermissaoFuncionarios,
             PermissaoCaixas = usuario.PermissaoCaixas,
+            PermissaoConferencia = usuario.PermissaoConferencia,
             PermissaoFecharComanda = usuario.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,

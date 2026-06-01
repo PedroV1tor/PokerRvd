@@ -24,6 +24,8 @@ export interface MovimentacaoCaixa {
   valor: number;
   comandaId?: number;
   comandaNome?: string;
+  torneioId?: number;
+  torneioNome?: string;
   formaPagamento?: string;
   desconto?: number;
   taxa?: number;
@@ -57,6 +59,7 @@ export interface CreateMovimentacaoDto {
   descricao: string;
   valor: number;
   comandaId?: number;
+  torneioId?: number;
 }
 
 export interface CaixaDto {

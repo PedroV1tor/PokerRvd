@@ -133,6 +133,62 @@ namespace PokerRvd.Api.Migrations
                     b.ToTable("Comandas");
                 });
 
+            modelBuilder.Entity("PokerRvd.Api.Models.ConferenciaCaixa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AReceber")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Bonus")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Caixinhas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Defesas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("DespesasPagas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("Dia")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal>("Percas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("PgtoCartao")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Rake")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("SaldoConta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConferenciasCaixa");
+                });
+
             modelBuilder.Entity("PokerRvd.Api.Models.ItemComanda", b =>
                 {
                     b.Property<int>("Id")
@@ -212,6 +268,13 @@ namespace PokerRvd.Api.Migrations
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("TorneioId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TorneioNome")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("UsuarioNome")
                         .IsRequired()
@@ -361,6 +424,9 @@ namespace PokerRvd.Api.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoComandas")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoConferencia")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoFecharComanda")

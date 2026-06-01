@@ -1,0 +1,259 @@
+<div class="app-container">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Cabeçalho de Ações -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Conferência de Caixa</h1>
+          <p class="page-subtitle">Controle diário de fechamento de caixa e conciliação de saldos</p>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-action btn-voltar" (click)="voltar()" title="Voltar para o Dashboard">
+            ← Voltar
+          </button>
+          <button class="btn-action btn-novo" (click)="novoLancamento()" [disabled]="saving"
+            title="Criar novo lançamento de conferência">
+            + Novo Lançamento
+          </button>
+          <button class="btn-action btn-salvar" [class.dirty]="dirtyIds.size > 0"
+            [disabled]="dirtyIds.size === 0 || saving" (click)="salvar()" title="Salvar alterações">
+            💾 Salvar {{ dirtyIds.size > 0 ? '(' + dirtyIds.size + ')' : '' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Pesquisa -->
+      <div class="search-bar-container" *ngIf="!loading">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Pesquisar por data ou observação..."
+            class="search-input" />
+          <button class="clear-search-btn" *ngIf="searchTerm" (click)="searchTerm = ''" title="Limpar pesquisa">
+            &times;
+          </button>
+        </div>
+        <div class="search-results-info" *ngIf="searchTerm">
+          Encontrado {{ conferenciasFiltradas.length }} {{ conferenciasFiltradas.length === 1 ? 'registro' : 'registros'
+          }}
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando registros de conferência...</p>
+      </div>
+
+      <!-- Lista de Conferência (Cards) -->
+      <div class="list-container">
+        <div *ngIf="!loading" class="conferencia-list">
+          <div *ngFor="let item of conferenciasFiltradas" class="conferencia-card" [class.dirty-card]="isDirty(item.id)"
+            (dblclick)="toggleExpand(item.id)" title="Dê um duplo clique para expandir/recolher">
+
+            <!-- Cabeçalho do Card (Linha de Resumo e Ações) -->
+            <div class="card-header" [class.collapsed-header]="!isExpanded(item.id)">
+              <div class="card-title">
+                <button class="btn-toggle-expand" (click)="toggleExpand(item.id); $event.stopPropagation()" title="Expandir/Recolher">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.rotated]="isExpanded(item.id)">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+                <span *ngIf="isDirty(item.id)" class="badge-dirty" title="Alterações não salvas"></span>
+                <span *ngIf="!isDirty(item.id)" class="badge-saved" title="Salvo">✓</span>
+                <input type="date" [ngModel]="formatarDataInput(item.dia)" (ngModelChange)="onDiaChange(item, $event)"
+                  class="input-date" [disabled]="!isEditing(item.id)" (click)="$event.stopPropagation()" />
+              </div>
+
+              <!-- Resumo (Visível quando o card está recolhido) -->
+              <div class="card-summary-data" *ngIf="!isExpanded(item.id)">
+                <div class="summary-item">
+                  <span class="label">Saldo:</span>
+                  <span class="value">{{ item.saldoDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Créditos:</span>
+                  <span class="value">{{ item.totalCreditos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'
+                    }) }}</span>
+                </div>
+                <div class="summary-item diferenca-box" [class.diff-positive]="item.diferenca > 0.01"
+                  [class.diff-negative]="item.diferenca < -0.01"
+                  [class.diff-zero]="item.diferenca >= -0.01 && item.diferenca <= 0.01">
+                  <span class="label">Diferença:</span>
+                  <span class="value">{{ item.diferenca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    }}</span>
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <button class="btn-alterar" [class.active]="isEditing(item.id)"
+                  (click)="toggleEdit(item); $event.stopPropagation()" title="Alterar dados">
+                  ✏️
+                </button>
+                <button class="btn-excluir" (click)="excluirConferencia(item); $event.stopPropagation()"
+                  title="Excluir este lançamento">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <!-- Conteúdo Completo (Visível quando expandido) -->
+            <div class="card-expanded-content" *ngIf="isExpanded(item.id)">
+              <!-- Corpo do Card (Agrupado) -->
+              <div class="card-body">
+                <!-- Grupo 1: Entradas -->
+                <div class="card-section section-entradas">
+                  <h4 class="section-title">Entradas / Ganhos</h4>
+                  <div class="section-grid">
+                    <div class="field-group">
+                      <label>Rake</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.rake" (ngModelChange)="onFieldChange(item)" step="0.01"
+                          min="0" class="input-number" [disabled]="!isEditing(item.id)"
+                          (click)="$event.stopPropagation()" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>Caixinhas</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.caixinhas" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grupo 2: Saídas -->
+                <div class="card-section section-saidas">
+                  <h4 class="section-title">Saídas / Despesas</h4>
+                  <div class="section-grid">
+                    <div class="field-group">
+                      <label>Despesas Pagas</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.despesasPagas" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)"
+                          (click)="$event.stopPropagation()" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>Percas</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.percas" (ngModelChange)="onFieldChange(item)" step="0.01"
+                          min="0" class="input-number" [disabled]="!isEditing(item.id)" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>Bônus</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.bonus" (ngModelChange)="onFieldChange(item)" step="0.01"
+                          min="0" class="input-number" [disabled]="!isEditing(item.id)" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>Defesas</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.defesas" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grupo 3: Fechamento -->
+                <div class="card-section section-fechamento">
+                  <h4 class="section-title">Fechamento / Contas</h4>
+                  <div class="section-grid">
+                    <div class="field-group">
+                      <label>Pgto Cartão</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.pgtoCartao" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)"
+                          (click)="$event.stopPropagation()" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>A Receber</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.aReceber" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)"
+                          (click)="$event.stopPropagation()" />
+                      </div>
+                    </div>
+                    <div class="field-group">
+                      <label>Saldo Conta</label>
+                      <div class="input-currency-wrapper" [class.disabled-wrapper]="!isEditing(item.id)">
+                        <span class="currency-prefix">R$</span>
+                        <input type="number" [(ngModel)]="item.saldoConta" (ngModelChange)="onFieldChange(item)"
+                          step="0.01" min="0" class="input-number" [disabled]="!isEditing(item.id)"
+                          (click)="$event.stopPropagation()" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grupo 4: Observações -->
+                <div class="card-section section-observacao">
+                  <h4 class="section-title">Observações</h4>
+                  <div class="field-group">
+                    <textarea [(ngModel)]="item.observacao" (ngModelChange)="onFieldChange(item)" class="input-textarea"
+                      [disabled]="!isEditing(item.id)"
+                      placeholder="Digite alguma observação sobre o fechamento deste dia..."
+                      (click)="$event.stopPropagation()"></textarea>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Rodapé do Card (Resumo) -->
+              <div class="card-footer">
+                <div class="result-box">
+                  <span class="label">Saldo do Dia</span>
+                  <span class="value">{{ item.saldoDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    }}</span>
+                </div>
+                <div class="result-box">
+                  <span class="label">Total Créditos</span>
+                  <span class="value">{{ item.totalCreditos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'
+                    })
+                    }}</span>
+                </div>
+                <div class="result-box diferenca-box" [class.diff-positive]="item.diferenca > 0.01"
+                  [class.diff-negative]="item.diferenca < -0.01"
+                  [class.diff-zero]="item.diferenca >= -0.01 && item.diferenca <= 0.01">
+                  <span class="label">Diferença</span>
+                  <span class="value">{{ item.diferenca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div *ngIf="conferenciasFiltradas.length === 0" class="empty-state">
+            {{ searchTerm ? 'Nenhum registro corresponde à sua pesquisa.' : 'Nenhum registro encontrado. Clique em "Novo
+            Lançamento" para iniciar.' }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

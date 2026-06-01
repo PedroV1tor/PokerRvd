@@ -19,6 +19,8 @@ public class TorneioStatsDto
     public decimal ValorTotalAddOn { get; set; }
 
     public decimal TotalArrecadado { get; set; }
+    public decimal TotalBebidas { get; set; }
+    public decimal TotalPremiacao { get; set; }
 }
 
 public class TorneioDto

@@ -146,6 +146,14 @@ public class TorneioService : ITorneioService
             .Where(c => c.TorneioId == id)
             .CountAsync();
 
+        var totalBebidas = await _context.Comandas
+            .Where(c => c.TorneioId == id && c.Status == StatusComanda.FECHADO)
+            .SumAsync(c => c.ValorBebidas);
+
+        var totalPremiacao = await _context.MovimentacoesCaixa
+            .Where(m => m.TorneioId == id && m.Categoria == "Premiação")
+            .SumAsync(m => m.Valor);
+
         return new TorneioStatsDto
         {
             TorneioId              = id,
@@ -162,7 +170,9 @@ public class TorneioService : ITorneioService
             TotalArrecadado        = (qtdBuyIn * torneio.ValorBuyIn)
                                    + (qtdRebuySimp * torneio.ValorRebuySimples)
                                    + (qtdRebuyDuplo * torneio.ValorRebuyDuplo)
-                                   + (qtdAddOn * torneio.ValorAddOn)
+                                   + (qtdAddOn * torneio.ValorAddOn),
+            TotalBebidas           = totalBebidas,
+            TotalPremiacao         = totalPremiacao
         };
     }
 

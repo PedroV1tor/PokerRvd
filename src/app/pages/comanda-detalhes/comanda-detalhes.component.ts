@@ -10,8 +10,8 @@ import { TorneioService } from '../../services/torneio.service';
 import { ProdutoService } from '../../services/produto.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor, UpdateComandaDto, PagamentoParcialDto } from '../../models/comanda.model';
-import { Torneio, StatusTorneio } from '../../models/torneio.model';
+import { Comanda, TipoComanda, StatusComanda, ItemComanda, FormaPagamentoValor, PagamentoParcialDto } from '../../models/comanda.model';
+import { Torneio } from '../../models/torneio.model';
 import { Produto } from '../../models/produto.model';
 import { AuthService } from '../../services/auth.service';
 
@@ -41,15 +41,6 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   nomeFichas: string = 'Fichas';
   tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
 
-  // Edição inline de mesa
-  editandoMesa = false;
-  mesaEditando = '';
-
-  // Modal de alterar tipo da comanda
-  mostrarModalAlterarTipo = false;
-  novoTipo: TipoComanda = TipoComanda.BAR;
-  torneioSelecionadoId: number | null = null;
-  torneiosDisponiveis: Torneio[] = [];
 
   // Modal de fechar comanda (formas de pagamento)
   mostrarModalFechar = false;
@@ -457,97 +448,6 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     return Math.abs(this.somaFormasPagamento - this.valorFinalFechar) < 0.01;
   }
 
-  // ==================== EDITAR MESA ====================
-
-  iniciarEdicaoMesa() {
-    this.mesaEditando = this.comanda?.mesa || '';
-    this.editandoMesa = true;
-  }
-
-  cancelarEdicaoMesa() {
-    this.editandoMesa = false;
-    this.mesaEditando = '';
-  }
-
-  salvarMesa() {
-    if (!this.comanda || this.isSaving) return;
-
-    const novaMesa = this.mesaEditando.trim() || '';
-
-    this.isSaving = true;
-    this.comandaService.updateComanda(this.comandaId, {
-      mesa: novaMesa || undefined,
-      atualizarMesa: true
-    }).subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.editandoMesa = false;
-        // Atualiza imediatamente na tela sem aguardar o reload
-        if (this.comanda) this.comanda.mesa = novaMesa;
-        this.carregarComanda();
-        this.toast.success('Mesa atualizada com sucesso!');
-      },
-      error: () => {
-        this.isSaving = false;
-        this.toast.error('Erro ao atualizar mesa.');
-      }
-    });
-  }
-
-  // ==================== ALTERAR TIPO ====================
-
-  abrirModalAlterarTipo() {
-    if (!this.comanda) return;
-    this.novoTipo = this.comanda.tipo;
-    this.torneioSelecionadoId = this.comanda.torneioId ?? null;
-    this.torneioService.getTorneios().subscribe({
-      next: (torneios) => {
-        this.torneiosDisponiveis = torneios.filter(t => t.status === StatusTorneio.EM_ANDAMENTO || t.status === StatusTorneio.AGUARDANDO);
-        this.mostrarModalAlterarTipo = true;
-      },
-      error: () => {
-        this.torneiosDisponiveis = [];
-        this.mostrarModalAlterarTipo = true;
-      }
-    });
-  }
-
-  fecharModalAlterarTipo() {
-    this.mostrarModalAlterarTipo = false;
-  }
-
-  salvarAlteracaoTipo() {
-    if (!this.comanda || this.isSaving) return;
-
-    const torneio = this.novoTipo === TipoComanda.TORNEIO
-      ? this.torneiosDisponiveis.find(t => t.id === Number(this.torneioSelecionadoId))
-      : null;
-
-    if (this.novoTipo === TipoComanda.TORNEIO && !torneio) {
-      this.toast.warning('Selecione um torneio.');
-      return;
-    }
-
-    this.isSaving = true;
-    const dto: UpdateComandaDto = {
-      tipo: this.novoTipo,
-      torneioId: torneio?.id,
-      torneioNome: torneio?.nome
-    };
-
-    this.comandaService.updateComanda(this.comandaId, dto).subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.fecharModalAlterarTipo();
-        this.toast.success('Tipo da comanda alterado com sucesso!');
-        this.carregarComanda();
-      },
-      error: () => {
-        this.isSaving = false;
-        this.toast.error('Erro ao alterar tipo da comanda.');
-      }
-    });
-  }
 
   // ==================== PERMISSÕES DE AÇÃO ====================
 

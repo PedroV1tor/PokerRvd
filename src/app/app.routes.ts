@@ -44,6 +44,12 @@ export const routes: Routes = [
     data: { permission: 'caixas' }
   },
   {
+    path: 'conferencia',
+    loadComponent: () => import('./pages/conferencia/conferencia.component').then(m => m.ConferenciaComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'conferencia' }
+  },
+  {
     path: 'funcionarios',
     loadComponent: () => import('./pages/funcionarios/funcionarios.component').then(m => m.FuncionariosComponent),
     canActivate: [authGuard, permissionGuard],

@@ -36,47 +36,9 @@
                   <span class="badge" [class]="getTipoClass(comanda.tipo)">
                     {{ getTipoLabel(comanda.tipo) }}
                   </span>
-                  <button
-                    *ngIf="comanda.status !== StatusComanda.FECHADO"
-                    class="btn-editar-campo"
-                    (click)="abrirModalAlterarTipo()"
-                    title="Alterar tipo">
-                    ✏️ Alterar
-                  </button>
                 </div>
               </div>
 
-              <!-- Mesa -->
-              <div class="info-field">
-                <span class="info-label">Mesa</span>
-
-                <!-- Exibição normal -->
-                <div class="info-value-row" *ngIf="!editandoMesa">
-                  <span class="mesa">{{ comanda.mesa || '—' }}</span>
-                  <button
-                    *ngIf="comanda.status !== StatusComanda.FECHADO"
-                    class="btn-editar-campo"
-                    (click)="iniciarEdicaoMesa()"
-                    title="Editar mesa">
-                    ✏️ Editar
-                  </button>
-                </div>
-
-                <!-- Edição inline -->
-                <div class="mesa-edit-row" *ngIf="editandoMesa">
-                  <input
-                    class="mesa-input"
-                    [(ngModel)]="mesaEditando"
-                    placeholder="Ex: Mesa 1"
-                    maxlength="50"
-                    (keyup.enter)="salvarMesa()"
-                    (keyup.escape)="cancelarEdicaoMesa()"
-                    autofocus
-                  />
-                  <button class="btn-mesa-ok" (click)="salvarMesa()" [disabled]="isSaving" title="Salvar">✓</button>
-                  <button class="btn-mesa-cancel" (click)="cancelarEdicaoMesa()" title="Cancelar">✕</button>
-                </div>
-              </div>
 
             </div>
           </div>
@@ -538,53 +500,6 @@
   </div>
 </div>
 
-<!-- Modal Alterar Tipo da Comanda -->
-<div class="modal-overlay" *ngIf="mostrarModalAlterarTipo" (click)="fecharModalAlterarTipo()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Alterar Tipo da Comanda</h3>
-      <button class="btn-close" (click)="fecharModalAlterarTipo()">✕</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Novo tipo:</label>
-        <div class="tipo-opcoes">
-          <label class="tipo-radio" [class.selected]="novoTipo === TipoComanda.CASH">
-            <input type="radio" [(ngModel)]="novoTipo" [value]="TipoComanda.CASH" name="novoTipo" />
-            Cash Game
-          </label>
-          <label class="tipo-radio" [class.selected]="novoTipo === TipoComanda.TORNEIO">
-            <input type="radio" [(ngModel)]="novoTipo" [value]="TipoComanda.TORNEIO" name="novoTipo" />
-            Torneio
-          </label>
-          <label class="tipo-radio" [class.selected]="novoTipo === TipoComanda.BAR">
-            <input type="radio" [(ngModel)]="novoTipo" [value]="TipoComanda.BAR" name="novoTipo" />
-            Bar
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="novoTipo === TipoComanda.TORNEIO">
-        <label>Torneio:</label>
-        <select [(ngModel)]="torneioSelecionadoId" class="form-control">
-          <option [value]="null">— Selecione um torneio —</option>
-          <option *ngFor="let t of torneiosDisponiveis" [value]="t.id">
-            {{ t.nome }}
-          </option>
-        </select>
-        <p class="form-hint" *ngIf="torneiosDisponiveis.length === 0">Nenhum torneio em andamento ou agendado.</p>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="fecharModalAlterarTipo()">Cancelar</button>
-      <button class="btn btn-primary" (click)="salvarAlteracaoTipo()" [disabled]="isSaving">
-        {{ isSaving ? 'Salvando...' : 'Salvar' }}
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Loading -->
 <div class="loading-overlay" *ngIf="loading">

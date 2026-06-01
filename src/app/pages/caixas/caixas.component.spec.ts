@@ -110,6 +110,7 @@ describe('CaixasComponent', () => {
     expect(caixaServiceSpy.abrirCaixa).toHaveBeenCalledWith({
       saldoInicial: 100,
       observacoesAbertura: 'Observação teste',
+      usuarioNome: undefined,
     });
   });
 

@@ -343,27 +343,27 @@
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-  border: 2px solid #00FF00;
-  border-radius: 16px;
+  background: #161616;
+  border: 1px solid #333;
+  border-radius: 12px;
   width: 90%;
   max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 255, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
 }
 
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 2px solid #333;
+  border-bottom: 1px solid #2a2a2a;
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   h3 {
-    color: #00FF00;
+    color: #fff;
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 }
 
@@ -558,106 +558,161 @@
 
 /* Modal Estatísticas */
 .modal-stats {
-  max-width: 520px;
+  max-width: 560px;
   width: 95%;
 }
 
 .stats-torneio-nome {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #00FF00;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
   text-align: center;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #2a2a2a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.stats-resumo {
-  display: flex;
+.stats-resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
 
-  .stat-resumo-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.9rem;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 10px;
-
-    &.highlight {
-      border-color: #00FF00;
-      background: rgba(0, 255, 0, 0.06);
-
-      .stat-resumo-value {
-        color: #00FF00;
-      }
-    }
-  }
+.stat-resumo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.9rem;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  transition: background 0.3s ease;
 
   .stat-resumo-label {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: #888;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
+    font-weight: 600;
   }
 
   .stat-resumo-value {
     font-size: 1.3rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #fff;
+  }
+
+  &.highlight-jogadores {
+    border-color: #2a2a2a;
+  }
+
+  &.highlight-arrecadado {
+    border-color: #2a2a2a;
+  }
+
+  &.highlight-bebidas {
+    border-color: #2a2a2a;
+  }
+
+  &.highlight-premiacao {
+    border-color: #2a2a2a;
+  }
+
+  &.highlight-liquido {
+    grid-column: span 2;
+    padding: 1.1rem;
+    
+    &.positive {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.03);
+      .stat-resumo-value {
+        color: #10b981;
+        font-size: 1.5rem;
+      }
+    }
+
+    &.negative {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.03);
+      .stat-resumo-value {
+        color: #ef4444;
+        font-size: 1.5rem;
+      }
+    }
   }
 }
 
+.stats-secao-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #888;
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 2px solid #555;
+  padding-left: 0.4rem;
+}
+
 .stats-tabela {
-  border: 1px solid #333;
-  border-radius: 10px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
   overflow: hidden;
+  background: #1e1e1e;
 
   .stats-tabela-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.2fr;
-    padding: 0.6rem 1rem;
-    background: #1a1a1a;
-    color: #888;
-    font-size: 0.78rem;
+    grid-template-columns: 1.8fr 1fr 1.2fr;
+    padding: 0.7rem 1rem;
+    background: #151515;
+    color: #666;
+    font-size: 0.75rem;
     text-transform: uppercase;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #2a2a2a;
   }
 
   .stats-tabela-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.2fr;
+    grid-template-columns: 1.8fr 1fr 1.2fr;
     padding: 0.75rem 1rem;
     border-top: 1px solid #2a2a2a;
     align-items: center;
-    transition: background 0.15s;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.03);
+    &:first-child {
+      border-top: none;
     }
 
     .stats-tipo {
-      color: #ddd;
+      color: #ccc;
       font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .stats-qtd {
-      font-weight: 700;
-      font-size: 1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
       color: #fff;
-      text-align: center;
     }
 
     .stats-valor {
-      color: #00FF00;
-      font-weight: 600;
+      color: #ccc;
+      font-weight: 550;
       font-size: 0.9rem;
-      text-align: right;
     }
   }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }

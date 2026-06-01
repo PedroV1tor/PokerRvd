@@ -18,6 +18,7 @@ public class Usuario
     public bool PermissaoProdutos { get; set; } = false;
     public bool PermissaoFuncionarios { get; set; } = false;
     public bool PermissaoCaixas { get; set; } = false;
+    public bool PermissaoConferencia { get; set; } = false;
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; } = false;

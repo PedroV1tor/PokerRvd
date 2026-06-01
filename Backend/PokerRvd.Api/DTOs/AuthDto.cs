@@ -33,6 +33,7 @@ public class UserDto
     public bool PermissaoProdutos { get; set; }
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
+    public bool PermissaoConferencia { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }

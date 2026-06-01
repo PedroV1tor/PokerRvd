@@ -59,6 +59,7 @@ public class FuncionarioService : IFuncionarioService
             PermissaoProdutos = dto.PermissaoProdutos,
             PermissaoFuncionarios = dto.PermissaoFuncionarios,
             PermissaoCaixas = dto.PermissaoCaixas,
+            PermissaoConferencia = dto.PermissaoConferencia,
             PermissaoFecharComanda = dto.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque,
@@ -103,6 +104,7 @@ public class FuncionarioService : IFuncionarioService
         funcionario.PermissaoProdutos = dto.PermissaoProdutos;
         funcionario.PermissaoFuncionarios = dto.PermissaoFuncionarios;
         funcionario.PermissaoCaixas = dto.PermissaoCaixas;
+        funcionario.PermissaoConferencia = dto.PermissaoConferencia;
         funcionario.PermissaoFecharComanda = dto.PermissaoFecharComanda;
         funcionario.PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda;
         funcionario.PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque;
@@ -152,6 +154,7 @@ public class FuncionarioService : IFuncionarioService
             PermissaoProdutos = usuario.PermissaoProdutos,
             PermissaoFuncionarios = usuario.PermissaoFuncionarios,
             PermissaoCaixas = usuario.PermissaoCaixas,
+            PermissaoConferencia = usuario.PermissaoConferencia,
             PermissaoFecharComanda = usuario.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,

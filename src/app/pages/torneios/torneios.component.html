@@ -142,46 +142,68 @@
     <div class="modal-body" *ngIf="!statsCarregando && torneioStats">
       <div class="stats-torneio-nome">{{ torneioStats.torneioNome }}</div>
 
-      <div class="stats-resumo">
-        <div class="stat-resumo-item">
+      <div class="stats-resumo-grid">
+        <div class="stat-resumo-card highlight-jogadores">
           <span class="stat-resumo-label">👥 Jogadores</span>
           <span class="stat-resumo-value">{{ torneioStats.totalJogadores }}</span>
         </div>
-        <div class="stat-resumo-item highlight">
+        
+        <div class="stat-resumo-card highlight-arrecadado">
           <span class="stat-resumo-label">💰 Total Arrecadado</span>
           <span class="stat-resumo-value">{{ formatarValor(torneioStats.totalArrecadado) }}</span>
         </div>
+        
+        <div class="stat-resumo-card highlight-bebidas">
+          <span class="stat-resumo-label">🍹 Total Bebidas</span>
+          <span class="stat-resumo-value">{{ formatarValor(torneioStats.totalBebidas) }}</span>
+        </div>
+        
+        <div class="stat-resumo-card highlight-premiacao">
+          <span class="stat-resumo-label">🏆 Premiação</span>
+          <span class="stat-resumo-value">{{ formatarValor(torneioStats.totalPremiacao) }}</span>
+        </div>
+        
+        <div class="stat-resumo-card highlight-liquido" 
+             [class.positive]="(torneioStats.totalArrecadado + torneioStats.totalBebidas - torneioStats.totalPremiacao) >= 0"
+             [class.negative]="(torneioStats.totalArrecadado + torneioStats.totalBebidas - torneioStats.totalPremiacao) < 0">
+          <span class="stat-resumo-label">💵 Valor Líquido</span>
+          <span class="stat-resumo-value">
+            {{ formatarValor(torneioStats.totalArrecadado + torneioStats.totalBebidas - torneioStats.totalPremiacao) }}
+          </span>
+        </div>
       </div>
+
+      <div class="stats-secao-titulo">📊 Detalhamento de Fichas</div>
 
       <div class="stats-tabela">
         <div class="stats-tabela-header">
           <span>Tipo</span>
-          <span>Quantidade</span>
-          <span>Valor Total</span>
+          <span class="text-center">Quantidade</span>
+          <span class="text-right">Valor Total</span>
         </div>
 
         <div class="stats-tabela-row">
           <span class="stats-tipo">Buy-in</span>
-          <span class="stats-qtd">{{ torneioStats.qtdBuyIn }}</span>
-          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalBuyIn) }}</span>
+          <span class="stats-qtd text-center">{{ torneioStats.qtdBuyIn }}</span>
+          <span class="stats-valor text-right">{{ formatarValor(torneioStats.valorTotalBuyIn) }}</span>
         </div>
 
         <div class="stats-tabela-row">
           <span class="stats-tipo">Re-buy Simples</span>
-          <span class="stats-qtd">{{ torneioStats.qtdRebuySimples }}</span>
-          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalRebuySimples) }}</span>
+          <span class="stats-qtd text-center">{{ torneioStats.qtdRebuySimples }}</span>
+          <span class="stats-valor text-right">{{ formatarValor(torneioStats.valorTotalRebuySimples) }}</span>
         </div>
 
         <div class="stats-tabela-row">
           <span class="stats-tipo">Re-buy Duplo</span>
-          <span class="stats-qtd">{{ torneioStats.qtdRebuyDuplo }}</span>
-          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalRebuyDuplo) }}</span>
+          <span class="stats-qtd text-center">{{ torneioStats.qtdRebuyDuplo }}</span>
+          <span class="stats-valor text-right">{{ formatarValor(torneioStats.valorTotalRebuyDuplo) }}</span>
         </div>
 
         <div class="stats-tabela-row">
           <span class="stats-tipo">Add-on</span>
-          <span class="stats-qtd">{{ torneioStats.qtdAddOn }}</span>
-          <span class="stats-valor">{{ formatarValor(torneioStats.valorTotalAddOn) }}</span>
+          <span class="stats-qtd text-center">{{ torneioStats.qtdAddOn }}</span>
+          <span class="stats-valor text-right">{{ formatarValor(torneioStats.valorTotalAddOn) }}</span>
         </div>
       </div>
     </div>

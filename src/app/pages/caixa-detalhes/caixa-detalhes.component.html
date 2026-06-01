@@ -603,7 +603,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Tipo:</label>
-        <select [(ngModel)]="tipoMovimentacao" class="form-control">
+        <select [(ngModel)]="tipoMovimentacao" (ngModelChange)="onTipoChange()" class="form-control">
           <option [value]="TipoMovimentacao.ENTRADA">Entrada</option>
           <option [value]="TipoMovimentacao.SAIDA">Saída</option>
         </select>
@@ -616,8 +616,16 @@
             + Nova Categoria
           </button>
         </div>
-        <select [(ngModel)]="categoriaMovimentacao" class="form-control">
+        <select [(ngModel)]="categoriaMovimentacao" (ngModelChange)="onCategoriaChange()" class="form-control">
           <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="categoriaMovimentacao === 'Premiação'">
+        <label>Torneio em Andamento: *</label>
+        <select [(ngModel)]="torneioSelecionadoId" class="form-control">
+          <option [ngValue]="null" disabled>Selecione um torneio...</option>
+          <option *ngFor="let t of torneiosEmAndamento" [value]="t.id">{{ t.nome }}</option>
         </select>
       </div>
 

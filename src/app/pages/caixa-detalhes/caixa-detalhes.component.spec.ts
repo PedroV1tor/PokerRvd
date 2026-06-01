@@ -5,6 +5,8 @@ import { CaixaDetalhesComponent } from './caixa-detalhes.component';
 import { CaixaService } from '../../services/caixa.service';
 import { ComandaService } from '../../services/comanda.service';
 import { ToastService } from '../../services/toast.service';
+import { TorneioService } from '../../services/torneio.service';
+import { SignalrService } from '../../services/signalr.service';
 import {
   CaixaDetailsDto,
   StatusCaixa,
@@ -19,6 +21,8 @@ describe('CaixaDetalhesComponent', () => {
   let comandaServiceSpy: jasmine.SpyObj<ComandaService>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let torneioServiceSpy: jasmine.SpyObj<TorneioService>;
+  let signalrServiceSpy: jasmine.SpyObj<SignalrService>;
 
   const activatedRouteStub = {
     snapshot: {
@@ -62,9 +66,15 @@ describe('CaixaDetalhesComponent', () => {
     ]);
     toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    torneioServiceSpy = jasmine.createSpyObj('TorneioService', ['getTorneios']);
+    signalrServiceSpy = jasmine.createSpyObj('SignalrService', ['connect', 'disconnect']);
+
+    // Set up onEvent as observable since it is used in ngOnInit
+    Object.defineProperty(signalrServiceSpy, 'onEvent', { value: of() });
 
     caixaServiceSpy.getCaixa.and.returnValue(of(caixaMock));
     comandaServiceSpy.getComandas.and.returnValue(of([] as Comanda[]));
+    torneioServiceSpy.getTorneios.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [CaixaDetalhesComponent],
@@ -74,6 +84,8 @@ describe('CaixaDetalhesComponent', () => {
         { provide: ToastService, useValue: toastSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: TorneioService, useValue: torneioServiceSpy },
+        { provide: SignalrService, useValue: signalrServiceSpy },
       ],
     }).compileComponents();
 
@@ -241,6 +253,7 @@ describe('CaixaDetalhesComponent', () => {
       mesa: '1',
       tipo: TipoComanda.CASH,
       valorTotal: 100,
+      valorRestante: 100,
     } as Comanda;
     component.formasPagamentoQuitar = [{ formaPagamento: 'Dinheiro', valor: 100 }];
 

@@ -30,6 +30,8 @@ public class MovimentacaoCaixa
     public decimal Valor { get; set; }
     public int? ComandaId { get; set; }
     public string? ComandaNome { get; set; }
+    public int? TorneioId { get; set; }
+    public string? TorneioNome { get; set; }
     public string? FormaPagamento { get; set; } // Dinheiro, PIX, Cartão Débito, Cartão Crédito, etc.
     public decimal? Desconto { get; set; } // Desconto em R$ dado na comanda ao fechar
     public decimal? Taxa { get; set; } // Taxa/acréscimo em R$ adicionado ao fechar

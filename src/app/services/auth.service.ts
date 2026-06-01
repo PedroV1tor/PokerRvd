@@ -185,6 +185,12 @@ export class AuthService {
     return user?.permissaoCaixas || false;
   }
 
+  hasPermissionConferencia(): boolean {
+    const user = this.getCurrentUser();
+    if (user?.role === 'ADMIN') return true;
+    return user?.permissaoConferencia || false;
+  }
+
   /**
    * Atualiza o usuário atual a partir do backend.
    * Importante porque as permissões podem mudar enquanto o usuário está logado.

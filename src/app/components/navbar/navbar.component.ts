@@ -61,6 +61,13 @@ import { User } from '../../models/auth.model';
             (click)="setActiveMenu('caixas')">
             Caixas
           </button>
+          <button 
+            *ngIf="hasPermissionConferencia()"
+            class="nav-item"
+            [class.active]="activeMenu === 'conferencia'"
+            (click)="setActiveMenu('conferencia')">
+            Conferência
+          </button>
         </div>
 
         <div class="user-menu">
@@ -637,6 +644,24 @@ export class NavbarComponent implements OnInit {
     this.authService.authState$.subscribe(state => {
       this.currentUser = state.user;
     });
+    this.detectarMenuAtivo();
+  }
+
+  detectarMenuAtivo() {
+    const url = this.router.url || '';
+    if (url.includes('/torneios')) {
+      this.activeMenu = 'torneios';
+    } else if (url.includes('/produtos')) {
+      this.activeMenu = 'produtos';
+    } else if (url.includes('/funcionarios')) {
+      this.activeMenu = 'funcionarios';
+    } else if (url.includes('/caixas') || url.includes('/caixa/')) {
+      this.activeMenu = 'caixas';
+    } else if (url.includes('/conferencia')) {
+      this.activeMenu = 'conferencia';
+    } else {
+      this.activeMenu = 'comandas';
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -680,6 +705,9 @@ export class NavbarComponent implements OnInit {
         break;
       case 'caixas':
         this.router.navigate(['/caixas']);
+        break;
+      case 'conferencia':
+        this.router.navigate(['/conferencia']);
         break;
     }
   }
@@ -740,5 +768,9 @@ export class NavbarComponent implements OnInit {
 
   hasPermissionCaixas(): boolean {
     return this.authService.hasPermissionCaixas();
+  }
+
+  hasPermissionConferencia(): boolean {
+    return this.authService.hasPermissionConferencia();
   }
 }

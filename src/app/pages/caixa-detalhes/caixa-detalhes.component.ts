@@ -10,6 +10,8 @@ import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
 import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '../../models/comanda.model';
+import { TorneioService } from '../../services/torneio.service';
+import { Torneio, StatusTorneio } from '../../models/torneio.model';
 
 @Component({
   selector: 'app-caixa-detalhes',
@@ -35,6 +37,10 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   descricaoMovimentacao: string = '';
   valorMovimentacao: number = 0;
 
+  // Controle de torneios para movimentação tipo Premiação
+  torneiosEmAndamento: Torneio[] = [];
+  torneioSelecionadoId: number | null = null;
+
   // Modal de nova categoria
   mostrarModalNovaCategoria = false;
   novaCategoria: string = '';
@@ -42,7 +48,7 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   StatusCaixa = StatusCaixa;
   TipoMovimentacao = TipoMovimentacao;
 
-  categorias = ['Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
+  categorias = ['Premiação', 'Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
 
   // Controle de abas
   abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' | 'pendentes' = 'todas';
@@ -86,7 +92,8 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     private caixaService: CaixaService,
     private comandaService: ComandaService,
     private signalr: SignalrService,
-    private toast: ToastService
+    private toast: ToastService,
+    private torneioService: TorneioService
   ) {}
 
   ngOnInit() {
@@ -199,6 +206,30 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     this.categoriaMovimentacao = 'Fichas';
     this.descricaoMovimentacao = '';
     this.valorMovimentacao = 0;
+    this.torneioSelecionadoId = null;
+    this.torneiosEmAndamento = [];
+
+    // Carrega os torneios em andamento
+    this.torneioService.getTorneios().subscribe({
+      next: (torneios) => {
+        this.torneiosEmAndamento = torneios.filter(t => t.status === StatusTorneio.EM_ANDAMENTO);
+      },
+      error: () => {
+        this.toast.error('Erro ao carregar torneios em andamento.');
+      }
+    });
+  }
+
+  onCategoriaChange() {
+    if (this.categoriaMovimentacao === 'Premiação') {
+      this.tipoMovimentacao = TipoMovimentacao.SAIDA;
+    }
+  }
+
+  onTipoChange() {
+    if (this.tipoMovimentacao === TipoMovimentacao.ENTRADA && this.categoriaMovimentacao === 'Premiação') {
+      this.categoriaMovimentacao = 'Fichas';
+    }
   }
 
   fecharModalMovimentacao() {
@@ -245,11 +276,23 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.categoriaMovimentacao === 'Premiação') {
+      if (this.tipoMovimentacao !== TipoMovimentacao.SAIDA) {
+        this.toast.warning('Movimentações de Premiação devem ser do tipo Saída');
+        return;
+      }
+      if (!this.torneioSelecionadoId) {
+        this.toast.warning('Selecione um torneio em andamento');
+        return;
+      }
+    }
+
     const dto: CreateMovimentacaoDto = {
       tipo: this.tipoMovimentacao,
       categoria: this.categoriaMovimentacao,
       descricao: this.descricaoMovimentacao,
-      valor: this.valorMovimentacao
+      valor: this.valorMovimentacao,
+      torneioId: this.categoriaMovimentacao === 'Premiação' ? (this.torneioSelecionadoId ?? undefined) : undefined
     };
 
     this.caixaService.addMovimentacao(this.caixaId, dto).subscribe({

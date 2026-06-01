@@ -49,4 +49,6 @@ export interface TorneioStats {
   qtdAddOn: number;
   valorTotalAddOn: number;
   totalArrecadado: number;
+  totalBebidas: number;
+  totalPremiacao: number;
 }
