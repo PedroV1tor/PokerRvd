@@ -30,7 +30,10 @@ export class TorneiosComponent implements OnInit, OnDestroy {
     valorBuyIn: 0,
     valorRebuySimples: 0,
     valorRebuyDuplo: 0,
-    valorAddOn: 0
+    valorRebuyTriplo: 0,
+    valorAddOn: 0,
+    valorAddOnDuplo: 0,
+    valorBuyIn2: 0
   };
 
   // Modal de estatísticas
@@ -108,7 +111,10 @@ export class TorneiosComponent implements OnInit, OnDestroy {
       valorBuyIn: 0,
       valorRebuySimples: 0,
       valorRebuyDuplo: 0,
-      valorAddOn: 0
+      valorRebuyTriplo: 0,
+      valorAddOn: 0,
+      valorAddOnDuplo: 0,
+      valorBuyIn2: 0
     };
   }
 

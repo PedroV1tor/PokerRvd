@@ -15,12 +15,22 @@ public class TorneioStatsDto
     public int QtdRebuyDuplo { get; set; }
     public decimal ValorTotalRebuyDuplo { get; set; }
 
+    public int QtdRebuyTriplo { get; set; }
+    public decimal ValorTotalRebuyTriplo { get; set; }
+
     public int QtdAddOn { get; set; }
     public decimal ValorTotalAddOn { get; set; }
+
+    public int QtdAddOnDuplo { get; set; }
+    public decimal ValorTotalAddOnDuplo { get; set; }
+
+    public int QtdBuyIn2 { get; set; }
+    public decimal ValorTotalBuyIn2 { get; set; }
 
     public decimal TotalArrecadado { get; set; }
     public decimal TotalBebidas { get; set; }
     public decimal TotalPremiacao { get; set; }
+    public decimal TotalPgtoFuncionarios { get; set; }
 }
 
 public class TorneioDto
@@ -30,7 +40,10 @@ public class TorneioDto
     public decimal ValorBuyIn { get; set; }
     public decimal ValorRebuySimples { get; set; }
     public decimal ValorRebuyDuplo { get; set; }
+    public decimal ValorRebuyTriplo { get; set; }
     public decimal ValorAddOn { get; set; }
+    public decimal ValorAddOnDuplo { get; set; }
+    public decimal ValorBuyIn2 { get; set; }
     public string Status { get; set; } = "AGUARDANDO";
     public DateTime? DataInicio { get; set; }
     public DateTime? DataFim { get; set; }
@@ -44,7 +57,10 @@ public class CreateTorneioDto
     public decimal ValorBuyIn { get; set; }
     public decimal ValorRebuySimples { get; set; }
     public decimal ValorRebuyDuplo { get; set; }
+    public decimal ValorRebuyTriplo { get; set; }
     public decimal ValorAddOn { get; set; }
+    public decimal ValorAddOnDuplo { get; set; }
+    public decimal ValorBuyIn2 { get; set; }
 }
 
 public class UpdateTorneioDto
@@ -53,6 +69,9 @@ public class UpdateTorneioDto
     public decimal? ValorBuyIn { get; set; }
     public decimal? ValorRebuySimples { get; set; }
     public decimal? ValorRebuyDuplo { get; set; }
+    public decimal? ValorRebuyTriplo { get; set; }
     public decimal? ValorAddOn { get; set; }
+    public decimal? ValorAddOnDuplo { get; set; }
+    public decimal? ValorBuyIn2 { get; set; }
     public string? Status { get; set; }
 }

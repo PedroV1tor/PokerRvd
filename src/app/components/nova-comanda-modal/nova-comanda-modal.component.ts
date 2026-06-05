@@ -69,9 +69,22 @@ import { Torneio, StatusTorneio } from '../../models/torneio.model';
                 <span class="badge-label">Re-buy Duplo:</span>
                 <span class="badge-value">R$ {{ torneioSelecionado.valorRebuyDuplo.toFixed(2) }}</span>
               </div>
+                            <div class="info-badge" *ngIf="torneioSelecionado.valorRebuyTriplo > 0">
+                <span class="badge-label">Re-buy Triplo:</span>
+                <span class="badge-value">R$ {{ torneioSelecionado.valorRebuyTriplo.toFixed(2) }}</span>
+              </div>
               <div class="info-badge" *ngIf="torneioSelecionado.valorAddOn > 0">
                 <span class="badge-label">Add-on:</span>
                 <span class="badge-value">R$ {{ torneioSelecionado.valorAddOn.toFixed(2) }}</span>
+              </div>
+
+              <div class="info-badge" *ngIf="torneioSelecionado.valorAddOnDuplo > 0">
+                <span class="badge-label">Add-on Duplo:</span>
+                <span class="badge-value">R$ {{ torneioSelecionado.valorAddOnDuplo.toFixed(2) }}</span>
+              </div>
+              <div class="info-badge" *ngIf="torneioSelecionado.valorBuyIn2 > 0">
+                <span class="badge-label">Buy-in 2:</span>
+                <span class="badge-value">R$ {{ torneioSelecionado.valorBuyIn2.toFixed(2) }}</span>
               </div>
             </div>
           </div>

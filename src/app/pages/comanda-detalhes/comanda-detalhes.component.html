@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    
+
   </header>
 
   <!-- Conteúdo Principal -->
@@ -53,76 +53,74 @@
               </div>
             </div>
 
-            <!-- Botões para TORNEIO apenas -->
-            <button 
-              class="action-btn" 
-              (click)="adicionarBuyIn()"
-              *ngIf="comanda.tipo === TipoComanda.TORNEIO">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Add Buy-in</span>
-                <span class="btn-valor" *ngIf="torneio && torneio.valorBuyIn > 0">
-                  R$ {{ torneio.valorBuyIn.toFixed(2) }}
-                </span>
-              </div>
-            </button>
+            <!-- Chips de ação compactos -->
+            <div class="action-chips">
+              <!-- TORNEIO -->
+              <button class="action-chip" (click)="adicionarBuyIn()" *ngIf="comanda.tipo === TipoComanda.TORNEIO">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Buy-in</span>
+                <span class="chip-valor" *ngIf="torneio && torneio.valorBuyIn > 0">R$ {{ torneio.valorBuyIn.toFixed(2)
+                  }}</span>
+              </button>
 
-            <button 
-              class="action-btn" 
-              (click)="adicionarRebuySimples()"
-              *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuySimples > 0)">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Add Re-buy Simples</span>
-                <span class="btn-valor" *ngIf="torneio && torneio.valorRebuySimples > 0">
-                  R$ {{ torneio.valorRebuySimples.toFixed(2) }}
-                </span>
-              </div>
-            </button>
+              <button class="action-chip" (click)="adicionarRebuySimples()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuySimples > 0)">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Re-buy</span>
+                <span class="chip-valor" *ngIf="torneio && torneio.valorRebuySimples > 0">R$ {{
+                  torneio.valorRebuySimples.toFixed(2) }}</span>
+              </button>
 
-            <button 
-              class="action-btn" 
-              (click)="adicionarRebuyDuplo()"
-              *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuyDuplo > 0)">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Add Re-buy Duplo</span>
-                <span class="btn-valor" *ngIf="torneio && torneio.valorRebuyDuplo > 0">
-                  R$ {{ torneio.valorRebuyDuplo.toFixed(2) }}
-                </span>
-              </div>
-            </button>
+              <button class="action-chip" (click)="adicionarRebuyDuplo()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuyDuplo > 0)">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Re-buy Duplo</span>
+                <span class="chip-valor" *ngIf="torneio && torneio.valorRebuyDuplo > 0">R$ {{
+                  torneio.valorRebuyDuplo.toFixed(2) }}</span>
+              </button>
 
-            <button 
-              class="action-btn" 
-              (click)="adicionarAddOn()"
-              *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorAddOn > 0">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Add Add-on</span>
-                <span class="btn-valor">
-                  R$ {{ torneio.valorAddOn.toFixed(2) }}
-                </span>
-              </div>
-            </button>
+              <button class="action-chip" (click)="adicionarRebuyTriplo()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorRebuyTriplo > 0">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Re-buy Triplo</span>
+                <span class="chip-valor">R$ {{ torneio.valorRebuyTriplo.toFixed(2) }}</span>
+              </button>
 
-            <!-- Botão Add Fichas para CASH GAME -->
-            <button 
-              class="action-btn action-btn-fichas" 
-              (click)="adicionarFichasCashGame()"
-              *ngIf="comanda.tipo === TipoComanda.CASH">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Add Fichas</span>
-              </div>
-            </button>
+              <button class="action-chip" (click)="adicionarAddOn()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorAddOn > 0)">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Add-on</span>
+                <span class="chip-valor" *ngIf="torneio && torneio.valorAddOn > 0">R$ {{ torneio.valorAddOn.toFixed(2)
+                  }}</span>
+              </button>
 
-            <button class="action-btn action-btn-bebida" (click)="abrirModalBebida()">
-              <span class="action-icon">+</span>
-              <div class="btn-content">
-                <span class="btn-label">Bebida</span>
-              </div>
-            </button>
+              <button class="action-chip" (click)="adicionarAddOnDuplo()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorAddOnDuplo > 0">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Add-on Duplo</span>
+                <span class="chip-valor">R$ {{ torneio.valorAddOnDuplo.toFixed(2) }}</span>
+              </button>
+
+              <button class="action-chip" (click)="adicionarBuyIn2()"
+                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorBuyIn2 > 0">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Buy-in 2</span>
+                <span class="chip-valor">R$ {{ torneio.valorBuyIn2.toFixed(2) }}</span>
+              </button>
+
+              <!-- CASH GAME -->
+              <button class="action-chip chip-fichas" (click)="adicionarFichasCashGame()"
+                *ngIf="comanda.tipo === TipoComanda.CASH">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Fichas</span>
+              </button>
+
+              <!-- BEBIDA (sempre) -->
+              <button class="action-chip chip-bebida" (click)="abrirModalBebida()">
+                <span class="chip-plus">+</span>
+                <span class="chip-label">Bebida</span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -179,16 +177,11 @@
 
           <!-- Botões de ação da comanda -->
           <div class="footer-actions" *ngIf="comanda.status !== StatusComanda.FECHADO">
-            <button
-              class="btn-pagamento-parcial"
-              (click)="abrirModalParcial()"
-              [disabled]="valorRestante <= 0"
+            <button class="btn-pagamento-parcial" (click)="abrirModalParcial()" [disabled]="valorRestante <= 0"
               title="Registrar um pagamento parcial sem fechar a comanda">
               Pagamento Parcial
             </button>
-            <button
-              class="btn-fechar-comanda"
-              (click)="abrirModalFechar()">
+            <button class="btn-fechar-comanda" (click)="abrirModalFechar()">
               Fechar Comanda
             </button>
           </div>
@@ -221,12 +214,7 @@
 
       <div class="form-group">
         <label>Quantidade:</label>
-        <input 
-          type="number" 
-          [(ngModel)]="quantidadeProduto" 
-          min="1" 
-          class="form-control"
-        />
+        <input type="number" [(ngModel)]="quantidadeProduto" min="1" class="form-control" />
       </div>
     </div>
 
@@ -275,16 +263,10 @@
           <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
             <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
           </select>
-          <input 
-            type="number" 
-            [(ngModel)]="forma.valor" 
-            min="0"
-            step="0.01"
-            class="form-control forma-valor"
-            placeholder="0,00"
-          />
-          <button type="button" class="btn-remover-forma" (click)="removerFormaPagamento(i)" 
-                  [disabled]="formasPagamento.length === 1" title="Remover">✕</button>
+          <input type="number" [(ngModel)]="forma.valor" min="0" step="0.01" class="form-control forma-valor"
+            placeholder="0,00" />
+          <button type="button" class="btn-remover-forma" (click)="removerFormaPagamento(i)"
+            [disabled]="formasPagamento.length === 1" title="Remover">✕</button>
         </div>
         <button type="button" class="btn-add-forma" (click)="adicionarFormaPagamento()">
           + Adicionar forma de pagamento
@@ -294,29 +276,15 @@
       <div class="desconto-taxa-row">
         <div class="desconto-taxa-item">
           <label for="taxa-fechar">Taxa (R$)</label>
-          <input
-            type="number"
-            id="taxa-fechar"
-            [(ngModel)]="taxaFechar"
-            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()"
-            min="0"
-            step="0.01"
-            class="form-control desconto-input"
-            placeholder="0,00"
-          />
+          <input type="number" id="taxa-fechar" [(ngModel)]="taxaFechar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()" min="0" step="0.01" class="form-control desconto-input"
+            placeholder="0,00" />
         </div>
         <div class="desconto-taxa-item">
           <label for="desconto-fechar">Desconto (R$)</label>
-          <input
-            type="number"
-            id="desconto-fechar"
-            [(ngModel)]="descontoFechar"
-            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()"
-            min="0"
-            step="0.01"
-            class="form-control desconto-input"
-            placeholder="0,00"
-          />
+          <input type="number" id="desconto-fechar" [(ngModel)]="descontoFechar"
+            (ngModelChange)="aplicarDescontoOuTaxaNoTotal()" min="0" step="0.01" class="form-control desconto-input"
+            placeholder="0,00" />
         </div>
         <span class="desconto-valor-receber">A receber: <strong>R$ {{ valorFinalFechar.toFixed(2) }}</strong></span>
       </div>
@@ -325,13 +293,15 @@
         <span>Soma</span>
         <span class="resumo-valor">R$ {{ somaFormasPagamento.toFixed(2) }}</span>
         <span *ngIf="totalBateComFormas" class="ok-badge">✓ Confere</span>
-        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Deve ser R$ {{ valorFinalFechar.toFixed(2) }}</span>
+        <span *ngIf="!totalBateComFormas && somaFormasPagamento > 0" class="erro-badge">Deve ser R$ {{
+          valorFinalFechar.toFixed(2) }}</span>
       </div>
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="fecharModalFechar()">Cancelar</button>
-      <button class="btn btn-primary" (click)="fecharComanda()" [disabled]="(valorFinalFechar > 0 && (!totalBateComFormas || somaFormasPagamento <= 0)) || valorFinalFechar < 0 || isSaving">
+      <button class="btn btn-primary" (click)="fecharComanda()"
+        [disabled]="(valorFinalFechar > 0 && (!totalBateComFormas || somaFormasPagamento <= 0)) || valorFinalFechar < 0 || isSaving">
         {{ isSaving ? 'Fechando...' : 'Fechar Comanda' }}
       </button>
     </div>
@@ -358,17 +328,9 @@
         <label class="parcial-campo-label" for="valor-base-parcial">Valor parcial da comanda</label>
         <div class="parcial-campo-input-wrap" [class.erro]="(valorBaseParcial || 0) > valorRestante">
           <span class="parcial-campo-prefix">R$</span>
-          <input
-            type="number"
-            id="valor-base-parcial"
-            [(ngModel)]="valorBaseParcial"
-            (ngModelChange)="aplicarTaxaDescontoParcial()"
-            min="0"
-            [max]="valorRestante"
-            step="0.01"
-            class="parcial-campo-input"
-            placeholder="0,00"
-          />
+          <input type="number" id="valor-base-parcial" [(ngModel)]="valorBaseParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()" min="0" [max]="valorRestante" step="0.01"
+            class="parcial-campo-input" placeholder="0,00" />
           <span class="parcial-campo-max">máx {{ valorRestante.toFixed(2) }}</span>
         </div>
         <span class="parcial-campo-erro" *ngIf="(valorBaseParcial || 0) > valorRestante">
@@ -380,31 +342,18 @@
       <div class="desconto-taxa-row">
         <div class="desconto-taxa-item">
           <label for="taxa-parcial">Taxa (R$)</label>
-          <input
-            type="number"
-            id="taxa-parcial"
-            [(ngModel)]="taxaParcial"
-            (ngModelChange)="aplicarTaxaDescontoParcial()"
-            min="0"
-            step="0.01"
-            class="form-control desconto-input"
-            placeholder="0,00"
-          />
+          <input type="number" id="taxa-parcial" [(ngModel)]="taxaParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()" min="0" step="0.01" class="form-control desconto-input"
+            placeholder="0,00" />
         </div>
         <div class="desconto-taxa-item">
           <label for="desconto-parcial">Desconto (R$)</label>
-          <input
-            type="number"
-            id="desconto-parcial"
-            [(ngModel)]="descontoParcial"
-            (ngModelChange)="aplicarTaxaDescontoParcial()"
-            min="0"
-            step="0.01"
-            class="form-control desconto-input"
-            placeholder="0,00"
-          />
+          <input type="number" id="desconto-parcial" [(ngModel)]="descontoParcial"
+            (ngModelChange)="aplicarTaxaDescontoParcial()" min="0" step="0.01" class="form-control desconto-input"
+            placeholder="0,00" />
         </div>
-        <span class="desconto-valor-receber">Total a cobrar: <strong>R$ {{ totalACobrarParcial.toFixed(2) }}</strong></span>
+        <span class="desconto-valor-receber">Total a cobrar: <strong>R$ {{ totalACobrarParcial.toFixed(2)
+            }}</strong></span>
       </div>
 
       <p class="modal-instruction">Distribua as formas de pagamento. A soma deve ser igual ao total a cobrar.</p>
@@ -419,16 +368,10 @@
           <select [(ngModel)]="forma.formaPagamento" class="form-control forma-select">
             <option *ngFor="let op of formasPagamentoOpcoes" [value]="op">{{ op }}</option>
           </select>
-          <input
-            type="number"
-            [(ngModel)]="forma.valor"
-            min="0"
-            step="0.01"
-            class="form-control forma-valor"
-            placeholder="0,00"
-          />
+          <input type="number" [(ngModel)]="forma.valor" min="0" step="0.01" class="form-control forma-valor"
+            placeholder="0,00" />
           <button type="button" class="btn-remover-forma" (click)="removerFormaParcial(i)"
-                  [disabled]="formasPagamentoParcial.length === 1" title="Remover">✕</button>
+            [disabled]="formasPagamentoParcial.length === 1" title="Remover">✕</button>
         </div>
         <button type="button" class="btn-add-forma" (click)="adicionarFormaParcial()">
           + Adicionar forma de pagamento
@@ -439,7 +382,8 @@
         <span>Soma</span>
         <span class="resumo-valor">R$ {{ somaFormasParcial.toFixed(2) }}</span>
         <span *ngIf="parcialValido" class="ok-badge">✓ Confere</span>
-        <span *ngIf="somaFormasParcial > 0 && !parcialValido" class="erro-badge">Deve ser R$ {{ totalACobrarParcial.toFixed(2) }}</span>
+        <span *ngIf="somaFormasParcial > 0 && !parcialValido" class="erro-badge">Deve ser R$ {{
+          totalACobrarParcial.toFixed(2) }}</span>
       </div>
 
     </div>
@@ -447,7 +391,7 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="fecharModalParcial()">Cancelar</button>
       <button class="btn btn-parcial-confirmar" (click)="confirmarPagamentoParcial()"
-              [disabled]="!parcialValido || totalACobrarParcial <= 0 || isSaving">
+        [disabled]="!parcialValido || totalACobrarParcial <= 0 || isSaving">
         {{ isSaving ? 'Registrando...' : 'Registrar Pagamento' }}
       </button>
     </div>
@@ -465,27 +409,14 @@
     <div class="modal-body">
       <div class="form-group" *ngIf="tipoFichaAtual === 'Fichas'">
         <label>Nome:</label>
-        <input 
-          type="text" 
-          [(ngModel)]="nomeFichas" 
-          class="form-control"
-          placeholder="Ex: Fichas, Recarga, etc."
-          required
-        />
+        <input type="text" [(ngModel)]="nomeFichas" class="form-control" placeholder="Ex: Fichas, Recarga, etc."
+          required />
       </div>
 
       <div class="form-group">
         <label>Valor (R$):</label>
-        <input 
-          type="number" 
-          [(ngModel)]="valorFichas" 
-          min="0.01"
-          step="0.01"
-          class="form-control"
-          placeholder="0.00"
-          autofocus
-          required
-        />
+        <input type="number" [(ngModel)]="valorFichas" min="0.01" step="0.01" class="form-control" placeholder="0.00"
+          autofocus required />
       </div>
     </div>
 

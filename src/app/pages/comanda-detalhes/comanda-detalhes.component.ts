@@ -39,7 +39,7 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
   mostrarModalFichas = false;
   valorFichas: number = 0;
   nomeFichas: string = 'Fichas';
-  tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Add-on' = 'Fichas';
+  tipoFichaAtual: 'Fichas' | 'Buy-in' | 'Re-buy Simples' | 'Re-buy Duplo' | 'Re-buy Triplo' | 'Add-on' | 'Add-on Duplo' | 'Buy-in 2' = 'Fichas';
 
 
   // Modal de fechar comanda (formas de pagamento)
@@ -181,6 +181,42 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
       // Caso contrário, abrir modal para digitar o valor
       this.tipoFichaAtual = 'Add-on';
       this.nomeFichas = 'Add-on';
+      this.abrirModalFichas();
+    }
+  }
+
+  adicionarRebuyTriplo() {
+    if (!this.comanda) return;
+
+    if (this.torneio && this.torneio.valorRebuyTriplo > 0) {
+      this.adicionarFichasDireto('Re-buy Triplo', this.torneio.valorRebuyTriplo);
+    } else {
+      this.tipoFichaAtual = 'Re-buy Triplo';
+      this.nomeFichas = 'Re-buy Triplo';
+      this.abrirModalFichas();
+    }
+  }
+
+  adicionarAddOnDuplo() {
+    if (!this.comanda) return;
+
+    if (this.torneio && this.torneio.valorAddOnDuplo > 0) {
+      this.adicionarFichasDireto('Add-on Duplo', this.torneio.valorAddOnDuplo);
+    } else {
+      this.tipoFichaAtual = 'Add-on Duplo';
+      this.nomeFichas = 'Add-on Duplo';
+      this.abrirModalFichas();
+    }
+  }
+
+  adicionarBuyIn2() {
+    if (!this.comanda) return;
+
+    if (this.torneio && this.torneio.valorBuyIn2 > 0) {
+      this.adicionarFichasDireto('Buy-in 2', this.torneio.valorBuyIn2);
+    } else {
+      this.tipoFichaAtual = 'Buy-in 2';
+      this.nomeFichas = 'Buy-in 2';
       this.abrirModalFichas();
     }
   }

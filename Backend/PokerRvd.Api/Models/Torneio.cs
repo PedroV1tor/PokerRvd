@@ -7,7 +7,10 @@ public class Torneio
     public decimal ValorBuyIn { get; set; }
     public decimal ValorRebuySimples { get; set; }
     public decimal ValorRebuyDuplo { get; set; }
+    public decimal ValorRebuyTriplo { get; set; }
     public decimal ValorAddOn { get; set; }
+    public decimal ValorAddOnDuplo { get; set; }
+    public decimal ValorBuyIn2 { get; set; }
     public string Status { get; set; } = "AGUARDANDO"; // AGUARDANDO, EM_ANDAMENTO, FINALIZADO, CANCELADO
     public DateTime? DataInicio { get; set; }
     public DateTime? DataFim { get; set; }

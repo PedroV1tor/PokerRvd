@@ -369,9 +369,15 @@ namespace PokerRvd.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<decimal>("ValorAddOnDuplo")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("ValorBuyIn")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ValorBuyIn2")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("ValorRebuyDuplo")
                         .HasPrecision(18, 2)
@@ -380,6 +386,9 @@ namespace PokerRvd.Api.Migrations
                     b.Property<decimal>("ValorRebuySimples")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ValorRebuyTriplo")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

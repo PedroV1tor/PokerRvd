@@ -259,4 +259,487 @@ describe('CaixaDetalhesComponent', () => {
 
     expect(component.totalBateComFormasQuitar).toBeTrue();
   });
+
+  // ===============================================================
+  // TESTES DE MOVIMENTAÇÕES CRÍTICAS: Premiação e Pgto Funcionários
+  // ===============================================================
+
+  describe('Categorias críticas (Premiação e Pgto Funcionários)', () => {
+
+    it('deve conter a categoria "Pgto Funcionários" na lista de categorias', () => {
+      expect(component.categorias).toContain('Pgto Funcionários');
+    });
+
+    it('deve conter a categoria "Premiação" na lista de categorias', () => {
+      expect(component.categorias).toContain('Premiação');
+    });
+
+    // --- onCategoriaChange ---
+
+    it('onCategoriaChange deve forçar tipo SAIDA ao selecionar Premiação', () => {
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.categoriaMovimentacao = 'Premiação';
+
+      component.onCategoriaChange();
+
+      expect(component.tipoMovimentacao).toBe(TipoMovimentacao.SAIDA);
+    });
+
+    it('onCategoriaChange deve forçar tipo SAIDA ao selecionar Pgto Funcionários', () => {
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+
+      component.onCategoriaChange();
+
+      expect(component.tipoMovimentacao).toBe(TipoMovimentacao.SAIDA);
+    });
+
+    it('onCategoriaChange NÃO deve alterar tipo ao selecionar Fichas', () => {
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.categoriaMovimentacao = 'Fichas';
+
+      component.onCategoriaChange();
+
+      expect(component.tipoMovimentacao).toBe(TipoMovimentacao.ENTRADA);
+    });
+
+    // --- onTipoChange ---
+
+    it('onTipoChange deve mudar categoria de Premiação para Fichas ao trocar para ENTRADA', () => {
+      component.categoriaMovimentacao = 'Premiação';
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+
+      component.onTipoChange();
+
+      expect(component.categoriaMovimentacao).toBe('Fichas');
+    });
+
+    it('onTipoChange deve mudar categoria de Pgto Funcionários para Fichas ao trocar para ENTRADA', () => {
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+
+      component.onTipoChange();
+
+      expect(component.categoriaMovimentacao).toBe('Fichas');
+    });
+
+    it('onTipoChange NÃO deve mudar categoria se tipo for SAIDA', () => {
+      component.categoriaMovimentacao = 'Premiação';
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+
+      component.onTipoChange();
+
+      expect(component.categoriaMovimentacao).toBe('Premiação');
+    });
+
+    it('onTipoChange NÃO deve mudar categoria "Fichas" ao trocar para ENTRADA', () => {
+      component.categoriaMovimentacao = 'Fichas';
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+
+      component.onTipoChange();
+
+      expect(component.categoriaMovimentacao).toBe('Fichas');
+    });
+
+    // --- Validação: torneio obrigatório ---
+
+    it('Premiação deve exigir torneio selecionado e mostrar warning se não houver', () => {
+      component.categoriaMovimentacao = 'Premiação';
+      component.descricaoMovimentacao = 'Premiação 1° lugar';
+      component.valorMovimentacao = 1000;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = null;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Selecione um torneio em andamento');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    it('Pgto Funcionários deve exigir torneio selecionado e mostrar warning se não houver', () => {
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = 'Pagamento dealer';
+      component.valorMovimentacao = 200;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = null;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Selecione um torneio em andamento');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    // --- Validação: forçar tipo saída ---
+
+    it('Premiação deve barrar se tipo não for SAIDA', () => {
+      component.categoriaMovimentacao = 'Premiação';
+      component.descricaoMovimentacao = 'Premiação 1° lugar';
+      component.valorMovimentacao = 1000;
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.torneioSelecionadoId = 5;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Movimentações de Premiação devem ser do tipo Saída');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    it('Pgto Funcionários deve barrar se tipo não for SAIDA', () => {
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = 'Pagamento dealer';
+      component.valorMovimentacao = 200;
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.torneioSelecionadoId = 5;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Movimentações de Pgto Funcionários devem ser do tipo Saída');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    // --- Requisição válida: DTO com torneioId ---
+
+    it('Premiação válida deve enviar DTO com torneioId correto', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Premiação';
+      component.descricaoMovimentacao = 'Premiação 1° lugar';
+      component.valorMovimentacao = 1000;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 7;
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.SAIDA,
+        categoria: 'Premiação',
+        descricao: 'Premiação 1° lugar',
+        valor: 1000,
+        torneioId: 7
+      });
+    });
+
+    it('Pgto Funcionários válida deve enviar DTO com torneioId correto', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = 'Pagamento dealer noturno';
+      component.valorMovimentacao = 300;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 12;
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.SAIDA,
+        categoria: 'Pgto Funcionários',
+        descricao: 'Pagamento dealer noturno',
+        valor: 300,
+        torneioId: 12
+      });
+    });
+
+    // --- Categoria normal NÃO deve incluir torneioId ---
+
+    it('Categoria "Fichas" NÃO deve incluir torneioId no DTO', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Fichas';
+      component.descricaoMovimentacao = 'Venda de fichas';
+      component.valorMovimentacao = 500;
+      component.tipoMovimentacao = TipoMovimentacao.ENTRADA;
+      component.torneioSelecionadoId = 99; // Mesmo com valor, não deve usar
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.ENTRADA,
+        categoria: 'Fichas',
+        descricao: 'Venda de fichas',
+        valor: 500,
+        torneioId: undefined
+      });
+    });
+
+    it('Categoria "Despesas" NÃO deve incluir torneioId no DTO', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Despesas';
+      component.descricaoMovimentacao = 'Compra de materiais';
+      component.valorMovimentacao = 150;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.SAIDA,
+        categoria: 'Despesas',
+        descricao: 'Compra de materiais',
+        valor: 150,
+        torneioId: undefined
+      });
+    });
+
+    // --- Validação de valor ---
+
+    it('deve barrar movimentação com valor zero', () => {
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = 'Pagamento dealer';
+      component.valorMovimentacao = 0;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 5;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Preencha todos os campos corretamente');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    it('deve barrar movimentação com valor negativo', () => {
+      component.categoriaMovimentacao = 'Premiação';
+      component.descricaoMovimentacao = 'Premiação';
+      component.valorMovimentacao = -100;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 5;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Preencha todos os campos corretamente');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+
+    it('deve barrar movimentação sem descrição', () => {
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = '';
+      component.valorMovimentacao = 200;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 5;
+
+      component.adicionarMovimentacao();
+
+      expect(toastSpy.warning).toHaveBeenCalledWith('Preencha todos os campos corretamente');
+      expect(caixaServiceSpy.addMovimentacao).not.toHaveBeenCalled();
+    });
+  });
+
+  // ===============================================================
+  // TESTES DE CÁLCULOS DO CAIXA COM MOVIMENTAÇÕES CRÍTICAS
+  // ===============================================================
+
+  describe('Cálculos do caixa com movimentações críticas', () => {
+
+    it('getSaldoEsperado deve refletir entradas e saídas (incluindo Premiação/Pgto Funcs)', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      // Simula cenário real: 200 saldo, 800 entradas, 400 saídas (Premiação + Pgto)
+      component.caixa.saldoInicial = 200;
+      component.caixa.totalEntradas = 800;
+      component.caixa.totalSaidas = 400; // inclui 250 Premiação + 150 Pgto Func
+
+      expect(component.getSaldoEsperado()).toBe(600); // 200 + 800 - 400
+    });
+
+    it('getDiferenca deve calcular corretamente com saídas de premiação/pgto', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.saldoInicial = 100;
+      component.caixa.totalEntradas = 1000;
+      component.caixa.totalSaidas = 500; // ex: Premiação 300 + Pgto Func 200
+      component.caixa.saldoFinal = 580;
+
+      // Saldo esperado = 100 + 1000 - 500 = 600
+      // Diferença = 580 - 600 = -20
+      expect(component.getDiferenca()).toBe(-20);
+    });
+
+    it('getResumoSaidas deve agrupar corretamente Premiação e Pgto Funcionários', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 500, descricao: '1° lugar' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 300, descricao: '2° lugar' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 200, descricao: 'Dealer' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 150, descricao: 'Floor' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Despesas', valor: 50, descricao: 'Materiais' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.ENTRADA, categoria: 'Fichas', valor: 1000, descricao: 'Fichas' } as MovimentacaoCaixa,
+      ];
+
+      const resumo = component.getResumoSaidas();
+
+      // Deve ter 3 categorias de saída
+      expect(resumo.length).toBe(3);
+
+      const premiacao = resumo.find(r => r.categoria === 'Premiação');
+      expect(premiacao).toBeDefined();
+      expect(premiacao!.quantidade).toBe(2);
+      expect(premiacao!.total).toBe(800); // 500 + 300
+
+      const pgtoFunc = resumo.find(r => r.categoria === 'Pgto Funcionários');
+      expect(pgtoFunc).toBeDefined();
+      expect(pgtoFunc!.quantidade).toBe(2);
+      expect(pgtoFunc!.total).toBe(350); // 200 + 150
+
+      const despesas = resumo.find(r => r.categoria === 'Despesas');
+      expect(despesas).toBeDefined();
+      expect(despesas!.quantidade).toBe(1);
+      expect(despesas!.total).toBe(50);
+    });
+
+    it('getResumoSaidas NÃO deve incluir movimentações de ENTRADA', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [
+        { tipo: TipoMovimentacao.ENTRADA, categoria: 'Fichas', valor: 1000, descricao: 'Fichas' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 500, descricao: '1° lugar' } as MovimentacaoCaixa,
+      ];
+
+      const resumo = component.getResumoSaidas();
+
+      expect(resumo.length).toBe(1);
+      expect(resumo[0].categoria).toBe('Premiação');
+    });
+
+    it('getMovimentacoesFiltradas com aba "saidas" deve incluir Premiação e Pgto Funcionários', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 500 } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 200 } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.ENTRADA, categoria: 'Fichas', valor: 1000 } as MovimentacaoCaixa,
+      ];
+      component.abaAtiva = 'saidas';
+
+      const filtradas = component.getMovimentacoesFiltradas();
+
+      expect(filtradas.length).toBe(2);
+      expect(filtradas.every(m => m.tipo === TipoMovimentacao.SAIDA)).toBeTrue();
+    });
+
+    it('getMovimentacoesFiltradas com aba "todas" deve incluir tudo', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 500 } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 200 } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.ENTRADA, categoria: 'Fichas', valor: 1000 } as MovimentacaoCaixa,
+      ];
+      component.abaAtiva = 'todas';
+
+      const filtradas = component.getMovimentacoesFiltradas();
+
+      expect(filtradas.length).toBe(3);
+    });
+  });
+
+  // ===============================================================
+  // TESTES DE EDGE CASES
+  // ===============================================================
+
+  describe('Edge cases de movimentações críticas', () => {
+
+    it('saldo esperado deve ser zero quando tudo se anula', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.saldoInicial = 0;
+      component.caixa.totalEntradas = 1000;
+      component.caixa.totalSaidas = 1000; // Premiação + Pgto Func = total saídas
+
+      expect(component.getSaldoEsperado()).toBe(0);
+    });
+
+    it('deve lidar com caixa sem movimentações para getResumoSaidas', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [];
+
+      const resumo = component.getResumoSaidas();
+      expect(resumo.length).toBe(0);
+    });
+
+    it('deve lidar com caixa null para getSaldoEsperado', () => {
+      component.caixa = null;
+      expect(component.getSaldoEsperado()).toBe(0);
+    });
+
+    it('deve lidar com caixa null para getDiferenca', () => {
+      component.caixa = null;
+      expect(component.getDiferenca()).toBe(0);
+    });
+
+    it('deve lidar com movimentacoes null/undefined', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+      component.caixa.movimentacoes = null as any;
+
+      const resumo = component.getResumoSaidas();
+      expect(resumo.length).toBe(0);
+    });
+
+    it('Premiação com valor decimal (centavos) deve funcionar corretamente', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Premiação';
+      component.descricaoMovimentacao = 'Premiação 3° lugar';
+      component.valorMovimentacao = 150.75;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 3;
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.SAIDA,
+        categoria: 'Premiação',
+        descricao: 'Premiação 3° lugar',
+        valor: 150.75,
+        torneioId: 3
+      });
+    });
+
+    it('Pgto Funcionários com valor decimal (centavos) deve funcionar corretamente', () => {
+      caixaServiceSpy.addMovimentacao.and.returnValue(of({}));
+
+      component.categoriaMovimentacao = 'Pgto Funcionários';
+      component.descricaoMovimentacao = 'Dealer hora extra';
+      component.valorMovimentacao = 99.99;
+      component.tipoMovimentacao = TipoMovimentacao.SAIDA;
+      component.torneioSelecionadoId = 8;
+
+      component.adicionarMovimentacao();
+
+      expect(caixaServiceSpy.addMovimentacao).toHaveBeenCalledWith(1, {
+        tipo: TipoMovimentacao.SAIDA,
+        categoria: 'Pgto Funcionários',
+        descricao: 'Dealer hora extra',
+        valor: 99.99,
+        torneioId: 8
+      });
+    });
+
+    it('múltiplas movimentações de categorias diferentes devem totalizar corretamente no resumo', () => {
+      if (!component.caixa) { fail('caixa não carregada'); return; }
+
+      component.caixa.movimentacoes = [
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 1000, descricao: '1°' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 500, descricao: '2°' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Premiação', valor: 250, descricao: '3°' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 300, descricao: 'Dealer 1' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 200, descricao: 'Dealer 2' } as MovimentacaoCaixa,
+        { tipo: TipoMovimentacao.SAIDA, categoria: 'Pgto Funcionários', valor: 100, descricao: 'Floor' } as MovimentacaoCaixa,
+      ];
+
+      const resumo = component.getResumoSaidas();
+
+      const premiacao = resumo.find(r => r.categoria === 'Premiação');
+      const pgtoFunc = resumo.find(r => r.categoria === 'Pgto Funcionários');
+
+      expect(premiacao!.total).toBe(1750); // 1000 + 500 + 250
+      expect(premiacao!.quantidade).toBe(3);
+      expect(pgtoFunc!.total).toBe(600); // 300 + 200 + 100
+      expect(pgtoFunc!.quantidade).toBe(3);
+
+      // Total geral de saídas
+      const totalSaidas = resumo.reduce((sum, r) => sum + r.total, 0);
+      expect(totalSaidas).toBe(2350); // 1750 + 600
+    });
+  });
 });
+

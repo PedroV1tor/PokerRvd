@@ -48,7 +48,7 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   StatusCaixa = StatusCaixa;
   TipoMovimentacao = TipoMovimentacao;
 
-  categorias = ['Premiação', 'Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
+  categorias = ['Premiação', 'Pgto Funcionários', 'Fichas', 'Bebidas', 'Comidas', 'Despesas', 'Outros'];
 
   // Controle de abas
   abaAtiva: 'todas' | 'entradas' | 'saidas' | 'resumo' | 'pendentes' = 'todas';
@@ -221,13 +221,13 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
   }
 
   onCategoriaChange() {
-    if (this.categoriaMovimentacao === 'Premiação') {
+    if (this.categoriaMovimentacao === 'Premiação' || this.categoriaMovimentacao === 'Pgto Funcionários') {
       this.tipoMovimentacao = TipoMovimentacao.SAIDA;
     }
   }
 
   onTipoChange() {
-    if (this.tipoMovimentacao === TipoMovimentacao.ENTRADA && this.categoriaMovimentacao === 'Premiação') {
+    if (this.tipoMovimentacao === TipoMovimentacao.ENTRADA && (this.categoriaMovimentacao === 'Premiação' || this.categoriaMovimentacao === 'Pgto Funcionários')) {
       this.categoriaMovimentacao = 'Fichas';
     }
   }
@@ -276,9 +276,10 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.categoriaMovimentacao === 'Premiação') {
+    const categoriasComTorneio = ['Premiação', 'Pgto Funcionários'];
+    if (categoriasComTorneio.includes(this.categoriaMovimentacao)) {
       if (this.tipoMovimentacao !== TipoMovimentacao.SAIDA) {
-        this.toast.warning('Movimentações de Premiação devem ser do tipo Saída');
+        this.toast.warning(`Movimentações de ${this.categoriaMovimentacao} devem ser do tipo Saída`);
         return;
       }
       if (!this.torneioSelecionadoId) {
@@ -292,7 +293,7 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
       categoria: this.categoriaMovimentacao,
       descricao: this.descricaoMovimentacao,
       valor: this.valorMovimentacao,
-      torneioId: this.categoriaMovimentacao === 'Premiação' ? (this.torneioSelecionadoId ?? undefined) : undefined
+      torneioId: categoriasComTorneio.includes(this.categoriaMovimentacao) ? (this.torneioSelecionadoId ?? undefined) : undefined
     };
 
     this.caixaService.addMovimentacao(this.caixaId, dto).subscribe({
@@ -424,7 +425,24 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     if (!this.caixa) return [];
     const movs = this.caixa.movimentacoes ?? [];
     const saidas = movs.filter(m => m.tipo === TipoMovimentacao.SAIDA);
-    return this.agruparMovimentacoes(saidas);
+    
+    const grupos = new Map<string, { categoria: string; quantidade: number; total: number }>();
+    saidas.forEach(mov => {
+      const chave = mov.categoria;
+      if (grupos.has(chave)) {
+        const grupo = grupos.get(chave)!;
+        grupo.quantidade++;
+        grupo.total += mov.valor;
+      } else {
+        grupos.set(chave, {
+          categoria: mov.categoria,
+          quantidade: 1,
+          total: mov.valor
+        });
+      }
+    });
+    
+    return Array.from(grupos.values()).sort((a, b) => b.total - a.total);
   }
 
   /** Resumo de descontos por comanda */

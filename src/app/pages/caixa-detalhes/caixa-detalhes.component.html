@@ -360,17 +360,15 @@
               <div class="resumo-section" *ngIf="filtroResumo === 'todos' || filtroResumo === 'saidas'">
                 <h4 class="resumo-section-title saida">📉 Saídas</h4>
                 <div class="resumo-table">
-                  <div class="resumo-header">
+                  <div class="resumo-header resumo-header-3col">
                     <span class="col-categoria">Categoria</span>
-                    <span class="col-descricao">Descrição</span>
                     <span class="col-quantidade">Qtd</span>
                     <span class="col-total">Total</span>
                   </div>
                   <div 
                     *ngFor="let item of getResumoSaidas()" 
-                    class="resumo-row saida">
+                    class="resumo-row resumo-row-3col saida">
                     <span class="col-categoria">{{ item.categoria }}</span>
-                    <span class="col-descricao">{{ item.descricao }}</span>
                     <span class="col-quantidade">{{ item.quantidade }}x</span>
                     <span class="col-total">R$ {{ item.total.toFixed(2) }}</span>
                   </div>
@@ -621,7 +619,7 @@
         </select>
       </div>
 
-      <div class="form-group" *ngIf="categoriaMovimentacao === 'Premiação'">
+      <div class="form-group" *ngIf="categoriaMovimentacao === 'Premiação' || categoriaMovimentacao === 'Pgto Funcionários'">
         <label>Torneio em Andamento: *</label>
         <select [(ngModel)]="torneioSelecionadoId" class="form-control">
           <option [ngValue]="null" disabled>Selecione um torneio...</option>

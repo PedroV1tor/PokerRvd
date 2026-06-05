@@ -4,7 +4,10 @@ export interface Torneio {
   valorBuyIn: number;
   valorRebuySimples: number;
   valorRebuyDuplo: number;
+  valorRebuyTriplo: number;
   valorAddOn: number;
+  valorAddOnDuplo: number;
+  valorBuyIn2: number;
   status: StatusTorneio;
   dataInicio?: Date;
   dataFim?: Date;
@@ -24,7 +27,10 @@ export interface CreateTorneioDto {
   valorBuyIn: number;
   valorRebuySimples: number;
   valorRebuyDuplo: number;
+  valorRebuyTriplo: number;
   valorAddOn: number;
+  valorAddOnDuplo: number;
+  valorBuyIn2: number;
 }
 
 export interface UpdateTorneioDto {
@@ -32,7 +38,10 @@ export interface UpdateTorneioDto {
   valorBuyIn?: number;
   valorRebuySimples?: number;
   valorRebuyDuplo?: number;
+  valorRebuyTriplo?: number;
   valorAddOn?: number;
+  valorAddOnDuplo?: number;
+  valorBuyIn2?: number;
   status?: StatusTorneio;
 }
 
@@ -46,9 +55,16 @@ export interface TorneioStats {
   valorTotalRebuySimples: number;
   qtdRebuyDuplo: number;
   valorTotalRebuyDuplo: number;
+  qtdRebuyTriplo: number;
+  valorTotalRebuyTriplo: number;
   qtdAddOn: number;
   valorTotalAddOn: number;
+  qtdAddOnDuplo: number;
+  valorTotalAddOnDuplo: number;
+  qtdBuyIn2: number;
+  valorTotalBuyIn2: number;
   totalArrecadado: number;
   totalBebidas: number;
   totalPremiacao: number;
+  totalPgtoFuncionarios: number;
 }
