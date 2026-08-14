@@ -1,4 +1,4 @@
-# 🃏 PokerRvd - Sistema de Gerenciamento de Poker
+#  PokerRvd - Sistema de Gerenciamento de Poker
 
 Sistema completo para gerenciamento de poker club com controle de **comandas**, **fichas** e **bebidas**.
 
@@ -8,7 +8,7 @@ Desenvolvido com **Angular 18** (frontend) e **C# ASP.NET Core 8** (backend).
 
 Interface moderna com tema **verde neon** e **fundo escuro**, ideal para ambientes de poker club.
 
-## 🚀 Início Rápido
+##  Início Rápido
 
 ### 1. Clone o Repositório
 ```bash
@@ -102,36 +102,36 @@ PokerRvd/
 └── INTEGRACAO_ANGULAR_CSHARP.md # Guia de integração
 ```
 
-## ✨ Funcionalidades
+##  Funcionalidades
 
-### 🎮 Gerenciamento de Comandas
+###  Gerenciamento de Comandas
 - ✅ Criar, editar e fechar comandas
 - ✅ Visualização em cards modernos
 - ✅ Busca por jogador ou comanda
 - ✅ Filtros por tipo (Torneio, Cash, Bar)
 - ✅ Status em tempo real (Ativo/Fechado)
 
-### 💰 Controle Financeiro
+###  Controle Financeiro
 - ✅ Controle de fichas por comanda
 - ✅ Controle de bebidas e consumo
 - ✅ Cálculo automático de totais
 - ✅ Dashboard com estatísticas
 - ✅ Faturamento total em destaque
 
-### 🎲 Recursos Adicionais
+###  Recursos Adicionais
 - ✅ Gerenciamento de jogadores
 - ✅ Gerenciamento de mesas
 - ✅ Controle de produtos/bebidas
 - ✅ Sistema de estoque básico
 - ✅ API REST completa
 
-### 🎨 Interface
+###  Interface
 - ✅ Design moderno com tema verde neon
 - ✅ Responsivo (Mobile, Tablet, Desktop)
 - ✅ Animações suaves
 - ✅ UX intuitiva
 
-## 🛠️ Tecnologias
+##  Tecnologias
 
 ### Frontend
 - **Angular 18** - Framework web
@@ -167,7 +167,7 @@ GET/POST/PUT/DELETE /api/players  # CRUD Jogadores
 GET/POST           /api/games    # CRUD Mesas
 ```
 
-## 🎯 Casos de Uso
+##  Casos de Uso
 
 1. **Abrir Comanda**: Jogador chega, cria comanda, adiciona fichas
 2. **Consumo**: Durante o jogo, adiciona bebidas à comanda
@@ -175,7 +175,7 @@ GET/POST           /api/games    # CRUD Mesas
 4. **Fechamento**: Ao final, fecha comanda e visualiza total
 5. **Relatórios**: Consulta histórico e estatísticas
 
-## 🧪 Testes
+##  Testes
 
 **Frontend:**
 ```bash
@@ -189,7 +189,7 @@ cd backend/PokerRvd.Api
 dotnet test
 ```
 
-## 📦 Build para Produção
+##  Build para Produção
 
 **Frontend:**
 ```bash
@@ -300,14 +300,14 @@ Painel com estatísticas em tempo real
 
 ---
 
-## ⚡ Performance
+##  Performance
 
 - **Frontend**: Build otimizado com Angular 18
 - **Backend**: API RESTful com Entity Framework
 - **Hot Reload**: Desenvolvimento ágil em ambos
 - **Responsivo**: Interface adaptável a qualquer tela
 
-## 🎓 Aprendizado
+##  Aprendizado
 
 Este projeto demonstra:
 - Arquitetura frontend/backend separada
