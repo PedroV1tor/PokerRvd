@@ -97,6 +97,9 @@ public class FuncionariosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<FuncionarioDto>> Update(int id, [FromBody] UpdateFuncionarioDto dto)
     {
+        if (!string.IsNullOrEmpty(dto.NovaSenha) && !User.IsInRole("ADMIN"))
+            return Forbid();
+
         try
         {
             if (string.IsNullOrWhiteSpace(dto.Nome))

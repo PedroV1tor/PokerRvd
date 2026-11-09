@@ -1,6 +1,13 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.Hubs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,16 +26,104 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CORS__Origins: URLs do sistema separadas por vírgula. Em desenvolvimento libera localhost.
+var corsOrigins = (builder.Configuration["CORS:Origins"] ?? string.Empty)
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    .Select(origin => origin.TrimEnd('/'))
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+var corsLiberarLocalhost = builder.Environment.IsDevelopment();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.SetIsOriginAllowed(_ => true)
+        policy.SetIsOriginAllowed(origin =>
+                  corsOrigins.Contains(origin) ||
+                  (corsLiberarLocalhost && new Uri(origin).IsLoopback))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
+
+    // Landing page (produção e previews da Vercel): somente leitura de dados públicos
+    options.AddPolicy("PublicRead", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .WithMethods("GET");
+    });
 });
+
+// Jwt__Key: segredo de pelo menos 32 caracteres. Obrigatório fora de desenvolvimento.
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    if (!builder.Environment.IsDevelopment())
+        throw new InvalidOperationException("Configure a variável Jwt__Key (mínimo de 32 caracteres).");
+
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+}
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Jwt__Key deve ter no mínimo 32 caracteres.");
+
+var jwtOptions = new JwtOptions(
+    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+    builder.Configuration.GetValue("Jwt:ExpiraHoras", 12));
+builder.Services.AddSingleton(jwtOptions);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = jwtOptions.ChaveAssinatura,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            NameClaimType = JwtRegisteredClaimNames.Sub,
+            RoleClaimType = "role"
+        };
+
+        // WebSocket não envia header Authorization: o SignalR manda o token na query
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    context.Token = token;
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    // Toda rota exige login, exceto as marcadas com [AllowAnonymous]
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    // Consulta o banco para valer na hora quando a permissão muda
+    options.AddPolicy("Conteudo", policy => policy.RequireAssertion(async context =>
+    {
+        if (context.Resource is not HttpContext http) return false;
+        if (!int.TryParse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var usuarioId)) return false;
+
+        var db = http.RequestServices.GetRequiredService<PokerDbContext>();
+        var usuario = await db.Usuarios.AsNoTracking()
+            .Where(u => u.Id == usuarioId)
+            .Select(u => new { u.Ativo, u.Role, u.PermissaoConteudo })
+            .FirstOrDefaultAsync();
+
+        return usuario is { Ativo: true } && (usuario.Role == UserRole.ADMIN || usuario.PermissaoConteudo);
+    }));
+});
+
+builder.Services.AddOutputCache();
 
 // Connection string: usa DATABASE_URL (formato Railway) ou ConnectionStrings__DefaultConnection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -66,6 +161,8 @@ builder.Services.AddScoped<ICaixaService, CaixaService>();
 builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 builder.Services.AddScoped<ITorneioService, TorneioService>();
 builder.Services.AddScoped<IConferenciaService, ConferenciaService>();
+builder.Services.AddScoped<IConteudoService, ConteudoService>();
+builder.Services.AddHttpClient<IImagemService, ImagemService>();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
@@ -99,7 +196,9 @@ _ = Task.Run(async () =>
     {
         await db.Database.MigrateAsync();
         app.Logger.LogInformation("Banco de dados migrado e conectado.");
-        await DataSeeder.EnsureDefaultUsuariosAsync(db, app.Logger);
+        // O seeder redefine as contas padrão para senhas fixas: nunca rodar em produção
+        if (app.Environment.IsDevelopment())
+            await DataSeeder.EnsureDefaultUsuariosAsync(db, app.Logger);
     }
     catch (Exception ex)
     {
@@ -107,9 +206,14 @@ _ = Task.Run(async () =>
     }
 });
 
-// Swagger em todos os ambientes (útil para debug em produção)
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+if (corsOrigins.Count == 0 && !app.Environment.IsDevelopment())
+    app.Logger.LogWarning("CORS__Origins não configurado: o sistema não conseguirá chamar a API.");
 
 app.UseCors("AllowAngular");
 
@@ -119,7 +223,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseOutputCache();
 
 app.MapControllers();
 app.MapHub<PokerHub>("/hubs/poker");
@@ -134,6 +240,6 @@ app.MapGet("/", () => Results.Content("""
 <p><a href="/api/health">Health Check</a></p>
 <p><a href="/swagger">Swagger</a> (apenas em Development)</p>
 </body></html>
-""", "text/html"));
+""", "text/html")).AllowAnonymous();
 
 app.Run();

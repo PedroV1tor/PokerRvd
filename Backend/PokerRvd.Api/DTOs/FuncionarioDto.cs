@@ -20,6 +20,7 @@ public class FuncionarioDto
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
     public bool PermissaoConferencia { get; set; }
+    public bool PermissaoConteudo { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }
@@ -45,6 +46,7 @@ public class CreateFuncionarioDto
     public bool PermissaoFuncionarios { get; set; } = false;
     public bool PermissaoCaixas { get; set; } = false;
     public bool PermissaoConferencia { get; set; } = false;
+    public bool PermissaoConteudo { get; set; } = false;
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; } = false;
@@ -62,6 +64,9 @@ public class UpdateFuncionarioDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public bool Ativo { get; set; }
+
+    // Opcional: quando preenchida, substitui a senha. Somente ADMIN.
+    public string? NovaSenha { get; set; }
     
     // Permissões
     public bool PermissaoComandas { get; set; }
@@ -70,6 +75,7 @@ public class UpdateFuncionarioDto
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
     public bool PermissaoConferencia { get; set; }
+    public bool PermissaoConteudo { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }

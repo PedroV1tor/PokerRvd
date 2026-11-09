@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Services;
@@ -23,6 +24,7 @@ public class AuthController : ControllerBase
     /// Realiza login do usuário
     /// </summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
         try
@@ -58,6 +60,7 @@ public class AuthController : ControllerBase
     /// Registra um novo usuário
     /// </summary>
     [HttpPost("register")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
     {
         try

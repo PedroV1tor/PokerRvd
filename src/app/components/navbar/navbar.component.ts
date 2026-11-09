@@ -68,6 +68,13 @@ import { User } from '../../models/auth.model';
             (click)="setActiveMenu('conferencia')">
             Conferência
           </button>
+          <button
+            *ngIf="hasPermissionConteudo()"
+            class="nav-item"
+            [class.active]="activeMenu === 'conteudo'"
+            (click)="setActiveMenu('conteudo')">
+            Conteúdo
+          </button>
         </div>
 
         <div class="user-menu">
@@ -369,6 +376,17 @@ import { User } from '../../models/auth.model';
       color: #ff6666;
     }
 
+    @media (max-width: 1400px) {
+      .nav-menu {
+        gap: 0.25rem;
+      }
+
+      .nav-item {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.92rem;
+      }
+    }
+
     @media (max-width: 992px) {
       .navbar {
         padding: 0.875rem;
@@ -659,6 +677,8 @@ export class NavbarComponent implements OnInit {
       this.activeMenu = 'caixas';
     } else if (url.includes('/conferencia')) {
       this.activeMenu = 'conferencia';
+    } else if (url.includes('/conteudo')) {
+      this.activeMenu = 'conteudo';
     } else {
       this.activeMenu = 'comandas';
     }
@@ -708,6 +728,9 @@ export class NavbarComponent implements OnInit {
         break;
       case 'conferencia':
         this.router.navigate(['/conferencia']);
+        break;
+      case 'conteudo':
+        this.router.navigate(['/conteudo']);
         break;
     }
   }
@@ -772,5 +795,9 @@ export class NavbarComponent implements OnInit {
 
   hasPermissionConferencia(): boolean {
     return this.authService.hasPermissionConferencia();
+  }
+
+  hasPermissionConteudo(): boolean {
+    return this.authService.hasPermissionConteudo();
   }
 }

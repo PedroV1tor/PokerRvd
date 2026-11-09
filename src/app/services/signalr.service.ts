@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { ConfigService } from './config.service';
+import { AuthService } from './auth.service';
 
 /** Eventos emitidos pelo backend via SignalR */
 export type PokerEvent =
@@ -31,7 +32,10 @@ export class SignalrService implements OnDestroy {
   private readonly statusSubject = new Subject<boolean>();
   readonly onStatus = this.statusSubject.asObservable();
 
-  constructor(private config: ConfigService) {}
+  constructor(
+    private config: ConfigService,
+    private auth: AuthService
+  ) {}
 
   async connect(): Promise<void> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
@@ -41,6 +45,7 @@ export class SignalrService implements OnDestroy {
     const hubUrl = this.config.hubUrl;
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
+        accessTokenFactory: () => this.auth.getToken() ?? '',
         withCredentials: true,
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets

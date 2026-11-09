@@ -17,6 +17,8 @@ public class PokerDbContext : DbContext
     public DbSet<MovimentacaoCaixa> MovimentacoesCaixa { get; set; }
     public DbSet<Torneio> Torneios { get; set; }
     public DbSet<ConferenciaCaixa> ConferenciasCaixa { get; set; }
+    public DbSet<Postagem> Postagens { get; set; }
+    public DbSet<TorneioDoDia> TorneiosDoDia { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -98,6 +100,30 @@ public class PokerDbContext : DbContext
             entity.Property(e => e.ValorAddOn).HasPrecision(18, 2);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.Property(e => e.PremioTotal).HasPrecision(18, 2);
+        });
+
+        // Conteúdo da landing page
+        modelBuilder.Entity<Postagem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Titulo).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Conteudo).IsRequired().HasMaxLength(5000);
+            entity.Property(e => e.ImagemUrl).HasMaxLength(500);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => new { e.Status, e.DataPublicacao });
+        });
+
+        modelBuilder.Entity<TorneioDoDia>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Titulo).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Modalidade).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.BuyIn).HasPrecision(18, 2);
+            entity.Property(e => e.Garantido).HasPrecision(18, 2);
+            entity.Property(e => e.Descricao).HasMaxLength(1000);
+            entity.Property(e => e.ImagemUrl).HasMaxLength(500);
+            entity.HasIndex(e => new { e.Publicado, e.Fim });
+            entity.HasOne<Torneio>().WithMany().HasForeignKey(e => e.TorneioId).OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configurações para Conferência de Caixa

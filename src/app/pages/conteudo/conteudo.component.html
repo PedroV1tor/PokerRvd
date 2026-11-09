@@ -1,0 +1,198 @@
+<div class="conteudo-container">
+  <app-navbar></app-navbar>
+
+  <main class="main-content">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">📣 Conteúdo do site</h1>
+        <button class="btn-novo" *ngIf="aba === 'postagens'" (click)="novaPostagem()">
+          <span class="icon">+</span>
+          Nova Postagem
+        </button>
+        <button class="btn-novo" *ngIf="aba === 'torneio'" (click)="novoTorneioDoDia()">
+          <span class="icon">+</span>
+          Novo Torneio do Dia
+        </button>
+      </div>
+
+      <div class="abas">
+        <button class="aba-btn" [class.active]="aba === 'postagens'" (click)="aba = 'postagens'">Postagens</button>
+        <button class="aba-btn" [class.active]="aba === 'torneio'" (click)="aba = 'torneio'">Torneio do dia</button>
+      </div>
+
+      <p class="estado" *ngIf="loading">Carregando...</p>
+
+      <!-- Postagens -->
+      <ng-container *ngIf="aba === 'postagens' && !loading">
+        <p class="estado" *ngIf="postagens.length === 0">Nenhuma postagem ainda.</p>
+
+        <article class="item" *ngFor="let postagem of postagens">
+          <img *ngIf="postagem.imagemUrl" [src]="postagem.imagemUrl" alt="" class="item-imagem" />
+          <div class="item-corpo">
+            <div class="item-topo">
+              <h3>{{ postagem.titulo }}</h3>
+              <span class="badge" [ngClass]="postagem.status === 'PUBLICADO' ? 'publicado' : 'rascunho'">
+                {{ postagem.status === 'PUBLICADO' ? 'Publicado' : 'Rascunho' }}
+              </span>
+            </div>
+            <p class="item-texto">{{ postagem.conteudo }}</p>
+            <small *ngIf="postagem.dataPublicacao">Publicado em {{ postagem.dataPublicacao | date: 'dd/MM/yyyy HH:mm' }}</small>
+            <div class="item-acoes">
+              <button class="btn-acao destaque" (click)="alternarPublicacao(postagem)">
+                {{ postagem.status === 'PUBLICADO' ? 'Retirar do site' : 'Publicar' }}
+              </button>
+              <button class="btn-acao" (click)="editarPostagem(postagem)">Editar</button>
+              <button class="btn-acao perigo" (click)="excluirPostagem(postagem)">Excluir</button>
+            </div>
+          </div>
+        </article>
+      </ng-container>
+
+      <!-- Torneio do dia -->
+      <ng-container *ngIf="aba === 'torneio' && !loading">
+        <p class="estado" *ngIf="torneiosDoDia.length === 0">Nenhum torneio do dia cadastrado.</p>
+
+        <article class="item" *ngFor="let torneio of torneiosDoDia">
+          <img *ngIf="torneio.imagemUrl" [src]="torneio.imagemUrl" alt="" class="item-imagem" />
+          <div class="item-corpo">
+            <div class="item-topo">
+              <h3>{{ torneio.titulo }}</h3>
+              <span class="badge" [ngClass]="situacaoTorneio(torneio).classe">{{ situacaoTorneio(torneio).texto }}</span>
+            </div>
+            <p class="item-texto">{{ torneio.modalidade }}</p>
+            <p class="item-horario">
+              {{ torneio.inicio | date: 'dd/MM HH:mm' }} até {{ torneio.fim | date: 'dd/MM HH:mm' }}
+            </p>
+            <small>
+              <ng-container *ngIf="torneio.buyIn != null">Buy-in {{ moeda(torneio.buyIn) }}</ng-container>
+              <ng-container *ngIf="torneio.garantido != null"> · Garantido {{ moeda(torneio.garantido) }}</ng-container>
+            </small>
+            <div class="item-acoes">
+              <button class="btn-acao" (click)="editarTorneioDoDia(torneio)">Editar</button>
+              <button class="btn-acao perigo" (click)="excluirTorneioDoDia(torneio)">Excluir</button>
+            </div>
+          </div>
+        </article>
+      </ng-container>
+    </div>
+  </main>
+</div>
+
+<!-- Modal postagem -->
+<div class="modal-overlay" *ngIf="formPostagem as form" (click)="formPostagem = null">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ form.id ? 'Editar Postagem' : 'Nova Postagem' }}</h3>
+      <button class="btn-close" (click)="formPostagem = null">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Título: *</label>
+        <input type="text" [(ngModel)]="form.titulo" class="form-control" maxlength="200" />
+      </div>
+
+      <div class="form-group">
+        <label>Texto: *</label>
+        <textarea [(ngModel)]="form.conteudo" class="form-control" rows="6" maxlength="5000"></textarea>
+      </div>
+
+      <ng-container *ngTemplateOutlet="campoImagem; context: { destino: form }"></ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="formPostagem = null">Cancelar</button>
+      <button class="btn btn-primary" [disabled]="salvando || enviandoImagem" (click)="salvarPostagem()">
+        {{ salvando ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal torneio do dia -->
+<div class="modal-overlay" *ngIf="formTorneio as form" (click)="formTorneio = null">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ form.id ? 'Editar Torneio do Dia' : 'Novo Torneio do Dia' }}</h3>
+      <button class="btn-close" (click)="formTorneio = null">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group" *ngIf="torneiosCadastrados.length > 0">
+        <label>Puxar dados de um torneio cadastrado:</label>
+        <select class="form-control" [ngModel]="form.torneioId" (ngModelChange)="aoSelecionarTorneio($event)">
+          <option [ngValue]="null">Nenhum</option>
+          <option *ngFor="let torneio of torneiosCadastrados" [ngValue]="torneio.id">{{ torneio.nome }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Título: *</label>
+        <input type="text" [(ngModel)]="form.titulo" class="form-control" maxlength="200" />
+      </div>
+
+      <div class="form-group">
+        <label>Modalidade: *</label>
+        <input type="text" [(ngModel)]="form.modalidade" class="form-control" maxlength="50" list="modalidades-torneio" />
+        <datalist id="modalidades-torneio">
+          <option value="Texas Hold'em"></option>
+          <option value="Omaha"></option>
+        </datalist>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Início: *</label>
+          <input type="datetime-local" [(ngModel)]="form.inicio" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Fim: *</label>
+          <input type="datetime-local" [(ngModel)]="form.fim" class="form-control" />
+        </div>
+      </div>
+      <p class="form-note">O torneio sai do site automaticamente quando chegar o horário de fim.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Buy-in (R$):</label>
+          <input type="number" [(ngModel)]="form.buyIn" class="form-control" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Garantido (R$):</label>
+          <input type="number" [(ngModel)]="form.garantido" class="form-control" min="0" step="0.01" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição:</label>
+        <textarea [(ngModel)]="form.descricao" class="form-control" rows="3" maxlength="1000"></textarea>
+      </div>
+
+      <ng-container *ngTemplateOutlet="campoImagem; context: { destino: form }"></ng-container>
+
+      <label class="form-check">
+        <input type="checkbox" [(ngModel)]="form.publicado" />
+        Mostrar no site
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="formTorneio = null">Cancelar</button>
+      <button class="btn btn-primary" [disabled]="salvando || enviandoImagem" (click)="salvarTorneioDoDia()">
+        {{ salvando ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #campoImagem let-destino="destino">
+  <div class="form-group">
+    <label>Imagem (JPG, PNG ou WebP, até 5 MB):</label>
+    <input type="file" accept="image/jpeg,image/png,image/webp" class="form-control" (change)="selecionarImagem($event, destino)" />
+    <p class="form-note" *ngIf="enviandoImagem">Enviando imagem...</p>
+    <div class="previa" *ngIf="destino.imagemUrl">
+      <img [src]="destino.imagemUrl" alt="Prévia da imagem" />
+      <button type="button" class="btn-acao perigo" (click)="destino.imagemUrl = null">Remover imagem</button>
+    </div>
+  </div>
+</ng-template>

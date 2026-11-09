@@ -11,6 +11,7 @@ export interface User {
   permissaoFuncionarios?: boolean;
   permissaoCaixas?: boolean;
   permissaoConferencia?: boolean;
+  permissaoConteudo?: boolean;
   permissaoFecharComanda?: boolean;
   permissaoRemoverItemComanda?: boolean;
   permissaoAdicionarEstoque?: boolean;

@@ -291,6 +291,52 @@ namespace PokerRvd.Api.Migrations
                     b.ToTable("MovimentacoesCaixa");
                 });
 
+            modelBuilder.Entity("PokerRvd.Api.Models.Postagem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AutorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Conteudo")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DataPublicacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImagemUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "DataPublicacao");
+
+                    b.ToTable("Postagens");
+                });
+
             modelBuilder.Entity("PokerRvd.Api.Models.Produto", b =>
                 {
                     b.Property<int>("Id")
@@ -395,6 +441,67 @@ namespace PokerRvd.Api.Migrations
                     b.ToTable("Torneios");
                 });
 
+            modelBuilder.Entity("PokerRvd.Api.Models.TorneioDoDia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("BuyIn")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("Fim")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Garantido")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("ImagemUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("Inicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Modalidade")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("Publicado")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("TorneioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TorneioId");
+
+                    b.HasIndex("Publicado", "Fim");
+
+                    b.ToTable("TorneiosDoDia");
+                });
+
             modelBuilder.Entity("PokerRvd.Api.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -436,6 +543,9 @@ namespace PokerRvd.Api.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoConferencia")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoConteudo")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoFecharComanda")
@@ -497,6 +607,14 @@ namespace PokerRvd.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Caixa");
+                });
+
+            modelBuilder.Entity("PokerRvd.Api.Models.TorneioDoDia", b =>
+                {
+                    b.HasOne("PokerRvd.Api.Models.Torneio", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("PokerRvd.Api.Models.Caixa", b =>

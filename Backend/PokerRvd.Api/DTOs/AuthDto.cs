@@ -34,6 +34,7 @@ public class UserDto
     public bool PermissaoFuncionarios { get; set; }
     public bool PermissaoCaixas { get; set; }
     public bool PermissaoConferencia { get; set; }
+    public bool PermissaoConteudo { get; set; }
 
     // Permissões específicas de ações em comandas
     public bool PermissaoFecharComanda { get; set; }

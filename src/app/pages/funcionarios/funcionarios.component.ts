@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { FuncionarioService } from '../../services/funcionario.service';
+import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
 import { Funcionario, CreateFuncionarioDto, UpdateFuncionarioDto, UserRole } from '../../models/funcionario.model';
@@ -35,6 +36,7 @@ export class FuncionariosComponent implements OnInit {
     permissaoFuncionarios: false,
     permissaoCaixas: false,
     permissaoConferencia: false,
+    permissaoConteudo: false,
     permissaoFecharComanda: false,
     permissaoRemoverItemComanda: false,
     permissaoAdicionarEstoque: false,
@@ -56,6 +58,7 @@ export class FuncionariosComponent implements OnInit {
     permissaoFuncionarios: false,
     permissaoCaixas: false,
     permissaoConferencia: false,
+    permissaoConteudo: false,
     permissaoFecharComanda: false,
     permissaoRemoverItemComanda: false,
     permissaoAdicionarEstoque: false,
@@ -68,11 +71,18 @@ export class FuncionariosComponent implements OnInit {
     { value: 'ATENDENTE', label: 'Atendente' }
   ];
 
+  novaSenhaEdicao = '';
+
   constructor(
     private funcionarioService: FuncionarioService,
     private toast: ToastService,
-    private confirm: ConfirmService
+    private confirm: ConfirmService,
+    private authService: AuthService
   ) {}
+
+  get podeAlterarSenha(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.carregarFuncionarios();
@@ -148,6 +158,7 @@ export class FuncionariosComponent implements OnInit {
       permissaoFuncionarios: false,
       permissaoCaixas: false,
       permissaoConferencia: false,
+      permissaoConteudo: false,
       permissaoFecharComanda: false,
       permissaoRemoverItemComanda: false,
       permissaoAdicionarEstoque: false,
@@ -171,6 +182,7 @@ export class FuncionariosComponent implements OnInit {
   }
 
   abrirModalEdicao(funcionario: Funcionario): void {
+    this.novaSenhaEdicao = '';
     this.funcionarioEditando = {
       id: funcionario.id,
       nome: funcionario.nome,
@@ -184,6 +196,7 @@ export class FuncionariosComponent implements OnInit {
       permissaoFuncionarios: funcionario.permissaoFuncionarios,
       permissaoCaixas: funcionario.permissaoCaixas,
       permissaoConferencia: funcionario.permissaoConferencia,
+      permissaoConteudo: funcionario.permissaoConteudo,
       permissaoFecharComanda: funcionario.permissaoFecharComanda,
       permissaoRemoverItemComanda: funcionario.permissaoRemoverItemComanda,
       permissaoAdicionarEstoque: funcionario.permissaoAdicionarEstoque ?? false,
@@ -195,10 +208,16 @@ export class FuncionariosComponent implements OnInit {
 
   fecharModalEdicao(): void {
     this.showModalEdicao = false;
+    this.novaSenhaEdicao = '';
   }
 
   salvarEdicao(): void {
     if (!this.isFormEdicaoValid()) return;
+
+    if (this.novaSenhaEdicao && this.novaSenhaEdicao.length < 8) {
+      this.toast.warning('A nova senha deve ter no mínimo 8 caracteres');
+      return;
+    }
 
     const antigoAtivo = this.funcionarios.find(f => f.id === this.funcionarioEditando.id)?.ativo;
     const mudouStatus = antigoAtivo !== this.funcionarioEditando.ativo;
@@ -209,12 +228,14 @@ export class FuncionariosComponent implements OnInit {
       email: this.funcionarioEditando.email,
       role: this.funcionarioEditando.role,
       ativo: this.funcionarioEditando.ativo,
+      novaSenha: this.novaSenhaEdicao || undefined,
       permissaoComandas: this.funcionarioEditando.permissaoComandas,
       permissaoTorneios: this.funcionarioEditando.permissaoTorneios,
       permissaoProdutos: this.funcionarioEditando.permissaoProdutos,
       permissaoFuncionarios: this.funcionarioEditando.permissaoFuncionarios,
       permissaoCaixas: this.funcionarioEditando.permissaoCaixas,
       permissaoConferencia: this.funcionarioEditando.permissaoConferencia,
+      permissaoConteudo: this.funcionarioEditando.permissaoConteudo,
       permissaoFecharComanda: this.funcionarioEditando.permissaoFecharComanda,
       permissaoRemoverItemComanda: this.funcionarioEditando.permissaoRemoverItemComanda,
       permissaoAdicionarEstoque: this.funcionarioEditando.permissaoAdicionarEstoque ?? false,
@@ -304,10 +325,11 @@ export class FuncionariosComponent implements OnInit {
     torneios: false,
     produtos: false,
     funcionarios: false,
-    caixas: false
+    caixas: false,
+    conteudo: false
   };
 
-  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoConferencia' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
+  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoConferencia' | 'permissaoConteudo' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
     {
       id: 'comandas',
       label: 'Módulo Comandas',
@@ -330,7 +352,8 @@ export class FuncionariosComponent implements OnInit {
       ]
     },
     { id: 'funcionarios', label: 'Módulo Funcionários', icon: '👥', children: [{ key: 'permissaoFuncionarios', label: 'Funcionários' }] },
-    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }, { key: 'permissaoConferencia', label: 'Conferência de Caixa' }] }
+    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }, { key: 'permissaoConferencia', label: 'Conferência de Caixa' }] },
+    { id: 'conteudo', label: 'Módulo Conteúdo do Site', icon: '📣', children: [{ key: 'permissaoConteudo', label: 'Postagens e Torneio do dia' }] }
   ];
 
   toggleModuloExpand(id: string): void {

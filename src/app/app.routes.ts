@@ -50,6 +50,12 @@ export const routes: Routes = [
     data: { permission: 'conferencia' }
   },
   {
+    path: 'conteudo',
+    loadComponent: () => import('./pages/conteudo/conteudo.component').then(m => m.ConteudoComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'conteudo' }
+  },
+  {
     path: 'funcionarios',
     loadComponent: () => import('./pages/funcionarios/funcionarios.component').then(m => m.FuncionariosComponent),
     canActivate: [authGuard, permissionGuard],

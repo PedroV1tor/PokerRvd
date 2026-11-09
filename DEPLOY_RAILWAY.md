@@ -29,7 +29,9 @@
 
 **Variáveis:**
 - `DATABASE_URL` – referência ao PostgreSQL (ou o connection string completo)
-- `CORS__Origins` – URL do frontend, ex: `https://poker-rvd-web.up.railway.app` (ajuste depois de gerar o domínio)
+- `Jwt__Key` – **obrigatória**: segredo aleatório de pelo menos 32 caracteres. Sem ela a API não sobe. Trocá-la encerra todas as sessões.
+- `CORS__Origins` – **obrigatória**: URL do sistema, ex: `https://poker-rvd-web.up.railway.app` (várias separadas por vírgula, sem a do site)
+- `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret` – envio de imagens das postagens. Sem elas o resto funciona, mas o upload responde que não está configurado.
 
 **Networking:** Generate Domain → ex: `https://poker-rvd-api.up.railway.app`
 

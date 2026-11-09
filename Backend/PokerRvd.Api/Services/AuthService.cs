@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
 using PokerRvd.Api.Models;
@@ -9,10 +12,12 @@ namespace PokerRvd.Api.Services;
 public class AuthService : IAuthService
 {
     private readonly PokerDbContext _context;
+    private readonly JwtOptions _jwt;
 
-    public AuthService(PokerDbContext context)
+    public AuthService(PokerDbContext context, JwtOptions jwt)
     {
         _context = context;
+        _jwt = jwt;
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -147,11 +152,19 @@ public class AuthService : IAuthService
 
     private string GenerateToken(Usuario usuario)
     {
-        // Por enquanto, um token simples
-        // Em produção, use JWT
-        return Convert.ToBase64String(Encoding.UTF8.GetBytes(
-            $"{usuario.Id}:{usuario.Email}:{DateTime.UtcNow.Ticks}"
-        ));
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+            new Claim("role", usuario.Role.ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(_jwt.ExpiraHoras),
+            signingCredentials: new SigningCredentials(_jwt.ChaveAssinatura, SecurityAlgorithms.HmacSha256));
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     private bool IsValidEmail(string email)
@@ -184,6 +197,7 @@ public class AuthService : IAuthService
             PermissaoFuncionarios = usuario.PermissaoFuncionarios,
             PermissaoCaixas = usuario.PermissaoCaixas,
             PermissaoConferencia = usuario.PermissaoConferencia,
+            PermissaoConteudo = usuario.PermissaoConteudo,
             PermissaoFecharComanda = usuario.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,

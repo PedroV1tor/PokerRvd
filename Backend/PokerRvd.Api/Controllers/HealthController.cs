@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokerRvd.Api.Data;
@@ -19,6 +20,7 @@ public class HealthController : ControllerBase
     /// Endpoint para verificar se a API está funcionando
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<object> GetHealth()
     {
         return Ok(new

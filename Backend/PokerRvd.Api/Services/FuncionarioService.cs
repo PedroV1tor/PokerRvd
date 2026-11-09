@@ -60,6 +60,7 @@ public class FuncionarioService : IFuncionarioService
             PermissaoFuncionarios = dto.PermissaoFuncionarios,
             PermissaoCaixas = dto.PermissaoCaixas,
             PermissaoConferencia = dto.PermissaoConferencia,
+            PermissaoConteudo = dto.PermissaoConteudo,
             PermissaoFecharComanda = dto.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque,
@@ -94,6 +95,14 @@ public class FuncionarioService : IFuncionarioService
         if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
             role = UserRole.ATENDENTE;
 
+        if (!string.IsNullOrEmpty(dto.NovaSenha))
+        {
+            if (dto.NovaSenha.Length < 8)
+                throw new InvalidOperationException("A nova senha deve ter no mínimo 8 caracteres");
+
+            funcionario.SenhaHash = PasswordHasher.Hash(dto.NovaSenha);
+        }
+
         funcionario.Nome = dto.Nome;
         funcionario.Cpf = cpfLimpo;
         funcionario.Email = dto.Email.ToLower();
@@ -105,6 +114,7 @@ public class FuncionarioService : IFuncionarioService
         funcionario.PermissaoFuncionarios = dto.PermissaoFuncionarios;
         funcionario.PermissaoCaixas = dto.PermissaoCaixas;
         funcionario.PermissaoConferencia = dto.PermissaoConferencia;
+        funcionario.PermissaoConteudo = dto.PermissaoConteudo;
         funcionario.PermissaoFecharComanda = dto.PermissaoFecharComanda;
         funcionario.PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda;
         funcionario.PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque;
@@ -155,6 +165,7 @@ public class FuncionarioService : IFuncionarioService
             PermissaoFuncionarios = usuario.PermissaoFuncionarios,
             PermissaoCaixas = usuario.PermissaoCaixas,
             PermissaoConferencia = usuario.PermissaoConferencia,
+            PermissaoConteudo = usuario.PermissaoConteudo,
             PermissaoFecharComanda = usuario.PermissaoFecharComanda,
             PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
             PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,
