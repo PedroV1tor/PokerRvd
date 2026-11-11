@@ -72,7 +72,7 @@ export class ComandaDetalhesComponent implements OnInit, OnDestroy {
     private signalr: SignalrService,
     private toast: ToastService,
     private confirm: ConfirmService,
-    private auth: AuthService
+    public auth: AuthService
   ) {}
 
   ngOnInit() {

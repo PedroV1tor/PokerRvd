@@ -29,23 +29,19 @@ public class PublicController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("torneio-do-dia")]
+    [HttpGet("torneios-agenda")]
     [OutputCache(Duration = CacheSegundos)]
     [ResponseCache(Duration = CacheSegundos, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<TorneioDoDiaPublicoDto>> GetTorneioDoDia()
+    public async Task<ActionResult<List<TorneioDoDiaPublicoDto>>> GetAgenda()
     {
         try
         {
-            var torneio = await _conteudoService.GetTorneioDoDiaPublicoAsync();
-            if (torneio == null)
-                return NoContent();
-
-            return Ok(torneio);
+            return Ok(await _conteudoService.GetAgendaPublicaAsync());
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar torneio do dia");
-            return StatusCode(500, "Erro ao buscar torneio do dia");
+            _logger.LogError(ex, "Erro ao buscar agenda de torneios");
+            return StatusCode(500, "Erro ao buscar agenda de torneios");
         }
     }
 

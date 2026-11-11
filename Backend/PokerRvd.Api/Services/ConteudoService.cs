@@ -9,6 +9,8 @@ public class ConteudoService : IConteudoService
 {
     private const string Rascunho = "RASCUNHO";
     private const string Publicado = "PUBLICADO";
+    private const int DiasAgenda = 7;
+    private const int LimiteAgenda = 30;
 
     private readonly PokerDbContext _context;
 
@@ -159,17 +161,20 @@ public class ConteudoService : IConteudoService
             .ToListAsync();
     }
 
-    public async Task<TorneioDoDiaPublicoDto?> GetTorneioDoDiaPublicoAsync()
+    public async Task<List<TorneioDoDiaPublicoDto>> GetAgendaPublicaAsync()
     {
         var agora = DateTime.UtcNow;
+        var limite = agora.AddDays(DiasAgenda);
 
         // O torneio sai do site sozinho quando passa do fim informado por quem publicou
         return await _context.TorneiosDoDia
             .AsNoTracking()
-            .Where(t => t.Publicado && t.Fim > agora)
+            .Where(t => t.Publicado && t.Fim > agora && t.Inicio < limite)
             .OrderBy(t => t.Inicio)
+            .Take(LimiteAgenda)
             .Select(t => new TorneioDoDiaPublicoDto
             {
+                Id = t.Id,
                 Titulo = t.Titulo,
                 Modalidade = t.Modalidade,
                 Inicio = t.Inicio,
@@ -179,7 +184,7 @@ public class ConteudoService : IConteudoService
                 Descricao = t.Descricao,
                 ImagemUrl = t.ImagemUrl
             })
-            .FirstOrDefaultAsync();
+            .ToListAsync();
     }
 
     // ==================== HELPERS ====================

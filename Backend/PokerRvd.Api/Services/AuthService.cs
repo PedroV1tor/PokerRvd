@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using PokerRvd.Api.Data;
 using PokerRvd.Api.DTOs;
@@ -13,35 +14,48 @@ public class AuthService : IAuthService
 {
     private readonly PokerDbContext _context;
     private readonly JwtOptions _jwt;
+    private readonly IHostEnvironment _env;
+    private readonly IMemoryCache _cache;
 
-    public AuthService(PokerDbContext context, JwtOptions jwt)
+    private const int MaximoFalhasPorConta = 8;
+    private static readonly TimeSpan JanelaFalhas = TimeSpan.FromMinutes(15);
+
+    public AuthService(PokerDbContext context, JwtOptions jwt, IHostEnvironment env, IMemoryCache cache)
     {
+        _cache = cache;
         _context = context;
         _jwt = jwt;
+        _env = env;
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
+        var chaveFalhas = $"login-falhas:{request.Email.Trim().ToLowerInvariant()}";
+        if (_cache.TryGetValue(chaveFalhas, out int falhas) && falhas >= MaximoFalhasPorConta)
+        {
+            return new AuthResponse
+            {
+                Message = "Muitas tentativas incorretas. Aguarde 15 minutos e tente novamente."
+            };
+        }
+
         // Buscar usuário por email
         var usuario = await _context.Usuarios
             .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
 
         if (usuario == null)
+            PasswordHasher.SimularVerificacao(request.Senha);
+
+        if (usuario == null || !VerifyPassword(request.Senha, usuario.SenhaHash))
         {
-            return new AuthResponse 
-            { 
-                Message = "E-mail ou senha incorretos" 
+            _cache.Set(chaveFalhas, falhas + 1, JanelaFalhas);
+            return new AuthResponse
+            {
+                Message = "E-mail ou senha incorretos"
             };
         }
 
-        // Verificar senha
-        if (!VerifyPassword(request.Senha, usuario.SenhaHash))
-        {
-            return new AuthResponse 
-            { 
-                Message = "E-mail ou senha incorretos" 
-            };
-        }
+        _cache.Remove(chaveFalhas);
 
         // Verificar se está ativo
         if (!usuario.Ativo)
@@ -51,6 +65,17 @@ public class AuthService : IAuthService
                 Message = "Usuário inativo. Entre em contato com o administrador." 
             };
         }
+
+        if (!_env.IsDevelopment() && SenhasPadrao.EhSenhaPadrao(request.Senha))
+        {
+            return new AuthResponse
+            {
+                Message = "Esta conta usa uma senha padrão e está bloqueada. Peça a troca da senha ao administrador."
+            };
+        }
+
+        if (PasswordHasher.PrecisaAtualizar(usuario.SenhaHash))
+            usuario.SenhaHash = HashPassword(request.Senha);
 
         // Atualizar último acesso
         usuario.UltimoAcesso = DateTime.UtcNow;
@@ -182,7 +207,7 @@ public class AuthService : IAuthService
 
     private UserDto MapToUserDto(Usuario usuario)
     {
-        return new UserDto
+        var dto = new UserDto
         {
             Id = usuario.Id,
             Nome = usuario.Nome,
@@ -190,18 +215,9 @@ public class AuthService : IAuthService
             Email = usuario.Email,
             Role = usuario.Role.ToString(),
             Ativo = usuario.Ativo,
-            DataCadastro = usuario.DataCadastro,
-            PermissaoComandas = usuario.PermissaoComandas,
-            PermissaoTorneios = usuario.PermissaoTorneios,
-            PermissaoProdutos = usuario.PermissaoProdutos,
-            PermissaoFuncionarios = usuario.PermissaoFuncionarios,
-            PermissaoCaixas = usuario.PermissaoCaixas,
-            PermissaoConferencia = usuario.PermissaoConferencia,
-            PermissaoConteudo = usuario.PermissaoConteudo,
-            PermissaoFecharComanda = usuario.PermissaoFecharComanda,
-            PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
-            PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,
-            PermissaoCadastrarProduto = usuario.PermissaoCadastrarProduto
+            DataCadastro = usuario.DataCadastro
         };
+        dto.CopiarPermissoesDe(usuario);
+        return dto;
     }
 }

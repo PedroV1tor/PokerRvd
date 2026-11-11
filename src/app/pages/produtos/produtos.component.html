@@ -81,10 +81,10 @@
             </span>
           </td>
           <td class="acoes">
-            <button class="btn-editar" (click)="abrirModalEdicao(produto)" title="Editar">
+            <button *ngIf="auth.pode('permissaoEditarProduto')" class="btn-editar" (click)="abrirModalEdicao(produto)" title="Editar">
               ✏️
             </button>
-            <button class="btn-deletar" (click)="deletarProduto(produto.id)" title="Deletar">
+            <button *ngIf="auth.pode('permissaoExcluirProduto')" class="btn-deletar" (click)="deletarProduto(produto.id)" title="Deletar">
               🗑️
             </button>
           </td>

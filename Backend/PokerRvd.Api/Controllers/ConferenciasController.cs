@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -20,6 +22,7 @@ public class ConferenciasController : ControllerBase
     /// <summary>
     /// Lista todos os lançamentos de conferência
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoConferencia))]
     [HttpGet]
     public async Task<ActionResult<List<ConferenciaDto>>> GetAll()
     {
@@ -38,6 +41,7 @@ public class ConferenciasController : ControllerBase
     /// <summary>
     /// Obtém um lançamento por ID
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoConferencia))]
     [HttpGet("{id}")]
     public async Task<ActionResult<ConferenciaDto>> GetById(int id)
     {
@@ -59,6 +63,8 @@ public class ConferenciasController : ControllerBase
     /// <summary>
     /// Cria um novo lançamento
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoNovaConferencia))]
+    [Authorize(Policy = nameof(Usuario.PermissaoSalvarConferencia))]
     [HttpPost]
     public async Task<ActionResult<ConferenciaDto>> Create([FromBody] CreateConferenciaDto dto)
     {
@@ -80,6 +86,8 @@ public class ConferenciasController : ControllerBase
     /// <summary>
     /// Atualiza um lançamento existente
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoEditarConferencia))]
+    [Authorize(Policy = nameof(Usuario.PermissaoSalvarConferencia))]
     [HttpPut("{id}")]
     public async Task<ActionResult<ConferenciaDto>> Update(int id, [FromBody] UpdateConferenciaDto dto)
     {
@@ -104,6 +112,7 @@ public class ConferenciasController : ControllerBase
     /// <summary>
     /// Exclui um lançamento
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoExcluirConferencia))]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {

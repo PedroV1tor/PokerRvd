@@ -12,7 +12,7 @@
           </h1>
           <p class="page-subtitle">Cadastre e gerencie todos os funcionários do sistema</p>
         </div>
-        <button class="btn-novo-header" (click)="abrirModal()">
+        <button *ngIf="auth.pode('permissaoCriarFuncionario')" class="btn-novo-header" (click)="abrirModal()">
           <span class="btn-icon">+</span>
           Novo Funcionário
         </button>
@@ -126,10 +126,10 @@
                 </span>
               </td>
               <td class="acoes">
-                <button class="btn-editar" (click)="abrirModalEdicao(funcionario)" title="Editar">
+                <button *ngIf="auth.pode('permissaoEditarFuncionario') && podeGerenciar(funcionario)" class="btn-editar" (click)="abrirModalEdicao(funcionario)" title="Editar">
                   ✏️
                 </button>
-                <button class="btn-deletar" (click)="deletarFuncionario(funcionario.id)" title="Desativar">
+                <button *ngIf="auth.pode('permissaoDesativarFuncionario') && podeGerenciar(funcionario)" class="btn-deletar" (click)="deletarFuncionario(funcionario.id)" title="Desativar">
                   🗑️
                 </button>
               </td>
@@ -230,7 +230,7 @@
                 name="role"
                 required
               >
-                <option *ngFor="let role of roles" [value]="role.value">
+                <option *ngFor="let role of rolesDisponiveis" [value]="role.value">
                   {{ role.label }}
                 </option>
               </select>
@@ -239,7 +239,7 @@
         </div>
 
         <div *ngIf="modalTab === 'permissoes'" class="modal-tab-content permissoes-tab">
-          <p class="permissoes-subtitle">Selecione os módulos e ações que este funcionário terá acesso</p>
+          <p class="permissoes-subtitle">Selecione as seções do menu e os botões que este funcionário poderá usar</p>
           <div class="permissoes-tree">
             <div *ngFor="let modulo of modulosPermissoes" class="tree-modulo">
               <div class="tree-modulo-header">
@@ -261,6 +261,7 @@
                   <input
                     type="checkbox"
                     [ngModel]="getPermissao(novoFuncionario, item.key)"
+                    [disabled]="!podeConceder(novoFuncionario, item.key)"
                     (ngModelChange)="setPermissao(novoFuncionario, item.key, $event)"
                     [name]="'novo-' + item.key"
                   />
@@ -346,7 +347,7 @@
               name="editar-role"
               required
             >
-              <option *ngFor="let role of roles" [value]="role.value">
+              <option *ngFor="let role of rolesDisponiveis" [value]="role.value">
                 {{ role.label }}
               </option>
             </select>
@@ -377,7 +378,7 @@
         </div>
 
         <div *ngIf="modalEdicaoTab === 'permissoes'" class="modal-tab-content permissoes-tab">
-          <p class="permissoes-subtitle">Selecione os módulos e ações que este funcionário terá acesso</p>
+          <p class="permissoes-subtitle">Selecione as seções do menu e os botões que este funcionário poderá usar</p>
           <div class="permissoes-tree">
             <div *ngFor="let modulo of modulosPermissoes" class="tree-modulo">
               <div class="tree-modulo-header">
@@ -399,6 +400,7 @@
                   <input
                     type="checkbox"
                     [ngModel]="getPermissao(funcionarioEditando, item.key)"
+                    [disabled]="!podeConceder(funcionarioEditando, item.key)"
                     (ngModelChange)="setPermissao(funcionarioEditando, item.key, $event)"
                     [name]="'editar-' + item.key"
                   />

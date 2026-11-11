@@ -110,12 +110,12 @@
 
           <!-- Ações -->
           <div class="actions-card" *ngIf="caixa.status === StatusCaixa.ABERTO">
-            <button class="btn-action primary" (click)="abrirModalMovimentacao()">
+            <button *ngIf="auth.pode('permissaoNovaMovimentacaoCaixa')" class="btn-action primary" (click)="abrirModalMovimentacao()">
               <span class="icon">➕</span>
               Nova Movimentação
             </button>
             
-            <button class="btn-action danger" (click)="abrirModalFechar()">
+            <button *ngIf="auth.pode('permissaoFecharCaixa')" class="btn-action danger" (click)="abrirModalFechar()">
               <span class="icon">🔒</span>
               Fechar Caixa
             </button>
@@ -194,7 +194,7 @@
                     </span>
                   </span>
                   <span class="col-acao">
-                    <button type="button" class="btn-quitar" (click)="abrirModalQuitarPendencia(comanda)">
+                    <button *ngIf="auth.pode('permissaoQuitarPendenciaCaixa')" type="button" class="btn-quitar" (click)="abrirModalQuitarPendencia(comanda)">
                       Quitar pendência
                     </button>
                   </span>
@@ -610,7 +610,7 @@
       <div class="form-group">
         <div class="label-with-button">
           <label>Categoria:</label>
-          <button type="button" class="btn-criar-categoria" (click)="abrirModalNovaCategoria()" title="Criar nova categoria">
+          <button *ngIf="auth.pode('permissaoCriarCategoriaCaixa')" type="button" class="btn-criar-categoria" (click)="abrirModalNovaCategoria()" title="Criar nova categoria">
             + Nova Categoria
           </button>
         </div>

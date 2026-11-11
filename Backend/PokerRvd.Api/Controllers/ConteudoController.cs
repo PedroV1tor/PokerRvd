@@ -2,13 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
 
 [ApiController]
 [Route("api/conteudo")]
-[Authorize(Policy = "Conteudo")]
+[Authorize(Policy = nameof(Usuario.PermissaoConteudo))]
 public class ConteudoController : ControllerBase
 {
     private const long TamanhoMaximoImagem = 5 * 1024 * 1024;
@@ -43,6 +44,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoNovaPostagem))]
     [HttpPost("postagens")]
     public async Task<ActionResult<PostagemDto>> CreatePostagem([FromBody] SalvarPostagemDto dto)
     {
@@ -61,6 +63,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoEditarPostagem))]
     [HttpPut("postagens/{id}")]
     public async Task<ActionResult<PostagemDto>> UpdatePostagem(int id, [FromBody] SalvarPostagemDto dto)
     {
@@ -82,6 +85,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoExcluirPostagem))]
     [HttpDelete("postagens/{id}")]
     public async Task<ActionResult> DeletePostagem(int id)
     {
@@ -100,6 +104,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoPublicarPostagem))]
     [HttpPost("postagens/{id}/publicar")]
     public async Task<ActionResult<PostagemDto>> PublicarPostagem(int id)
     {
@@ -118,6 +123,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoPublicarPostagem))]
     [HttpPost("postagens/{id}/despublicar")]
     public async Task<ActionResult<PostagemDto>> DespublicarPostagem(int id)
     {
@@ -152,6 +158,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoNovoTorneioAgenda))]
     [HttpPost("torneios-do-dia")]
     public async Task<ActionResult<TorneioDoDiaDto>> CreateTorneioDoDia([FromBody] SalvarTorneioDoDiaDto dto)
     {
@@ -169,6 +176,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoEditarTorneioAgenda))]
     [HttpPut("torneios-do-dia/{id}")]
     public async Task<ActionResult<TorneioDoDiaDto>> UpdateTorneioDoDia(int id, [FromBody] SalvarTorneioDoDiaDto dto)
     {
@@ -190,6 +198,7 @@ public class ConteudoController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoExcluirTorneioAgenda))]
     [HttpDelete("torneios-do-dia/{id}")]
     public async Task<ActionResult> DeleteTorneioDoDia(int id)
     {
@@ -210,6 +219,7 @@ public class ConteudoController : ControllerBase
 
     // ==================== IMAGENS ====================
 
+    [Authorize(Policy = Permissoes.EnviarImagem)]
     [HttpPost("imagens")]
     [RequestSizeLimit(TamanhoMaximoImagem + 1024 * 1024)]
     public async Task<ActionResult<object>> EnviarImagem(IFormFile arquivo, CancellationToken cancellationToken)

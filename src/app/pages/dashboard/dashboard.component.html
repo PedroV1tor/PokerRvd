@@ -13,7 +13,7 @@
           </h1>
           <p class="page-subtitle">Gerencie todas as comandas em tempo real</p>
         </div>
-        <button class="btn-nova-comanda-header" (click)="abrirModalNovaComanda()">
+        <button *ngIf="auth.pode('permissaoCriarComanda')" class="btn-nova-comanda-header" (click)="abrirModalNovaComanda()">
           <span class="btn-icon">+</span>
           Nova Comanda
         </button>

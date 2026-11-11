@@ -1,8 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PokerRvd.Api.Data;
@@ -108,22 +111,32 @@ builder.Services.AddAuthorization(options =>
         .Build();
 
     // Consulta o banco para valer na hora quando a permissão muda
-    options.AddPolicy("Conteudo", policy => policy.RequireAssertion(async context =>
-    {
-        if (context.Resource is not HttpContext http) return false;
-        if (!int.TryParse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var usuarioId)) return false;
-
-        var db = http.RequestServices.GetRequiredService<PokerDbContext>();
-        var usuario = await db.Usuarios.AsNoTracking()
-            .Where(u => u.Id == usuarioId)
-            .Select(u => new { u.Ativo, u.Role, u.PermissaoConteudo })
-            .FirstOrDefaultAsync();
-
-        return usuario is { Ativo: true } && (usuario.Role == UserRole.ADMIN || usuario.PermissaoConteudo);
-    }));
+    foreach (var (nome, regra) in Permissoes.Regras)
+        options.AddPolicy(nome, policy => policy.RequireAssertion(context => UsuarioAutorizadoAsync(context, regra)));
 });
 
 builder.Services.AddOutputCache();
+builder.Services.AddMemoryCache();
+
+// O Railway fica na frente da API: o IP real vem no último valor de X-Forwarded-For, escrito pelo próprio proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("Login", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.OnRejected = (context, cancellationToken) =>
+        new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(
+            new { message = "Muitas tentativas. Aguarde um minuto e tente novamente." }, cancellationToken));
+});
 
 // Connection string: usa DATABASE_URL (formato Railway) ou ConnectionStrings__DefaultConnection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -138,6 +151,16 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddDbContext<PokerDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+static async Task<bool> UsuarioAutorizadoAsync(AuthorizationHandlerContext context, Func<Usuario, bool> regra)
+{
+    if (context.Resource is not HttpContext http) return false;
+    if (!int.TryParse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var usuarioId)) return false;
+
+    var db = http.RequestServices.GetRequiredService<PokerDbContext>();
+    var usuario = await db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
+    return usuario != null && Permissoes.Permite(usuario, regra);
+}
 
 static string ConvertDatabaseUrlToNpgsql(string databaseUrl)
 {
@@ -166,6 +189,8 @@ builder.Services.AddHttpClient<IImagemService, ImagemService>();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Em desenvolvimento, capturar exceções não tratadas e retornar mensagem no 500 (ajuda a debugar)
 if (app.Environment.IsDevelopment())
@@ -199,6 +224,8 @@ _ = Task.Run(async () =>
         // O seeder redefine as contas padrão para senhas fixas: nunca rodar em produção
         if (app.Environment.IsDevelopment())
             await DataSeeder.EnsureDefaultUsuariosAsync(db, app.Logger);
+        else
+            await SenhasPadrao.ProtegerAdminAsync(db, builder.Configuration["Admin:SenhaInicial"], app.Logger);
     }
     catch (Exception ex)
     {
@@ -216,6 +243,7 @@ if (corsOrigins.Count == 0 && !app.Environment.IsDevelopment())
     app.Logger.LogWarning("CORS__Origins não configurado: o sistema não conseguirá chamar a API.");
 
 app.UseCors("AllowAngular");
+app.UseRateLimiter();
 
 // Em desenvolvimento, evita redirecionar HTTP->HTTPS (quebra negotiate do SignalR)
 if (!app.Environment.IsDevelopment())

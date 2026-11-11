@@ -1,3 +1,4 @@
+import { AuthService } from '../../services/auth.service';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
@@ -42,6 +43,9 @@ describe('DashboardComponent', () => {
         { provide: Router, useValue: routerSpy },
       ],
     }).compileComponents();
+
+    spyOn(TestBed.inject(AuthService), 'pode').and.returnValue(true);
+    spyOn(TestBed.inject(AuthService), 'hasPermissionComandas').and.returnValue(true);
 
     const fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;

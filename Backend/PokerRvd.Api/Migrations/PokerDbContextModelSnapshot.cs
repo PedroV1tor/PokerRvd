@@ -530,7 +530,22 @@ namespace PokerRvd.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("PermissaoAbrirCaixa")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoAddOnComanda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoAdicionarBebidaComanda")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("PermissaoAdicionarEstoque")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoAlterarStatusComanda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoBuyInComanda")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoCadastrarProduto")
@@ -548,19 +563,109 @@ namespace PokerRvd.Api.Migrations
                     b.Property<bool>("PermissaoConteudo")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("PermissaoCriarCategoriaCaixa")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoCriarComanda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoCriarFuncionario")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoCriarTorneio")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoDesativarFuncionario")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoEditarConferencia")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoEditarFuncionario")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoEditarPostagem")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoEditarProduto")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoEditarTorneioAgenda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoExcluirConferencia")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoExcluirPostagem")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoExcluirProduto")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoExcluirTorneio")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoExcluirTorneioAgenda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoFecharCaixa")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("PermissaoFecharComanda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoFichasComanda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoFinalizarTorneio")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoFuncionarios")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("PermissaoIniciarTorneio")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoNovaConferencia")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoNovaMovimentacaoCaixa")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoNovaPostagem")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoNovoTorneioAgenda")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoPagamentoParcialComanda")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("PermissaoProdutos")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoPublicarPostagem")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoQuitarPendenciaCaixa")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoRebuyComanda")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("PermissaoRemoverItemComanda")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("PermissaoSalvarConferencia")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("PermissaoTorneios")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoVerCaixa")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermissaoVerComanda")
                         .HasColumnType("boolean");
 
                     b.Property<int>("Role")

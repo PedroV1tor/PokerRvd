@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -17,6 +19,7 @@ public class ProdutosController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize(Policy = Permissoes.LerProdutos)]
     [HttpGet]
     public async Task<ActionResult<List<ProdutoDto>>> GetAll()
     {
@@ -32,6 +35,7 @@ public class ProdutosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoProdutos))]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProdutoDto>> GetById(int id)
     {
@@ -50,6 +54,7 @@ public class ProdutosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoCadastrarProduto))]
     [HttpPost]
     public async Task<ActionResult<ProdutoDto>> Create([FromBody] CreateProdutoDto dto)
     {
@@ -71,6 +76,7 @@ public class ProdutosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoEditarProduto))]
     [HttpPut("{id}")]
     public async Task<ActionResult<ProdutoDto>> Update(int id, [FromBody] UpdateProdutoDto dto)
     {
@@ -95,6 +101,7 @@ public class ProdutosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoExcluirProduto))]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
@@ -113,9 +120,13 @@ public class ProdutosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoAdicionarEstoque))]
     [HttpPost("{id}/estoque")]
     public async Task<ActionResult> AtualizarEstoque(int id, [FromBody] int quantidade)
     {
+        if (quantidade <= 0)
+            return BadRequest("Informe uma quantidade maior que zero");
+
         try
         {
             var success = await _produtoService.AtualizarEstoqueAsync(id, quantidade);

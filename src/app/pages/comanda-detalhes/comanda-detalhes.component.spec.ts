@@ -43,11 +43,13 @@ describe('ComandaDetalhesComponent', () => {
     toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning']);
     confirmSpy = jasmine.createSpyObj('ConfirmService', ['confirm']);
     authSpy = jasmine.createSpyObj('AuthService', [
+      'pode',
       'hasPermissionFecharComanda',
       'hasPermissionRemoverItemComanda',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
+    authSpy.pode.and.returnValue(true);
     authSpy.hasPermissionFecharComanda.and.returnValue(true);
     authSpy.hasPermissionRemoverItemComanda.and.returnValue(true);
 

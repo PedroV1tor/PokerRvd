@@ -60,14 +60,13 @@ public class HealthController : ControllerBase
                 timestamp = DateTime.UtcNow
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new
             {
                 status = "unhealthy",
                 database = "PostgreSQL",
                 message = "Erro ao conectar ao banco de dados.",
-                error = ex.Message,
                 timestamp = DateTime.UtcNow
             });
         }

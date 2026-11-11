@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -17,6 +19,7 @@ public class TorneiosController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize(Policy = Permissoes.LerTorneios)]
     [HttpGet]
     public async Task<ActionResult<List<TorneioDto>>> GetAll()
     {
@@ -32,6 +35,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = Permissoes.LerTorneioDaComanda)]
     [HttpGet("{id}")]
     public async Task<ActionResult<TorneioDto>> GetById(int id)
     {
@@ -50,6 +54,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoCriarTorneio))]
     [HttpPost]
     public async Task<ActionResult<TorneioDto>> Create([FromBody] CreateTorneioDto dto)
     {
@@ -68,6 +73,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = Permissoes.Admin)]
     [HttpPut("{id}")]
     public async Task<ActionResult<TorneioDto>> Update(int id, [FromBody] UpdateTorneioDto dto)
     {
@@ -86,6 +92,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoExcluirTorneio))]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
@@ -104,6 +111,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoIniciarTorneio))]
     [HttpPost("{id}/iniciar")]
     public async Task<ActionResult<TorneioDto>> Iniciar(int id)
     {
@@ -122,6 +130,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoFinalizarTorneio))]
     [HttpPost("{id}/finalizar")]
     public async Task<ActionResult<TorneioDto>> Finalizar(int id)
     {
@@ -140,6 +149,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = nameof(Usuario.PermissaoTorneios))]
     [HttpGet("{id}/stats")]
     public async Task<ActionResult<TorneioStatsDto>> GetStats(int id)
     {
@@ -158,6 +168,7 @@ public class TorneiosController : ControllerBase
         }
     }
 
+    [Authorize(Policy = Permissoes.Admin)]
     [HttpPost("{id}/cancelar")]
     public async Task<ActionResult<TorneioDto>> Cancelar(int id)
     {

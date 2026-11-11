@@ -1,4 +1,6 @@
-export interface Funcionario {
+import { Permissoes } from './permissoes.model';
+
+export interface Funcionario extends Permissoes {
   id: number;
   nome: string;
   cpf: string;
@@ -7,56 +9,23 @@ export interface Funcionario {
   ativo: boolean;
   dataCadastro: string;
   ultimoAcesso?: string;
-  permissaoComandas: boolean;
-  permissaoTorneios: boolean;
-  permissaoProdutos: boolean;
-  permissaoFuncionarios: boolean;
-  permissaoCaixas: boolean;
-  permissaoConferencia: boolean;
-  permissaoConteudo: boolean;
-  permissaoFecharComanda: boolean;
-  permissaoRemoverItemComanda: boolean;
-  permissaoAdicionarEstoque: boolean;
-  permissaoCadastrarProduto: boolean;
 }
 
-export interface CreateFuncionarioDto {
+export interface CreateFuncionarioDto extends Permissoes {
   nome: string;
   cpf: string;
   email: string;
   senha: string;
   role: string;
-  permissaoComandas: boolean;
-  permissaoTorneios: boolean;
-  permissaoProdutos: boolean;
-  permissaoFuncionarios: boolean;
-  permissaoCaixas: boolean;
-  permissaoConferencia: boolean;
-  permissaoConteudo: boolean;
-  permissaoFecharComanda: boolean;
-  permissaoRemoverItemComanda: boolean;
-  permissaoAdicionarEstoque: boolean;
-  permissaoCadastrarProduto: boolean;
 }
 
-export interface UpdateFuncionarioDto {
+export interface UpdateFuncionarioDto extends Permissoes {
   nome: string;
   cpf: string;
   email: string;
   role: string;
   ativo: boolean;
   novaSenha?: string;
-  permissaoComandas: boolean;
-  permissaoTorneios: boolean;
-  permissaoProdutos: boolean;
-  permissaoFuncionarios: boolean;
-  permissaoCaixas: boolean;
-  permissaoConferencia: boolean;
-  permissaoConteudo: boolean;
-  permissaoFecharComanda: boolean;
-  permissaoRemoverItemComanda: boolean;
-  permissaoAdicionarEstoque: boolean;
-  permissaoCadastrarProduto: boolean;
 }
 
 export enum UserRole {

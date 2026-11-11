@@ -17,5 +17,5 @@ public interface IConteudoService
     Task<bool> DeleteTorneioDoDiaAsync(int id);
 
     Task<List<PostagemPublicaDto>> GetPostagensPublicasAsync(int limite);
-    Task<TorneioDoDiaPublicoDto?> GetTorneioDoDiaPublicoAsync();
+    Task<List<TorneioDoDiaPublicoDto>> GetAgendaPublicaAsync();
 }

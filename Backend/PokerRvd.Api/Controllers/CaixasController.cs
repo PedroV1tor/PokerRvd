@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -20,6 +22,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Obtém todos os caixas
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoCaixas))]
     [HttpGet]
     public async Task<ActionResult<List<CaixaDto>>> GetAllCaixas()
     {
@@ -38,6 +41,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Obtém um caixa por ID com detalhes completos
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoVerCaixa))]
     [HttpGet("{id}")]
     public async Task<ActionResult<CaixaDetailsDto>> GetCaixa(int id)
     {
@@ -59,6 +63,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Obtém o caixa atualmente aberto
     /// </summary>
+    [Authorize(Policy = Permissoes.LerCaixaAberto)]
     [HttpGet("aberto")]
     public async Task<ActionResult<CaixaDto>> GetCaixaAberto()
     {
@@ -80,6 +85,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Abre um novo caixa
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoAbrirCaixa))]
     [HttpPost("abrir")]
     public async Task<ActionResult<CaixaDto>> AbrirCaixa([FromBody] CreateCaixaDto dto)
     {
@@ -107,6 +113,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Fecha um caixa
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoFecharCaixa))]
     [HttpPost("{id}/fechar")]
     public async Task<ActionResult<CaixaDto>> FecharCaixa(int id, [FromBody] FecharCaixaDto dto)
     {
@@ -138,6 +145,7 @@ public class CaixasController : ControllerBase
     /// <summary>
     /// Adiciona uma movimentação ao caixa
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoNovaMovimentacaoCaixa))]
     [HttpPost("{id}/movimentacoes")]
     public async Task<ActionResult> AddMovimentacao(int id, [FromBody] CreateMovimentacaoDto dto)
     {

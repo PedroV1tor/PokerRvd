@@ -8,7 +8,7 @@
       <!-- Header -->
       <div class="page-header">
         <h1 class="page-title">🏆 Torneios</h1>
-        <button class="btn-novo-torneio" (click)="abrirModalCriar()">
+        <button *ngIf="auth.pode('permissaoCriarTorneio')" class="btn-novo-torneio" (click)="abrirModalCriar()">
           <span class="icon">+</span>
           Novo Torneio
         </button>
@@ -61,20 +61,21 @@
             </div>
             <div class="card-actions">
               <button 
-                *ngIf="torneio.status === StatusTorneio.AGUARDANDO"
+                *ngIf="torneio.status === StatusTorneio.AGUARDANDO && auth.pode('permissaoIniciarTorneio')"
                 class="btn-action btn-iniciar" 
                 (click)="iniciarTorneio(torneio.id)"
                 title="Iniciar Torneio">
                 ▶
               </button>
               <button 
-                *ngIf="torneio.status === StatusTorneio.EM_ANDAMENTO"
+                *ngIf="torneio.status === StatusTorneio.EM_ANDAMENTO && auth.pode('permissaoFinalizarTorneio')"
                 class="btn-action btn-finalizar" 
                 (click)="finalizarTorneio(torneio.id)"
                 title="Finalizar Torneio">
                 ⏹
               </button>
               <button 
+                *ngIf="auth.pode('permissaoExcluirTorneio')"
                 class="btn-action btn-deletar" 
                 (click)="deletarTorneio(torneio.id)"
                 title="Excluir Torneio">

@@ -56,7 +56,7 @@
             <!-- Chips de ação compactos -->
             <div class="action-chips">
               <!-- TORNEIO -->
-              <button class="action-chip" (click)="adicionarBuyIn()" *ngIf="comanda.tipo === TipoComanda.TORNEIO">
+              <button class="action-chip" (click)="adicionarBuyIn()" *ngIf="auth.pode('permissaoBuyInComanda') && comanda.tipo === TipoComanda.TORNEIO">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Buy-in</span>
                 <span class="chip-valor" *ngIf="torneio && torneio.valorBuyIn > 0">R$ {{ torneio.valorBuyIn.toFixed(2)
@@ -64,7 +64,7 @@
               </button>
 
               <button class="action-chip" (click)="adicionarRebuySimples()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuySimples > 0)">
+                *ngIf="auth.pode('permissaoRebuyComanda') && comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuySimples > 0)">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Re-buy</span>
                 <span class="chip-valor" *ngIf="torneio && torneio.valorRebuySimples > 0">R$ {{
@@ -72,7 +72,7 @@
               </button>
 
               <button class="action-chip" (click)="adicionarRebuyDuplo()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuyDuplo > 0)">
+                *ngIf="auth.pode('permissaoRebuyComanda') && comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorRebuyDuplo > 0)">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Re-buy Duplo</span>
                 <span class="chip-valor" *ngIf="torneio && torneio.valorRebuyDuplo > 0">R$ {{
@@ -80,14 +80,14 @@
               </button>
 
               <button class="action-chip" (click)="adicionarRebuyTriplo()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorRebuyTriplo > 0">
+                *ngIf="auth.pode('permissaoRebuyComanda') && comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorRebuyTriplo > 0">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Re-buy Triplo</span>
                 <span class="chip-valor">R$ {{ torneio.valorRebuyTriplo.toFixed(2) }}</span>
               </button>
 
               <button class="action-chip" (click)="adicionarAddOn()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorAddOn > 0)">
+                *ngIf="auth.pode('permissaoAddOnComanda') && comanda.tipo === TipoComanda.TORNEIO && (!torneio || torneio.valorAddOn > 0)">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Add-on</span>
                 <span class="chip-valor" *ngIf="torneio && torneio.valorAddOn > 0">R$ {{ torneio.valorAddOn.toFixed(2)
@@ -95,14 +95,14 @@
               </button>
 
               <button class="action-chip" (click)="adicionarAddOnDuplo()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorAddOnDuplo > 0">
+                *ngIf="auth.pode('permissaoAddOnComanda') && comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorAddOnDuplo > 0">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Add-on Duplo</span>
                 <span class="chip-valor">R$ {{ torneio.valorAddOnDuplo.toFixed(2) }}</span>
               </button>
 
               <button class="action-chip" (click)="adicionarBuyIn2()"
-                *ngIf="comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorBuyIn2 > 0">
+                *ngIf="auth.pode('permissaoBuyInComanda') && comanda.tipo === TipoComanda.TORNEIO && torneio && torneio.valorBuyIn2 > 0">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Buy-in 2</span>
                 <span class="chip-valor">R$ {{ torneio.valorBuyIn2.toFixed(2) }}</span>
@@ -110,13 +110,13 @@
 
               <!-- CASH GAME -->
               <button class="action-chip chip-fichas" (click)="adicionarFichasCashGame()"
-                *ngIf="comanda.tipo === TipoComanda.CASH">
+                *ngIf="auth.pode('permissaoFichasComanda') && comanda.tipo === TipoComanda.CASH">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Fichas</span>
               </button>
 
               <!-- BEBIDA (sempre) -->
-              <button class="action-chip chip-bebida" (click)="abrirModalBebida()">
+              <button *ngIf="auth.pode('permissaoAdicionarBebidaComanda')" class="action-chip chip-bebida" (click)="abrirModalBebida()">
                 <span class="chip-plus">+</span>
                 <span class="chip-label">Bebida</span>
               </button>
@@ -142,7 +142,7 @@
                   <td class="text-center">{{ item.quantidade }}</td>
                   <td class="text-right">R$ {{ item.valorTotal.toFixed(2) }}</td>
                   <td class="text-center">
-                    <button class="btn-remover" (click)="removerItem(i)" title="Remover item">
+                    <button *ngIf="podeRemoverItem" class="btn-remover" (click)="removerItem(i)" title="Remover item">
                       🗑️
                     </button>
                   </td>
@@ -177,11 +177,11 @@
 
           <!-- Botões de ação da comanda -->
           <div class="footer-actions" *ngIf="comanda.status !== StatusComanda.FECHADO">
-            <button class="btn-pagamento-parcial" (click)="abrirModalParcial()" [disabled]="valorRestante <= 0"
+            <button *ngIf="auth.pode('permissaoPagamentoParcialComanda')" class="btn-pagamento-parcial" (click)="abrirModalParcial()" [disabled]="valorRestante <= 0"
               title="Registrar um pagamento parcial sem fechar a comanda">
               Pagamento Parcial
             </button>
-            <button class="btn-fechar-comanda" (click)="abrirModalFechar()">
+            <button *ngIf="podeFecharComanda" class="btn-fechar-comanda" (click)="abrirModalFechar()">
               Fechar Comanda
             </button>
           </div>

@@ -37,7 +37,7 @@ export class CaixasComponent implements OnInit, OnDestroy {
     private signalr: SignalrService,
     private router: Router,
     private toast: ToastService,
-    private authService: AuthService
+    public auth: AuthService
   ) {}
 
   ngOnInit() {
@@ -97,7 +97,7 @@ export class CaixasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const usuario = this.authService.getCurrentUser();
+    const usuario = this.auth.getCurrentUser();
     const dto: CreateCaixaDto = {
       saldoInicial: this.saldoInicial,
       observacoesAbertura: this.observacoesAbertura || undefined,
@@ -118,6 +118,7 @@ export class CaixasComponent implements OnInit, OnDestroy {
   }
 
   verDetalhesCaixa(id: number) {
+    if (!this.auth.pode('permissaoVerCaixa')) return;
     this.router.navigate(['/caixa', id]);
   }
 

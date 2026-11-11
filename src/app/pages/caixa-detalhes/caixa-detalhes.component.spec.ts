@@ -1,3 +1,4 @@
+import { AuthService } from '../../services/auth.service';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -82,6 +83,7 @@ describe('CaixaDetalhesComponent', () => {
         { provide: CaixaService, useValue: caixaServiceSpy },
         { provide: ComandaService, useValue: comandaServiceSpy },
         { provide: ToastService, useValue: toastSpy },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', { pode: true, hasPermissionComandas: true }) },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: TorneioService, useValue: torneioServiceSpy },

@@ -289,17 +289,8 @@ export class ProdutosComponent implements OnInit {
     const quantidadeAdicionar = Number(this.estoqueAdd.quantidade);
     const novoEstoque = produto.quantidadeEstoque + quantidadeAdicionar;
 
-    const updateDto = {
-      nome: produto.nome,
-      valorCusto: produto.valorCusto,
-      valorComercial: produto.valorComercial,
-      quantidadeEstoque: novoEstoque,
-      unidadeVenda: produto.unidadeVenda,
-      ativo: produto.ativo
-    };
-
     this.isSaving = true;
-    this.produtoService.updateProduto(produto.id, updateDto).subscribe({
+    this.produtoService.atualizarEstoque(produto.id, quantidadeAdicionar).subscribe({
       next: () => {
         this.isSaving = false;
         this.carregarProdutos();

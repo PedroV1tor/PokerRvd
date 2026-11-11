@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -11,16 +13,19 @@ public class ComandasController : ControllerBase
 {
     private readonly IComandaService _comandaService;
     private readonly ILogger<ComandasController> _logger;
+    private readonly IAuthorizationService _authorization;
 
-    public ComandasController(IComandaService comandaService, ILogger<ComandasController> logger)
+    public ComandasController(IComandaService comandaService, ILogger<ComandasController> logger, IAuthorizationService authorization)
     {
         _comandaService = comandaService;
         _logger = logger;
+        _authorization = authorization;
     }
 
     /// <summary>
     /// Obtém todas as comandas, opcionalmente filtradas por caixa (para dashboard: caixaId do caixa aberto; para pendentes: caixaId do caixa)
     /// </summary>
+    [Authorize(Policy = Permissoes.LerComandas)]
     [HttpGet]
     public async Task<ActionResult<List<ComandaDto>>> GetAllComandas([FromQuery] int? caixaId = null)
     {
@@ -32,14 +37,14 @@ public class ComandasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar comandas");
-            var message = ex.InnerException?.Message ?? ex.Message;
-            return StatusCode(500, new { message = message });
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
     /// <summary>
     /// Obtém uma comanda por ID com detalhes completos
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoVerComanda))]
     [HttpGet("{id}")]
     public async Task<ActionResult<ComandaDetailsDto>> GetComanda(int id)
     {
@@ -61,6 +66,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Cria uma nova comanda
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoCriarComanda))]
     [HttpPost]
     public async Task<ActionResult<ComandaDto>> CreateComanda([FromBody] CreateComandaDto createComandaDto)
     {
@@ -85,17 +91,24 @@ public class ComandasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao criar comanda: {@CreateComandaDto}", createComandaDto);
-            var message = ex.InnerException?.Message ?? ex.Message;
-            return StatusCode(500, new { message = message });
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
     /// <summary>
     /// Atualiza uma comanda existente
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoAlterarStatusComanda))]
     [HttpPut("{id}")]
     public async Task<ActionResult<ComandaDto>> UpdateComanda(int id, [FromBody] UpdateComandaDto updateComandaDto)
     {
+        // O botão da tela só troca o status; os demais campos não têm botão
+        var somenteStatus = updateComandaDto.ValorFichas == null && updateComandaDto.ValorBebidas == null
+            && updateComandaDto.Tipo == null && updateComandaDto.TorneioId == null
+            && updateComandaDto.TorneioNome == null && updateComandaDto.Mesa == null && !updateComandaDto.AtualizarMesa;
+        if (!somenteStatus && !(await _authorization.AuthorizeAsync(User, HttpContext, Permissoes.Admin)).Succeeded)
+            return Forbid();
+
         try
         {
             if (!ModelState.IsValid)
@@ -117,6 +130,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Fecha uma comanda, opcionalmente informando as formas de pagamento
     /// </summary>
+    [Authorize(Policy = Permissoes.FecharOuQuitarComanda)]
     [HttpPost("{id}/fechar")]
     public async Task<ActionResult<ComandaDto>> FecharComanda(int id, [FromBody] FecharComandaDto? fecharComandaDto = null)
     {
@@ -152,6 +166,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Registra um pagamento parcial sem fechar a comanda
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoPagamentoParcialComanda))]
     [HttpPost("{id}/pagamento-parcial")]
     public async Task<ActionResult<ComandaDto>> PagamentoParcial(int id, [FromBody] PagamentoParcialDto pagamentoDto)
     {
@@ -187,6 +202,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Adiciona um item (produto) à comanda
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoAdicionarBebidaComanda))]
     [HttpPost("{id}/itens")]
     public async Task<ActionResult> AddItemToComanda(int id, [FromBody] AddItemComandaDto addItemDto)
     {
@@ -208,6 +224,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Adiciona um item de fichas (Buy-in, Re-buy, Add-on) à comanda
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoComandas))]
     [HttpPost("{id}/fichas")]
     public async Task<ActionResult> AddFichasToComanda(int id, [FromBody] AddItemFichasDto addItemDto)
     {
@@ -229,6 +246,10 @@ public class ComandasController : ControllerBase
                 return BadRequest(ModelState);
             }
 
+            // Buy-in, Re-buy, Add-on e Fichas usam a mesma rota: o nome do item identifica o botão
+            if (!(await _authorization.AuthorizeAsync(User, HttpContext, Permissoes.PoliticaDaFicha(addItemDto.Nome))).Succeeded)
+                return Forbid();
+
             var result = await _comandaService.AddItemFichasAsync(id, addItemDto);
             if (!result)
             {
@@ -242,13 +263,14 @@ public class ComandasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao adicionar fichas à comanda {ComandaId}", id);
-            return StatusCode(500, new { message = "Erro interno do servidor", error = ex.Message });
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
     /// <summary>
     /// Remove um item de uma comanda e reverte a saída de caixa correspondente
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoRemoverItemComanda))]
     [HttpDelete("{id}/itens/{itemId}")]
     public async Task<ActionResult> RemoveItemFromComanda(int id, int itemId)
     {
@@ -270,6 +292,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Remove uma comanda
     /// </summary>
+    [Authorize(Policy = Permissoes.Admin)]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteComanda(int id)
     {
@@ -291,6 +314,7 @@ public class ComandasController : ControllerBase
     /// <summary>
     /// Obtém estatísticas do dashboard (opcional: caixaId do caixa aberto para contar só comandas desse caixa)
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoComandas))]
     [HttpGet("stats")]
     public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats([FromQuery] int? caixaId = null)
     {
@@ -302,8 +326,7 @@ public class ComandasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar estatísticas");
-            var message = ex.InnerException?.Message ?? ex.Message;
-            return StatusCode(500, new { message = message });
+            return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 }

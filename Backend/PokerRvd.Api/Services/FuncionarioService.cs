@@ -41,9 +41,7 @@ public class FuncionarioService : IFuncionarioService
         // Hash da senha
         var senhaHash = PasswordHasher.Hash(dto.Senha);
 
-        // Parse do Role
-        if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
-            role = UserRole.ATENDENTE;
+        var role = LerRole(dto.Role);
 
         var funcionario = new Usuario
         {
@@ -53,19 +51,9 @@ public class FuncionarioService : IFuncionarioService
             SenhaHash = senhaHash,
             Role = role,
             Ativo = true,
-            DataCadastro = DateTime.UtcNow,
-            PermissaoComandas = dto.PermissaoComandas,
-            PermissaoTorneios = dto.PermissaoTorneios,
-            PermissaoProdutos = dto.PermissaoProdutos,
-            PermissaoFuncionarios = dto.PermissaoFuncionarios,
-            PermissaoCaixas = dto.PermissaoCaixas,
-            PermissaoConferencia = dto.PermissaoConferencia,
-            PermissaoConteudo = dto.PermissaoConteudo,
-            PermissaoFecharComanda = dto.PermissaoFecharComanda,
-            PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda,
-            PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque,
-            PermissaoCadastrarProduto = dto.PermissaoCadastrarProduto
+            DataCadastro = DateTime.UtcNow
         };
+        funcionario.CopiarPermissoesDe(dto);
 
         _context.Usuarios.Add(funcionario);
         await _context.SaveChangesAsync();
@@ -91,9 +79,7 @@ public class FuncionarioService : IFuncionarioService
         if (emailExistente)
             throw new InvalidOperationException("Email já cadastrado para outro funcionário");
 
-        // Parse do Role
-        if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
-            role = UserRole.ATENDENTE;
+        var role = LerRole(dto.Role);
 
         if (!string.IsNullOrEmpty(dto.NovaSenha))
         {
@@ -108,17 +94,7 @@ public class FuncionarioService : IFuncionarioService
         funcionario.Email = dto.Email.ToLower();
         funcionario.Role = role;
         funcionario.Ativo = dto.Ativo;
-        funcionario.PermissaoComandas = dto.PermissaoComandas;
-        funcionario.PermissaoTorneios = dto.PermissaoTorneios;
-        funcionario.PermissaoProdutos = dto.PermissaoProdutos;
-        funcionario.PermissaoFuncionarios = dto.PermissaoFuncionarios;
-        funcionario.PermissaoCaixas = dto.PermissaoCaixas;
-        funcionario.PermissaoConferencia = dto.PermissaoConferencia;
-        funcionario.PermissaoConteudo = dto.PermissaoConteudo;
-        funcionario.PermissaoFecharComanda = dto.PermissaoFecharComanda;
-        funcionario.PermissaoRemoverItemComanda = dto.PermissaoRemoverItemComanda;
-        funcionario.PermissaoAdicionarEstoque = dto.PermissaoAdicionarEstoque;
-        funcionario.PermissaoCadastrarProduto = dto.PermissaoCadastrarProduto;
+        funcionario.CopiarPermissoesDe(dto);
 
         await _context.SaveChangesAsync();
 
@@ -149,7 +125,7 @@ public class FuncionarioService : IFuncionarioService
 
     private static FuncionarioDto MapToDto(Usuario usuario)
     {
-        return new FuncionarioDto
+        var dto = new FuncionarioDto
         {
             Id = usuario.Id,
             Nome = usuario.Nome,
@@ -158,20 +134,61 @@ public class FuncionarioService : IFuncionarioService
             Role = usuario.Role.ToString(),
             Ativo = usuario.Ativo,
             DataCadastro = usuario.DataCadastro,
-            UltimoAcesso = usuario.UltimoAcesso,
-            PermissaoComandas = usuario.PermissaoComandas,
-            PermissaoTorneios = usuario.PermissaoTorneios,
-            PermissaoProdutos = usuario.PermissaoProdutos,
-            PermissaoFuncionarios = usuario.PermissaoFuncionarios,
-            PermissaoCaixas = usuario.PermissaoCaixas,
-            PermissaoConferencia = usuario.PermissaoConferencia,
-            PermissaoConteudo = usuario.PermissaoConteudo,
-            PermissaoFecharComanda = usuario.PermissaoFecharComanda,
-            PermissaoRemoverItemComanda = usuario.PermissaoRemoverItemComanda,
-            PermissaoAdicionarEstoque = usuario.PermissaoAdicionarEstoque,
-            PermissaoCadastrarProduto = usuario.PermissaoCadastrarProduto
+            UltimoAcesso = usuario.UltimoAcesso
         };
+        dto.CopiarPermissoesDe(usuario);
+        return dto;
     }
+
+    // ==================== REGRAS CONTRA ESCALONAMENTO DE PRIVILÉGIO ====================
+    // Quem gerencia funcionários sem ser ADMIN não cria ADMIN, não mexe em ADMIN
+    // e só concede permissões que também possui. Retornam a mensagem de recusa, ou null.
+
+    public async Task<string?> ValidarCriacaoAsync(int editorId, CreateFuncionarioDto dto)
+    {
+        var editor = await BuscarAsync(editorId);
+        return ValidarAlteracao(editor, alvo: null, LerRole(dto.Role), dto);
+    }
+
+    public async Task<string?> ValidarEdicaoAsync(int editorId, int alvoId, UpdateFuncionarioDto dto)
+    {
+        var editor = await BuscarAsync(editorId);
+        if (!string.IsNullOrEmpty(dto.NovaSenha) && editor?.Role != UserRole.ADMIN)
+            return "Somente administradores podem alterar senhas";
+
+        return ValidarAlteracao(editor, await BuscarAsync(alvoId), LerRole(dto.Role), dto);
+    }
+
+    public async Task<string?> ValidarDesativacaoAsync(int editorId, int alvoId)
+    {
+        var editor = await BuscarAsync(editorId);
+        var alvo = await BuscarAsync(alvoId);
+        return editor?.Role != UserRole.ADMIN && alvo?.Role == UserRole.ADMIN ? SomenteAdmin : null;
+    }
+
+    private const string SomenteAdmin = "Somente administradores podem criar ou alterar administradores";
+
+    private Task<Usuario?> BuscarAsync(int id) =>
+        _context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+
+    private static string? ValidarAlteracao(Usuario? editor, Usuario? alvo, UserRole novoRole, PermissoesBase novas)
+    {
+        if (editor == null) return "Sem permissão";
+        if (editor.Role == UserRole.ADMIN) return null;
+        if (novoRole == UserRole.ADMIN || alvo?.Role == UserRole.ADMIN) return SomenteAdmin;
+
+        foreach (var permissao in PermissoesBase.Todas)
+        {
+            var concedendo = (bool)permissao.GetValue(novas)! && !(alvo != null && (bool)permissao.GetValue(alvo)!);
+            if (concedendo && !(bool)permissao.GetValue(editor)!)
+                return "Você só pode conceder permissões que também possui";
+        }
+
+        return null;
+    }
+
+    private static UserRole LerRole(string role) =>
+        Enum.TryParse<UserRole>(role, true, out var valor) && Enum.IsDefined(valor) ? valor : UserRole.ATENDENTE;
 
     private static string LimparCpf(string cpf)
     {

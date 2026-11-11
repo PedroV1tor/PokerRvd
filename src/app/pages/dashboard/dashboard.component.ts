@@ -13,6 +13,7 @@ import { CaixaService } from '../../services/caixa.service';
 import { ProdutoService } from '../../services/produto.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 import { Comanda, CreateComandaDto, DashboardStats, TipoComanda, StatusComanda } from '../../models/comanda.model';
 import { Produto } from '../../models/produto.model';
 
@@ -70,10 +71,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private produtoService: ProdutoService,
     private signalr: SignalrService,
     private router: Router,
-    private toast: ToastService
+    private toast: ToastService,
+    public auth: AuthService
   ) {}
 
   ngOnInit() {
+    if (!this.auth.hasPermissionComandas()) return;
+
     this.carregarProdutosLista();
     this.carregarDados();
     const eventos = ['ComandaCriada', 'ComandaAtualizada', 'ComandaFechada', 'ComandaRemovida', 'CaixaAberto', 'CaixaFechado'];

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Comanda, StatusComanda } from '../../models/comanda.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-comanda-card',
@@ -35,6 +36,7 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
 
           <button 
             class="btn-status"
+            [disabled]="!auth.pode('permissaoAlterarStatusComanda')"
             [class.ativo]="comanda.status === 'ATIVO'"
             [class.fechado]="comanda.status === 'FECHADO'"
             (click)="onToggleStatus(); $event.stopPropagation()">
@@ -46,12 +48,12 @@ import { Comanda, StatusComanda } from '../../models/comanda.model';
       <button
         type="button"
         class="btn-bebida-card"
-        *ngIf="comanda.status === 'ATIVO'"
+        *ngIf="comanda.status === 'ATIVO' && auth.pode('permissaoAdicionarBebidaComanda')"
         (click)="onAdicionarBebida(); $event.stopPropagation()">
         <span>Adicionar  Bebida</span>
       </button>
 
-      <button class="btn-ver-comanda" (click)="onVerDetalhes(); $event.stopPropagation()">
+      <button *ngIf="auth.pode('permissaoVerComanda')" class="btn-ver-comanda" (click)="onVerDetalhes(); $event.stopPropagation()">
         <span>📋</span>
         Ver comanda completa
       </button>
@@ -337,7 +339,7 @@ export class ComandaCardComponent {
   /** Abre fluxo rápido de adicionar bebida/comida sem ir à tela da comanda */
   @Output() adicionarBebida = new EventEmitter<number>();
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, public auth: AuthService) {}
 
   getInitials(nome: string): string {
     return nome
@@ -369,6 +371,7 @@ export class ComandaCardComponent {
   }
 
   onVerDetalhes() {
+    if (!this.auth.pode('permissaoVerComanda')) return;
     this.router.navigate(['/comanda', this.comanda.id]);
   }
 

@@ -30,6 +30,7 @@
 **Variáveis:**
 - `DATABASE_URL` – referência ao PostgreSQL (ou o connection string completo)
 - `Jwt__Key` – **obrigatória**: segredo aleatório de pelo menos 32 caracteres. Sem ela a API não sobe. Trocá-la encerra todas as sessões.
+- `Admin__SenhaInicial` – **obrigatória no primeiro deploy**: pelo menos 12 caracteres. Substitui a senha padrão de `admin@pokerrvd.com`; sem ela essa conta fica bloqueada. Depois da troca, a variável não altera mais a senha.
 - `CORS__Origins` – **obrigatória**: URL do sistema, ex: `https://poker-rvd-web.up.railway.app` (várias separadas por vírgula, sem a do site)
 - `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret` – envio de imagens das postagens. Sem elas o resto funciona, mas o upload responde que não está configurado.
 

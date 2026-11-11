@@ -29,7 +29,7 @@ export const routes: Routes = [
     path: 'comanda/:id',
     loadComponent: () => import('./pages/comanda-detalhes/comanda-detalhes.component').then(m => m.ComandaDetalhesComponent),
     canActivate: [authGuard, permissionGuard],
-    data: { permission: 'comandas' }
+    data: { permission: 'comandaDetalhes' }
   },
   {
     path: 'caixas',
@@ -41,7 +41,7 @@ export const routes: Routes = [
     path: 'caixa/:id',
     loadComponent: () => import('./pages/caixa-detalhes/caixa-detalhes.component').then(m => m.CaixaDetalhesComponent),
     canActivate: [authGuard, permissionGuard],
-    data: { permission: 'caixas' }
+    data: { permission: 'caixaDetalhes' }
   },
   {
     path: 'conferencia',

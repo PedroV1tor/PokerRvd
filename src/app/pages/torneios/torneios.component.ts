@@ -8,6 +8,7 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { TorneioService } from '../../services/torneio.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 import { ConfirmService } from '../../services/confirm.service';
 import { Torneio, CreateTorneioDto, StatusTorneio, TorneioStats } from '../../models/torneio.model';
 
@@ -52,7 +53,8 @@ export class TorneiosComponent implements OnInit, OnDestroy {
     private signalr: SignalrService,
     private router: Router,
     private toast: ToastService,
-    private confirm: ConfirmService
+    private confirm: ConfirmService,
+    public auth: AuthService
   ) {}
 
   ngOnInit() {

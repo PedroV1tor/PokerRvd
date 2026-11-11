@@ -1,21 +1,12 @@
-export interface User {
+import { Permissoes } from './permissoes.model';
+
+export interface User extends Partial<Permissoes> {
   id: number;
   nome: string;
   email: string;
   role: UserRole;
   ativo: boolean;
   dataCadastro: Date;
-  permissaoComandas?: boolean;
-  permissaoTorneios?: boolean;
-  permissaoProdutos?: boolean;
-  permissaoFuncionarios?: boolean;
-  permissaoCaixas?: boolean;
-  permissaoConferencia?: boolean;
-  permissaoConteudo?: boolean;
-  permissaoFecharComanda?: boolean;
-  permissaoRemoverItemComanda?: boolean;
-  permissaoAdicionarEstoque?: boolean;
-  permissaoCadastrarProduto?: boolean;
 }
 
 export enum UserRole {

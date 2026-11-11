@@ -17,7 +17,7 @@ public class RegisterRequest
     public string ConfirmarSenha { get; set; } = string.Empty;
 }
 
-public class UserDto
+public class UserDto : PermissoesBase
 {
     public int Id { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -26,23 +26,6 @@ public class UserDto
     public string Role { get; set; } = string.Empty;
     public bool Ativo { get; set; }
     public DateTime DataCadastro { get; set; }
-    
-    // Permissões por módulo
-    public bool PermissaoComandas { get; set; }
-    public bool PermissaoTorneios { get; set; }
-    public bool PermissaoProdutos { get; set; }
-    public bool PermissaoFuncionarios { get; set; }
-    public bool PermissaoCaixas { get; set; }
-    public bool PermissaoConferencia { get; set; }
-    public bool PermissaoConteudo { get; set; }
-
-    // Permissões específicas de ações em comandas
-    public bool PermissaoFecharComanda { get; set; }
-    public bool PermissaoRemoverItemComanda { get; set; }
-
-    // Permissões específicas de ações em produtos
-    public bool PermissaoAdicionarEstoque { get; set; }
-    public bool PermissaoCadastrarProduto { get; set; }
 }
 
 public class AuthResponse

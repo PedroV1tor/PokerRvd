@@ -8,6 +8,7 @@ import { CaixaService } from '../../services/caixa.service';
 import { ComandaService } from '../../services/comanda.service';
 import { SignalrService } from '../../services/signalr.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 import { CaixaDetailsDto, StatusCaixa, TipoMovimentacao, FecharCaixaDto, CreateMovimentacaoDto } from '../../models/caixa.model';
 import { Comanda, StatusComanda, FormaPagamentoValor, FecharComandaDto } from '../../models/comanda.model';
 import { TorneioService } from '../../services/torneio.service';
@@ -93,7 +94,8 @@ export class CaixaDetalhesComponent implements OnInit, OnDestroy {
     private comandaService: ComandaService,
     private signalr: SignalrService,
     private toast: ToastService,
-    private torneioService: TorneioService
+    private torneioService: TorneioService,
+    public auth: AuthService
   ) {}
 
   ngOnInit() {

@@ -44,11 +44,11 @@ export class ConferenciaComponent implements OnInit {
     private router: Router,
     private toast: ToastService,
     private confirm: ConfirmService,
-    private authService: AuthService
+    public auth: AuthService
   ) {}
 
   ngOnInit() {
-    if (!this.authService.hasPermissionConferencia()) {
+    if (!this.auth.hasPermissionConferencia()) {
       this.toast.error('Você não tem permissão para acessar esta página.');
       this.router.navigate(['/dashboard']);
       return;

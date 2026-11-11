@@ -1,6 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -12,9 +15,11 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
     private readonly IWebHostEnvironment _env;
+    private readonly IAuthorizationService _authorization;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger, IWebHostEnvironment env)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger, IWebHostEnvironment env, IAuthorizationService authorization)
     {
+        _authorization = authorization;
         _authService = authService;
         _logger = logger;
         _env = env;
@@ -25,6 +30,7 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("Login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
         try
@@ -60,7 +66,7 @@ public class AuthController : ControllerBase
     /// Registra um novo usuário
     /// </summary>
     [HttpPost("register")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Policy = Permissoes.Admin)]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
     {
         try
@@ -89,6 +95,7 @@ public class AuthController : ControllerBase
     /// Verifica se um email já está cadastrado
     /// </summary>
     [HttpGet("check-email/{email}")]
+    [Authorize(Policy = nameof(Usuario.PermissaoFuncionarios))]
     public async Task<ActionResult<bool>> CheckEmail(string email)
     {
         try
@@ -109,6 +116,11 @@ public class AuthController : ControllerBase
     [HttpGet("me/{id}")]
     public async Task<ActionResult<UserDto>> GetMe(int id)
     {
+        // Devolve CPF e permissões: cada um consulta só a própria conta, exceto ADMIN
+        var propriaConta = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value == id.ToString();
+        if (!propriaConta && !(await _authorization.AuthorizeAsync(User, HttpContext, Permissoes.Admin)).Succeeded)
+            return Forbid();
+
         try
         {
             var user = await _authService.GetUserByIdAsync(id);

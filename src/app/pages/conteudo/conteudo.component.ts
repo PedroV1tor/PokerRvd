@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { of, switchMap } from 'rxjs';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { ConteudoService } from '../../services/conteudo.service';
 import { TorneioService } from '../../services/torneio.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { AuthService } from '../../services/auth.service';
 import { Postagem, TorneioDoDia } from '../../models/conteudo.model';
 import { StatusTorneio, Torneio } from '../../models/torneio.model';
 
@@ -15,6 +17,8 @@ interface FormPostagem {
   titulo: string;
   conteudo: string;
   imagemUrl: string | null;
+  jaPublicada: boolean;
+  publicarAoSalvar: boolean;
 }
 
 interface FormTorneio {
@@ -40,6 +44,7 @@ interface FormTorneio {
 })
 export class ConteudoComponent implements OnInit {
   aba: 'postagens' | 'torneio' = 'postagens';
+  mostrarEncerrados = false;
   loading = false;
   salvando = false;
   enviandoImagem = false;
@@ -55,7 +60,8 @@ export class ConteudoComponent implements OnInit {
     private conteudo: ConteudoService,
     private torneioService: TorneioService,
     private toast: ToastService,
-    private confirm: ConfirmService
+    private confirm: ConfirmService,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -91,7 +97,7 @@ export class ConteudoComponent implements OnInit {
   // ==================== POSTAGENS ====================
 
   novaPostagem(): void {
-    this.formPostagem = { id: null, titulo: '', conteudo: '', imagemUrl: null };
+    this.formPostagem = { id: null, titulo: '', conteudo: '', imagemUrl: null, jaPublicada: false, publicarAoSalvar: this.auth.pode('permissaoPublicarPostagem') };
   }
 
   editarPostagem(postagem: Postagem): void {
@@ -99,7 +105,9 @@ export class ConteudoComponent implements OnInit {
       id: postagem.id,
       titulo: postagem.titulo,
       conteudo: postagem.conteudo,
-      imagemUrl: postagem.imagemUrl ?? null
+      imagemUrl: postagem.imagemUrl ?? null,
+      jaPublicada: postagem.status === 'PUBLICADO',
+      publicarAoSalvar: false
     };
   }
 
@@ -118,11 +126,17 @@ export class ConteudoComponent implements OnInit {
       : this.conteudo.createPostagem(dto);
 
     this.salvando = true;
-    requisicao.subscribe({
-      next: () => {
+    requisicao.pipe(
+      switchMap(postagem => (form.publicarAoSalvar ? this.conteudo.publicarPostagem(postagem.id) : of(postagem)))
+    ).subscribe({
+      next: postagem => {
         this.salvando = false;
         this.formPostagem = null;
-        this.toast.success(form.id ? 'Postagem atualizada' : 'Rascunho criado. Publique quando estiver pronto.');
+        this.toast.success(
+          postagem.status === 'PUBLICADO'
+            ? 'Postagem salva e publicada. Aparece no site em até 1 minuto.'
+            : 'Rascunho salvo. Ele só aparece no site depois de publicado.'
+        );
         this.carregar();
       },
       error: err => {
@@ -247,7 +261,7 @@ export class ConteudoComponent implements OnInit {
       next: () => {
         this.salvando = false;
         this.formTorneio = null;
-        this.toast.success('Torneio do dia salvo');
+        this.toast.success('Torneio salvo. Aparece na agenda do site em até 1 minuto.');
         this.carregar();
       },
       error: err => {
@@ -262,7 +276,7 @@ export class ConteudoComponent implements OnInit {
       if (!ok) return;
       this.conteudo.deleteTorneioDoDia(torneio.id).subscribe({
         next: () => {
-          this.toast.success('Torneio do dia excluído');
+          this.toast.success('Torneio excluído');
           this.carregar();
         },
         error: err => this.toast.error(this.mensagemErro(err, 'Erro ao excluir torneio do dia'))
@@ -271,9 +285,52 @@ export class ConteudoComponent implements OnInit {
   }
 
   situacaoTorneio(torneio: TorneioDoDia): { texto: string; classe: string } {
-    if (new Date(torneio.fim) <= new Date()) return { texto: 'Encerrado', classe: 'encerrado' };
-    if (!torneio.publicado) return { texto: 'Oculto', classe: 'rascunho' };
-    return { texto: 'Publicado', classe: 'publicado' };
+    const agora = new Date();
+    if (new Date(torneio.fim) <= agora) return { texto: 'Encerrado', classe: 'encerrado' };
+    if (!torneio.publicado) return { texto: 'Oculto do site', classe: 'rascunho' };
+    if (new Date(torneio.inicio) <= agora) return { texto: 'Acontecendo agora', classe: 'ao-vivo' };
+    return { texto: 'No site', classe: 'publicado' };
+  }
+
+  // ==================== AGRUPAMENTOS DA TELA ====================
+
+  get postagensNoSite(): Postagem[] {
+    return this.postagens.filter(p => p.status === 'PUBLICADO');
+  }
+
+  get rascunhos(): Postagem[] {
+    return this.postagens.filter(p => p.status !== 'PUBLICADO');
+  }
+
+  get proximosTorneios(): TorneioDoDia[] {
+    const agora = Date.now();
+    return this.torneiosDoDia
+      .filter(t => new Date(t.fim).getTime() > agora)
+      .sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
+  }
+
+  get torneiosEncerrados(): TorneioDoDia[] {
+    const agora = Date.now();
+    return this.torneiosDoDia
+      .filter(t => new Date(t.fim).getTime() <= agora)
+      .sort((a, b) => new Date(b.inicio).getTime() - new Date(a.inicio).getTime());
+  }
+
+  /** Dia, mês e dia da semana para o bloco de data da agenda. */
+  partesData(valor: string): { dia: string; mes: string; semana: string; hoje: boolean } {
+    const data = new Date(valor);
+    const hoje = data.toDateString() === new Date().toDateString();
+    return {
+      dia: String(data.getDate()).padStart(2, '0'),
+      mes: data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+      semana: hoje ? 'Hoje' : data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+      hoje
+    };
+  }
+
+  /** O torneio termina em outro dia (ex.: 19:00 até 03:00). */
+  terminaNoDiaSeguinte(torneio: TorneioDoDia): boolean {
+    return new Date(torneio.inicio).toDateString() !== new Date(torneio.fim).toDateString();
   }
 
   // ==================== IMAGEM ====================

@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokerRvd.Api.DTOs;
+using PokerRvd.Api.Models;
 using PokerRvd.Api.Services;
 
 namespace PokerRvd.Api.Controllers;
@@ -17,9 +20,12 @@ public class FuncionariosController : ControllerBase
         _logger = logger;
     }
 
+    private int EditorId => int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
+
     /// <summary>
     /// Lista todos os funcionários
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoFuncionarios))]
     [HttpGet]
     public async Task<ActionResult<List<FuncionarioDto>>> GetAll()
     {
@@ -38,6 +44,7 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Busca um funcionário por ID
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoFuncionarios))]
     [HttpGet("{id}")]
     public async Task<ActionResult<FuncionarioDto>> GetById(int id)
     {
@@ -59,6 +66,7 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Cria um novo funcionário
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoCriarFuncionario))]
     [HttpPost]
     public async Task<ActionResult<FuncionarioDto>> Create([FromBody] CreateFuncionarioDto dto)
     {
@@ -75,6 +83,10 @@ public class FuncionariosController : ControllerBase
 
             if (string.IsNullOrWhiteSpace(dto.Senha))
                 return BadRequest("Senha é obrigatória");
+
+            var negado = await _funcionarioService.ValidarCriacaoAsync(EditorId, dto);
+            if (negado != null)
+                return StatusCode(403, negado);
 
             var funcionario = await _funcionarioService.CreateFuncionarioAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = funcionario.Id }, funcionario);
@@ -94,12 +106,10 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Atualiza um funcionário existente
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoEditarFuncionario))]
     [HttpPut("{id}")]
     public async Task<ActionResult<FuncionarioDto>> Update(int id, [FromBody] UpdateFuncionarioDto dto)
     {
-        if (!string.IsNullOrEmpty(dto.NovaSenha) && !User.IsInRole("ADMIN"))
-            return Forbid();
-
         try
         {
             if (string.IsNullOrWhiteSpace(dto.Nome))
@@ -110,6 +120,10 @@ public class FuncionariosController : ControllerBase
 
             if (string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest("Email é obrigatório");
+
+            var negado = await _funcionarioService.ValidarEdicaoAsync(EditorId, id, dto);
+            if (negado != null)
+                return StatusCode(403, negado);
 
             var funcionario = await _funcionarioService.UpdateFuncionarioAsync(id, dto);
             if (funcionario == null)
@@ -132,11 +146,16 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Desativa um funcionário (soft delete)
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoDesativarFuncionario))]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
         try
         {
+            var negado = await _funcionarioService.ValidarDesativacaoAsync(EditorId, id);
+            if (negado != null)
+                return StatusCode(403, negado);
+
             var success = await _funcionarioService.DeleteFuncionarioAsync(id);
             if (!success)
                 return NotFound($"Funcionário {id} não encontrado");
@@ -153,6 +172,7 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Verifica se um CPF já está cadastrado
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoFuncionarios))]
     [HttpGet("check-cpf/{cpf}")]
     public async Task<ActionResult<bool>> CheckCpf(string cpf)
     {
@@ -171,6 +191,7 @@ public class FuncionariosController : ControllerBase
     /// <summary>
     /// Verifica se um email já está cadastrado
     /// </summary>
+    [Authorize(Policy = nameof(Usuario.PermissaoFuncionarios))]
     [HttpGet("check-email/{email}")]
     public async Task<ActionResult<bool>> CheckEmail(string email)
     {

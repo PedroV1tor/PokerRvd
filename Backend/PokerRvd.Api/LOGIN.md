@@ -1,5 +1,7 @@
 # Login do sistema
 
+> Estas senhas valem somente em desenvolvimento. Fora dele, contas com senha padrão não abrem sessão: configure `Admin__SenhaInicial` (veja `DEPLOY_RAILWAY.md`).
+
 ## Usuário administrador (após migration ou script manual)
 
 - **E-mail:** `admin@pokerrvd.com`

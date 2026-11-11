@@ -6,7 +6,17 @@ import { FuncionarioService } from '../../services/funcionario.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { Funcionario, CreateFuncionarioDto, UpdateFuncionarioDto, UserRole } from '../../models/funcionario.model';
+import { Funcionario, CreateFuncionarioDto, UpdateFuncionarioDto } from '../../models/funcionario.model';
+import { PermissaoKey, SECOES_PERMISSOES, copiarPermissoes } from '../../models/permissoes.model';
+
+type PermissoesAlvo = CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number });
+
+interface ModuloPermissao {
+  id: string;
+  label: string;
+  icon: string;
+  children: { key: PermissaoKey; label: string }[];
+}
 
 @Component({
   selector: 'app-funcionarios',
@@ -30,17 +40,7 @@ export class FuncionariosComponent implements OnInit {
     email: '',
     senha: '',
     role: 'ATENDENTE',
-    permissaoComandas: false,
-    permissaoTorneios: false,
-    permissaoProdutos: false,
-    permissaoFuncionarios: false,
-    permissaoCaixas: false,
-    permissaoConferencia: false,
-    permissaoConteudo: false,
-    permissaoFecharComanda: false,
-    permissaoRemoverItemComanda: false,
-    permissaoAdicionarEstoque: false,
-    permissaoCadastrarProduto: false
+    ...copiarPermissoes()
   };
 
   // Modal Editar Funcionário
@@ -52,17 +52,7 @@ export class FuncionariosComponent implements OnInit {
     email: '',
     role: 'ATENDENTE',
     ativo: true,
-    permissaoComandas: false,
-    permissaoTorneios: false,
-    permissaoProdutos: false,
-    permissaoFuncionarios: false,
-    permissaoCaixas: false,
-    permissaoConferencia: false,
-    permissaoConteudo: false,
-    permissaoFecharComanda: false,
-    permissaoRemoverItemComanda: false,
-    permissaoAdicionarEstoque: false,
-    permissaoCadastrarProduto: false
+    ...copiarPermissoes()
   };
 
   roles = [
@@ -77,11 +67,25 @@ export class FuncionariosComponent implements OnInit {
     private funcionarioService: FuncionarioService,
     private toast: ToastService,
     private confirm: ConfirmService,
-    private authService: AuthService
+    public auth: AuthService
   ) {}
 
   get podeAlterarSenha(): boolean {
-    return this.authService.isAdmin();
+    return this.auth.isAdmin();
+  }
+
+  /** Só ADMIN cria ou altera outro ADMIN (a API também recusa). */
+  get rolesDisponiveis() {
+    return this.auth.isAdmin() ? this.roles : this.roles.filter(r => r.value !== 'ADMIN');
+  }
+
+  podeGerenciar(funcionario: Funcionario): boolean {
+    return this.auth.isAdmin() || funcionario.role !== 'ADMIN';
+  }
+
+  /** Sem ser ADMIN, só concede o que também possui; pode retirar o que o funcionário já tem. */
+  podeConceder(target: PermissoesAlvo, key: PermissaoKey): boolean {
+    return this.auth.isAdmin() || !!this.auth.getCurrentUser()?.[key] || target[key];
   }
 
   ngOnInit(): void {
@@ -152,17 +156,7 @@ export class FuncionariosComponent implements OnInit {
       email: '',
       senha: '',
       role: 'ATENDENTE',
-      permissaoComandas: false,
-      permissaoTorneios: false,
-      permissaoProdutos: false,
-      permissaoFuncionarios: false,
-      permissaoCaixas: false,
-      permissaoConferencia: false,
-      permissaoConteudo: false,
-      permissaoFecharComanda: false,
-      permissaoRemoverItemComanda: false,
-      permissaoAdicionarEstoque: false,
-      permissaoCadastrarProduto: false
+      ...copiarPermissoes()
     };
   }
 
@@ -190,17 +184,7 @@ export class FuncionariosComponent implements OnInit {
       email: funcionario.email,
       role: funcionario.role,
       ativo: funcionario.ativo,
-      permissaoComandas: funcionario.permissaoComandas,
-      permissaoTorneios: funcionario.permissaoTorneios,
-      permissaoProdutos: funcionario.permissaoProdutos,
-      permissaoFuncionarios: funcionario.permissaoFuncionarios,
-      permissaoCaixas: funcionario.permissaoCaixas,
-      permissaoConferencia: funcionario.permissaoConferencia,
-      permissaoConteudo: funcionario.permissaoConteudo,
-      permissaoFecharComanda: funcionario.permissaoFecharComanda,
-      permissaoRemoverItemComanda: funcionario.permissaoRemoverItemComanda,
-      permissaoAdicionarEstoque: funcionario.permissaoAdicionarEstoque ?? false,
-      permissaoCadastrarProduto: funcionario.permissaoCadastrarProduto ?? false
+      ...copiarPermissoes(funcionario)
     };
     this.modalEdicaoTab = 'conta';
     this.showModalEdicao = true;
@@ -229,17 +213,7 @@ export class FuncionariosComponent implements OnInit {
       role: this.funcionarioEditando.role,
       ativo: this.funcionarioEditando.ativo,
       novaSenha: this.novaSenhaEdicao || undefined,
-      permissaoComandas: this.funcionarioEditando.permissaoComandas,
-      permissaoTorneios: this.funcionarioEditando.permissaoTorneios,
-      permissaoProdutos: this.funcionarioEditando.permissaoProdutos,
-      permissaoFuncionarios: this.funcionarioEditando.permissaoFuncionarios,
-      permissaoCaixas: this.funcionarioEditando.permissaoCaixas,
-      permissaoConferencia: this.funcionarioEditando.permissaoConferencia,
-      permissaoConteudo: this.funcionarioEditando.permissaoConteudo,
-      permissaoFecharComanda: this.funcionarioEditando.permissaoFecharComanda,
-      permissaoRemoverItemComanda: this.funcionarioEditando.permissaoRemoverItemComanda,
-      permissaoAdicionarEstoque: this.funcionarioEditando.permissaoAdicionarEstoque ?? false,
-      permissaoCadastrarProduto: this.funcionarioEditando.permissaoCadastrarProduto ?? false
+      ...copiarPermissoes(this.funcionarioEditando)
     }).subscribe({
       next: () => {
         if (mudouStatus) {
@@ -319,67 +293,43 @@ export class FuncionariosComponent implements OnInit {
     this.modalEdicaoTab = tab;
   }
 
-  // --- Árvore de permissões (módulos e itens) ---
-  moduloExpanded: Record<string, boolean> = {
-    comandas: true,
-    torneios: false,
-    produtos: false,
-    funcionarios: false,
-    caixas: false,
-    conteudo: false
-  };
+  // --- Árvore de permissões: uma entrada por seção do header ---
+  moduloExpanded: Record<string, boolean> = { comandas: true };
 
-  modulosPermissoes: { id: string; label: string; icon: string; children: { key: keyof Pick<CreateFuncionarioDto, 'permissaoComandas' | 'permissaoTorneios' | 'permissaoProdutos' | 'permissaoFuncionarios' | 'permissaoCaixas' | 'permissaoConferencia' | 'permissaoConteudo' | 'permissaoFecharComanda' | 'permissaoRemoverItemComanda' | 'permissaoAdicionarEstoque' | 'permissaoCadastrarProduto'>; label: string }[] }[] = [
-    {
-      id: 'comandas',
-      label: 'Módulo Comandas',
-      icon: '🎮',
-      children: [
-        { key: 'permissaoComandas', label: 'Comandas' },
-        { key: 'permissaoFecharComanda', label: 'Fechar Comanda' },
-        { key: 'permissaoRemoverItemComanda', label: 'Remover itens da comanda' }
-      ]
-    },
-    { id: 'torneios', label: 'Módulo Torneios', icon: '🏆', children: [{ key: 'permissaoTorneios', label: 'Torneios' }] },
-    {
-      id: 'produtos',
-      label: 'Módulo Produtos',
-      icon: '📦',
-      children: [
-        { key: 'permissaoProdutos', label: 'Produtos' },
-        { key: 'permissaoCadastrarProduto', label: 'Cadastrar produto' },
-        { key: 'permissaoAdicionarEstoque', label: 'Adicionar estoque' }
-      ]
-    },
-    { id: 'funcionarios', label: 'Módulo Funcionários', icon: '👥', children: [{ key: 'permissaoFuncionarios', label: 'Funcionários' }] },
-    { id: 'caixas', label: 'Módulo Caixas', icon: '💰', children: [{ key: 'permissaoCaixas', label: 'Caixas' }, { key: 'permissaoConferencia', label: 'Conferência de Caixa' }] },
-    { id: 'conteudo', label: 'Módulo Conteúdo do Site', icon: '📣', children: [{ key: 'permissaoConteudo', label: 'Postagens e Torneio do dia' }] }
-  ];
+  modulosPermissoes = SECOES_PERMISSOES.map(secao => ({
+    id: secao.id,
+    label: `Seção ${secao.label}`,
+    icon: secao.icon,
+    children: [
+      { key: secao.secao as PermissaoKey, label: `Acessar ${secao.label}` },
+      ...secao.acoes.map(acao => ({ key: acao.key as PermissaoKey, label: acao.label as string }))
+    ]
+  }));
 
   toggleModuloExpand(id: string): void {
     this.moduloExpanded[id] = !this.moduloExpanded[id];
   }
 
-  isModuloChecked(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0]): boolean {
-    return modulo.children.every(c => (target as unknown as Record<string, boolean>)[c.key] === true);
+  isModuloChecked(target: PermissoesAlvo, modulo: ModuloPermissao): boolean {
+    return modulo.children.every(c => target[c.key]);
   }
 
-  isModuloIndeterminate(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0]): boolean {
-    const checked = modulo.children.filter(c => (target as unknown as Record<string, boolean>)[c.key] === true).length;
-    return checked > 0 && checked < modulo.children.length;
+  isModuloIndeterminate(target: PermissoesAlvo, modulo: ModuloPermissao): boolean {
+    const marcadas = modulo.children.filter(c => target[c.key]).length;
+    return marcadas > 0 && marcadas < modulo.children.length;
   }
 
-  setModuloChecked(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), modulo: typeof this.modulosPermissoes[0], value: boolean): void {
-    modulo.children.forEach(c => ((target as unknown as Record<string, boolean>)[c.key] = value));
+  setModuloChecked(target: PermissoesAlvo, modulo: ModuloPermissao, value: boolean): void {
+    modulo.children
+      .filter(c => this.podeConceder(target, c.key))
+      .forEach(c => (target[c.key] = value));
   }
 
-  /** Lê valor de permissão por chave (evita problema de binding com chave dinâmica). */
-  getPermissao(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), key: string): boolean {
-    return !!(target as unknown as Record<string, boolean>)[key];
+  getPermissao(target: PermissoesAlvo, key: PermissaoKey): boolean {
+    return target[key];
   }
 
-  /** Atualiza valor de permissão por chave. */
-  setPermissao(target: CreateFuncionarioDto | (UpdateFuncionarioDto & { id: number }), key: string, value: boolean): void {
-    (target as unknown as Record<string, boolean>)[key] = value;
+  setPermissao(target: PermissoesAlvo, key: PermissaoKey, value: boolean): void {
+    target[key] = value;
   }
 }

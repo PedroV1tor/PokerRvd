@@ -22,10 +22,11 @@ describe('ConferenciaComponent', () => {
     serviceSpy = jasmine.createSpyObj('ConferenciaService', ['getConferencias', 'createConferencia', 'updateConferencia', 'deleteConferencia']);
     toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning', 'info']);
     confirmSpy = jasmine.createSpyObj('ConfirmService', ['confirm']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermissionConferencia']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['pode', 'hasPermissionConferencia']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     // Default spy configurations
+    authServiceSpy.pode.and.returnValue(true);
     authServiceSpy.hasPermissionConferencia.and.returnValue(true);
     serviceSpy.getConferencias.and.returnValue(of([] as Conferencia[]));
 

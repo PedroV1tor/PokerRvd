@@ -17,11 +17,11 @@
           <button class="btn-action btn-voltar" (click)="voltar()" title="Voltar para o Dashboard">
             ← Voltar
           </button>
-          <button class="btn-action btn-novo" (click)="novoLancamento()" [disabled]="saving"
+          <button *ngIf="auth.pode('permissaoNovaConferencia')" class="btn-action btn-novo" (click)="novoLancamento()" [disabled]="saving"
             title="Criar novo lançamento de conferência">
             + Novo Lançamento
           </button>
-          <button class="btn-action btn-salvar" [class.dirty]="dirtyIds.size > 0"
+          <button *ngIf="auth.pode('permissaoSalvarConferencia')" class="btn-action btn-salvar" [class.dirty]="dirtyIds.size > 0"
             [disabled]="dirtyIds.size === 0 || saving" (click)="salvar()" title="Salvar alterações">
             💾 Salvar {{ dirtyIds.size > 0 ? '(' + dirtyIds.size + ')' : '' }}
           </button>
@@ -96,11 +96,11 @@
               </div>
 
               <div class="card-actions">
-                <button class="btn-alterar" [class.active]="isEditing(item.id)"
+                <button *ngIf="auth.pode('permissaoEditarConferencia')" class="btn-alterar" [class.active]="isEditing(item.id)"
                   (click)="toggleEdit(item); $event.stopPropagation()" title="Alterar dados">
                   ✏️
                 </button>
-                <button class="btn-excluir" (click)="excluirConferencia(item); $event.stopPropagation()"
+                <button *ngIf="auth.pode('permissaoExcluirConferencia')" class="btn-excluir" (click)="excluirConferencia(item); $event.stopPropagation()"
                   title="Excluir este lançamento">
                   🗑️
                 </button>

@@ -10,6 +10,7 @@ import {
   AuthResponse,
   LoginState 
 } from '../models/auth.model';
+import { PermissaoKey, secaoDaAcao } from '../models/permissoes.model';
 
 @Injectable({
   providedIn: 'root'
@@ -120,7 +121,15 @@ export class AuthService {
   }
 
   // ==================== PERMISSÕES ====================
-  
+
+  /** Libera um botão: ADMIN sempre; os demais precisam da seção e do próprio botão. */
+  pode(permissao: PermissaoKey): boolean {
+    const user = this.authStateSubject.value.user;
+    if (user?.role === 'ADMIN') return true;
+    const secao = secaoDaAcao(permissao);
+    return !!user?.[permissao] && (!secao || !!user?.[secao]);
+  }
+
   hasPermissionComandas(): boolean {
     const user = this.getCurrentUser();
     // ADMIN tem acesso a tudo
@@ -129,20 +138,11 @@ export class AuthService {
   }
 
   hasPermissionFecharComanda(): boolean {
-    const user = this.getCurrentUser();
-    if (user?.role === 'ADMIN') return true;
-    // Para fechar comanda, além da permissão específica, é esperado que tenha acesso ao módulo de comandas
-    const moduloComandas = user?.permissaoComandas || false;
-    const acaoFechar = user?.permissaoFecharComanda || false;
-    return moduloComandas && acaoFechar;
+    return this.pode('permissaoFecharComanda');
   }
 
   hasPermissionRemoverItemComanda(): boolean {
-    const user = this.getCurrentUser();
-    if (user?.role === 'ADMIN') return true;
-    const moduloComandas = user?.permissaoComandas || false;
-    const acaoRemover = user?.permissaoRemoverItemComanda || false;
-    return moduloComandas && acaoRemover;
+    return this.pode('permissaoRemoverItemComanda');
   }
 
   hasPermissionTorneios(): boolean {
@@ -158,19 +158,11 @@ export class AuthService {
   }
 
   hasPermissionAdicionarEstoque(): boolean {
-    const user = this.getCurrentUser();
-    if (user?.role === 'ADMIN') return true;
-    const moduloProdutos = user?.permissaoProdutos || false;
-    const acaoEstoque = user?.permissaoAdicionarEstoque || false;
-    return moduloProdutos && acaoEstoque;
+    return this.pode('permissaoAdicionarEstoque');
   }
 
   hasPermissionCadastrarProduto(): boolean {
-    const user = this.getCurrentUser();
-    if (user?.role === 'ADMIN') return true;
-    const moduloProdutos = user?.permissaoProdutos || false;
-    const acaoCadastrar = user?.permissaoCadastrarProduto || false;
-    return moduloProdutos && acaoCadastrar;
+    return this.pode('permissaoCadastrarProduto');
   }
 
   hasPermissionFuncionarios(): boolean {

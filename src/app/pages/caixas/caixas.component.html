@@ -12,7 +12,8 @@
           <p class="page-subtitle">Gerencie a abertura e fechamento de caixas</p>
         </div>
         <button 
-          class="btn-abrir-caixa" 
+          *ngIf="auth.pode('permissaoAbrirCaixa')"
+          class="btn-abrir-caixa"
           (click)="abrirModalAbrirCaixa()"
           [disabled]="caixaAberto !== null">
           <span class="icon">📦</span>
@@ -27,7 +28,7 @@
           <strong>Caixa Aberto</strong>
           <p>Aberto em {{ formatarData(caixaAberto.dataAbertura) }} por {{ caixaAberto.usuarioAbertura }}</p>
         </div>
-        <button class="btn-ver-caixa" (click)="verDetalhesCaixa(caixaAberto.id)">
+        <button *ngIf="auth.pode('permissaoVerCaixa')" class="btn-ver-caixa" (click)="verDetalhesCaixa(caixaAberto.id)">
           Ver Detalhes
         </button>
       </div>

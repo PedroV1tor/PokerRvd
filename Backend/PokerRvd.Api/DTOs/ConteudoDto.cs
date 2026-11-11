@@ -62,6 +62,7 @@ public class PostagemPublicaDto
 
 public class TorneioDoDiaPublicoDto
 {
+    public int Id { get; set; }
     public string Titulo { get; set; } = string.Empty;
     public string Modalidade { get; set; } = string.Empty;
     public DateTime Inicio { get; set; }
